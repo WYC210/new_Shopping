@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wyc.mapper.CategoriesMapper">
+
+    <resultMap type="com.wyc.domain.po.Categories" id="CategoriesResult">
+        <id     property="categoryId"    column="category_id"    />
+        <result property="name"          column="name"           />
+        <result property="parentId"      column="parent_id"      />
+        <result property="sortOrder"     column="sort_order"     />
+        <result property="isVisible"     column="is_visible"     />
+        <result property="createdAt"     column="created_at"     />
+        <result property="updatedAt"     column="updated_at"     />
+    </resultMap>
+
+    <sql id="selectCategoriesVo">
+        select category_id, name, parent_id, sort_order, is_visible, created_at, updated_at
+        from categories
+    </sql>
+
+    <!-- 使用主键索引 -->
+    <select id="selectById" parameterType="Long" resultMap="CategoriesResult">
+        <include refid="selectCategoriesVo"/>
+        where category_id = #{categoryId}
+    </select>
+
+    <!-- 使用parent_id索引 -->
+    <select id="selectByParentId" parameterType="Long" resultMap="CategoriesResult">
+        <include refid="selectCategoriesVo"/>
+        where parent_id = #{parentId}
+        order by sort_order desc
+    </select>
+
+    <!-- 使用is_visible索引 -->
+    <select id="selectVisible" resultMap="CategoriesResult">
+        <include refid="selectCategoriesVo"/>
+        where is_visible = true
+        order by sort_order desc
+    </select>
+
+    <!-- 查询所有分类 -->
+    <select id="selectAll" resultMap="CategoriesResult">
+        <include refid="selectCategoriesVo"/>
+        order by sort_order desc
+    </select>
+
+    <!-- 新增分类 -->
+    <insert id="insert" parameterType="com.wyc.domain.po.Categories" useGeneratedKeys="true" keyProperty="categoryId">
+        insert into categories (
+            name,
+            parent_id,
+            sort_order,
+            is_visible
+        ) values (
+            #{name},
+            #{parentId},
+            #{sortOrder},
+            #{isVisible}
+        )
+    </insert>
+
+    <!-- 修改分类 -->
+    <update id="update" parameterType="com.wyc.domain.po.Categories">
+        update categories
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="isVisible != null">is_visible = #{isVisible},</if>
+        </set>
+        where category_id = #{categoryId}
+    </update>
+
+    <!-- 删除分类 -->
+    <delete id="deleteById" parameterType="Long">
+        delete from categories where category_id = #{categoryId}
+    </delete>
+
+</mapper> 

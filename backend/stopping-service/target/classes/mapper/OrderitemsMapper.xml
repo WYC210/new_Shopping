@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wyc.mapper.OrderitemsMapper">
+
+    <resultMap type="com.wyc.domain.po.Orderitems" id="OrderitemsResult">
+        <id property="orderItemId" column="order_item_id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="productId" column="product_id"/>
+        <result property="productSkuId" column="product_sku_id"/>
+        <result property="quantity" column="quantity"/>
+        <result property="price" column="price"/>
+        <result property="productName" column="product_name"/>
+        <result property="productImage" column="product_image"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <sql id="selectOrderitemsVo">
+        select order_item_id, order_id, product_id, product_sku_id, quantity, price,
+               product_name, product_image, created_at
+        from orderitems
+    </sql>
+
+    <insert id="insert" parameterType="com.wyc.domain.po.Orderitems" useGeneratedKeys="true" keyProperty="orderItemId">
+        insert into orderitems (
+            order_id, product_id, product_sku_id, quantity, price,
+            product_name, product_image, created_at
+        ) values (
+            #{orderId}, #{productId}, #{productSkuId}, #{quantity}, #{price},
+            #{productName}, #{productImage}, #{createdAt}
+        )
+    </insert>
+
+    <select id="selectById" parameterType="Long" resultMap="OrderitemsResult">
+        <include refid="selectOrderitemsVo"/>
+        where order_item_id = #{orderItemId}
+    </select>
+
+    <select id="selectByOrderId" parameterType="Long" resultMap="OrderitemsResult">
+        <include refid="selectOrderitemsVo"/>
+        where order_id = #{orderId}
+    </select>
+
+    <delete id="deleteByOrderId" parameterType="Long">
+        delete from orderitems where order_id = #{orderId}
+    </delete>
+
+</mapper> 

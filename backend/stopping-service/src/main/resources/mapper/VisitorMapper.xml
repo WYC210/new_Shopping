@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wyc.mapper.VisitorMapper">
+    
+    <select id="getVisitorIdByFingerprint" resultType="java.lang.Long">
+        SELECT visitor_id
+        FROM Visitors
+        WHERE fingerprint = #{fingerprint}
+    </select>
+    
+    <insert id="createVisitor" parameterType="java.lang.String" useGeneratedKeys="true" keyProperty="visitorId">
+        INSERT INTO Visitors (fingerprint)
+        VALUES (#{fingerprint})
+    </insert>
+    
+    <update id="bindUserIdToFingerprint">
+        UPDATE Visitors SET user_id = #{userId} WHERE fingerprint = #{fingerprint}
+    </update>
+    
+</mapper> 

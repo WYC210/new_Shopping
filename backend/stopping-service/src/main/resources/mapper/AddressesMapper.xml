@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wyc.mapper.AddressesMapper">
+
+    <resultMap type="com.wyc.domain.po.Addresses" id="AddressesResult">
+        <id property="addressId" column="address_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="receiverName" column="receiver_name"/>
+        <result property="receiverPhone" column="receiver_phone"/>
+        <result property="province" column="province"/>
+        <result property="city" column="city"/>
+        <result property="district" column="district"/>
+        <result property="detailAddress" column="detail_address"/>
+        <result property="isDefault" column="is_default"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="selectAddressesVo">
+        select address_id, user_id, receiver_name, receiver_phone, province, city, district,
+               detail_address, is_default, created_at, updated_at
+        from useraddresses
+    </sql>
+
+    <insert id="insert" parameterType="com.wyc.domain.po.Addresses" useGeneratedKeys="true" keyProperty="addressId">
+        insert into useraddresses (
+            user_id, receiver_name, receiver_phone, province, city, district,
+            detail_address, is_default, created_at, updated_at
+        ) values (
+            #{userId}, #{receiverName}, #{receiverPhone}, #{province}, #{city}, #{district},
+            #{detailAddress}, #{isDefault}, #{createdAt}, #{updatedAt}
+        )
+    </insert>
+
+    <select id="selectById" parameterType="Long" resultMap="AddressesResult">
+        <include refid="selectAddressesVo"/>
+        where address_id = #{addressId}
+    </select>
+
+    <update id="updateById" parameterType="com.wyc.domain.po.Addresses">
+        update useraddresses
+        <set>
+            <if test="receiverName != null">receiver_name = #{receiverName},</if>
+            <if test="receiverPhone != null">receiver_phone = #{receiverPhone},</if>
+            <if test="province != null">province = #{province},</if>
+            <if test="city != null">city = #{city},</if>
+            <if test="district != null">district = #{district},</if>
+            <if test="detailAddress != null">detail_address = #{detailAddress},</if>
+            <if test="isDefault != null">is_default = #{isDefault},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </set>
+        where address_id = #{addressId}
+    </update>
+
+    <delete id="deleteById" parameterType="Long">
+        delete from useraddresses where address_id = #{addressId}
+    </delete>
+
+    <update id="setDefaultAddress">
+        update useraddresses
+        set is_default = 1,
+            updated_at = now()
+        where address_id = #{addressId}
+        and user_id = #{userId}
+    </update>
+
+    <update id="unsetDefaultAddress">
+        update useraddresses
+        set is_default = 0,
+            updated_at = now()
+        where user_id = #{userId}
+        and is_default = 1
+    </update>
+
+    <update id="updateDefaultStatus">
+        update useraddresses
+        set is_default = #{isDefault},
+            updated_at = now()
+        where user_id = #{userId}
+    </update>
+
+</mapper> 

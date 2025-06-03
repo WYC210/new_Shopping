@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wyc.mapper.VisitorBrowsingRecordMapper">
+    
+    <!-- 创建索引 -->
+    <update id="createIndexes">
+        CREATE INDEX IF NOT EXISTS idx_visitor_browsing_visitor_id ON VisitorBrowsingRecords(visitor_id);
+        CREATE INDEX IF NOT EXISTS idx_visitor_browsing_product_id ON VisitorBrowsingRecords(product_id);
+        CREATE INDEX IF NOT EXISTS idx_visitor_browsing_viewed_at ON VisitorBrowsingRecords(viewed_at);
+    </update>
+    
+    <select id="getBrowsingHistory" resultType="com.wyc.domain.vo.BrowsingRecordVO">
+        SELECT 
+            vbr.record_id,
+            vbr.product_id,
+            vbr.product_name,
+            vbr.viewed_at
+        FROM VisitorBrowsingRecords vbr
+        INNER JOIN Visitors v ON vbr.visitor_id = v.visitor_id
+        WHERE v.user_id = #{userId}
+        ORDER BY vbr.viewed_at DESC
+    </select>
+    
+    <insert id="recordBrowsing">
+        INSERT INTO VisitorBrowsingRecords (visitor_id, product_id, product_name)
+        VALUES (#{visitorId}, #{productId}, #{productName})
+    </insert>
+    
+    <insert id="insertUserBrowsingRecord">
+        INSERT INTO UserBrowsingRecords (user_id, product_id, product_name, viewed_at)
+        VALUES (#{userId}, #{productId}, #{productName}, #{viewedAt})
+    </insert>
+    
+</mapper> 

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wyc.mapper.UserCouponsMapper">
+    
+    <select id="selectByUserIdAndStatus" resultType="com.wyc.domain.po.UserCoupons">
+        SELECT 
+            user_coupon_id as id,
+            user_id,
+            coupon_id,
+            status,
+            used_at as useTime,
+            created_at as createdAt
+        FROM UserCoupons
+        WHERE user_id = #{userId}
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+    
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO UserCoupons (
+            user_id,
+            coupon_id,
+            coupon_name,
+            status,
+            created_at
+        ) VALUES (
+            #{userId},
+            #{couponId},
+            'Default Coupon Name',
+            #{status},
+            NOW()
+        )
+    </insert>
+    
+    <select id="selectById" resultType="com.wyc.domain.po.UserCoupons">
+        SELECT 
+            user_coupon_id as id,
+            user_id,
+            coupon_id,
+            status,
+            used_at as useTime,
+            created_at as createdAt
+        FROM UserCoupons
+        WHERE user_coupon_id = #{id}
+    </select>
+    
+    <select id="countByUserIdAndCouponId" resultType="int">
+        SELECT COUNT(*)
+        FROM UserCoupons
+        WHERE user_id = #{userId} AND coupon_id = #{couponId}
+    </select>
+    
+    <update id="updateStatus">
+        UPDATE UserCoupons
+        SET status = #{status},
+            used_at = NOW()
+        WHERE user_coupon_id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM UserCoupons
+        WHERE user_coupon_id = #{id}
+    </delete>
+    
+</mapper> 

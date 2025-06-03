@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wyc.mapper.ProductMapper">
+
+    <resultMap id="productMap" type="com.wyc.domain.dto.ProductDTO">
+        <id property="productId" column="product_id"/>
+        <result property="name" column="name"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="brand" column="brand"/>
+        <result property="price" column="price"/>
+        <result property="stock" column="stock"/>
+        <result property="isOnSale" column="is_on_sale"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="description" column="description"/>
+        <result property="specifications" column="specifications"/>
+        <result property="mainImageUrl" column="image_url"/>
+    </resultMap>
+
+    <resultMap id="productDetailMap" type="com.wyc.domain.dto.ProductDetailDTO">
+        <id property="productId" column="product_id"/>
+        <result property="name" column="name"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="brand" column="brand"/>
+        <result property="price" column="price"/>
+        <result property="stock" column="stock"/>
+        <result property="isOnSale" column="is_on_sale"/>
+        <result property="description" column="description"/>
+        <result property="specifications" column="specifications"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <collection property="imageUrls" ofType="string">
+            <constructor>
+                <arg column="image_url"/>
+            </constructor>
+        </collection>
+        <collection property="tags" ofType="string">
+            <constructor>
+                <arg column="tag_name"/>
+            </constructor>
+        </collection>
+        <collection property="skus" ofType="com.wyc.domain.dto.ProductSKUDTO">
+            <id property="skuId" column="sku_id"/>
+            <result property="skuCode" column="sku_code"/>
+            <result property="attributes" column="sku_attributes" typeHandler="com.wyc.handler.JsonTypeHandler"/>
+            <result property="price" column="sku_price"/>
+            <result property="stock" column="sku_stock"/>
+        </collection>
+    </resultMap>
+
+    <select id="getHotProducts" resultMap="productMap">
+        SELECT p.*, pd.description, pd.specifications, pi.image_url
+        FROM Products p
+        LEFT JOIN ProductDetails pd ON p.product_id = pd.product_id
+        LEFT JOIN ProductImages pi ON p.product_id = pi.product_id AND pi.is_main = true
+        INNER JOIN ProductTagRelations ptr ON p.product_id = ptr.product_id
+        INNER JOIN ProductTags pt ON ptr.tag_id = pt.tag_id
+        WHERE pt.name = '热销' AND p.is_on_sale = true
+        ORDER BY p.created_at DESC
+    </select>
+
+    <select id="getNewProducts" resultMap="productMap">
+        SELECT p.*, pd.description, pd.specifications, pi.image_url
+        FROM Products p
+        LEFT JOIN ProductDetails pd ON p.product_id = pd.product_id
+        LEFT JOIN ProductImages pi ON p.product_id = pi.product_id AND pi.is_main = true
+        WHERE p.is_on_sale = true
+        AND p.created_at >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        ORDER BY p.created_at DESC
+    </select>
+
+    <select id="getProductDetail" resultMap="productDetailMap">
+        SELECT
+            p.*,
+            pd.description,
+            pd.specifications,
+            pi.image_url,
+            pt.name as tag_name,
+            ps.sku_id,
+            ps.sku_code,
+            ps.attributes as sku_attributes,
+            ps.price as sku_price,
+            ps.stock as sku_stock
+        FROM Products p
+        LEFT JOIN ProductDetails pd ON p.product_id = pd.product_id
+        LEFT JOIN ProductImages pi ON p.product_id = pi.product_id
+        LEFT JOIN ProductTagRelations ptr ON p.product_id = ptr.product_id
+        LEFT JOIN ProductTags pt ON ptr.tag_id = pt.tag_id
+        LEFT JOIN ProductSKUs ps ON p.product_id = ps.product_id
+        WHERE p.product_id = #{productId}
+    </select>
+
+    <select id="getProductsByCategory" resultMap="productMap">
+        SELECT p.*, pd.description, pd.specifications, pi.image_url
+        FROM Products p
+        LEFT JOIN ProductDetails pd ON p.product_id = pd.product_id
+        LEFT JOIN ProductImages pi ON p.product_id = pi.product_id AND pi.is_main = true
+        WHERE p.category_id = #{categoryId} AND p.is_on_sale = true
+        ORDER BY p.created_at DESC
+    </select>
+
+    <select id="searchProducts" resultMap="productMap">
+        SELECT p.*, pd.description, pd.specifications, pi.image_url
+        FROM Products p
+        LEFT JOIN ProductDetails pd ON p.product_id = pd.product_id
+        LEFT JOIN ProductImages pi ON p.product_id = pi.product_id AND pi.is_main = true
+        WHERE p.is_on_sale = true
+        AND (p.name LIKE CONCAT('%', #{keyword}, '%')
+        OR p.brand LIKE CONCAT('%', #{keyword}, '%')
+        OR pd.description LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY p.created_at DESC
+    </select>
+</mapper>

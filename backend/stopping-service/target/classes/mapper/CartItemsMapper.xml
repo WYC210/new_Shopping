@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wyc.mapper.CartItemsMapper">
+    <resultMap id="CartItemsResultMap" type="com.wyc.domain.po.CartItems">
+        <id property="itemId" column="cart_item_id" />
+        <result property="userId" column="user_id" />
+        <result property="productId" column="product_sku_id" />
+        <result property="skuId" column="product_sku_id" />
+        <result property="productName" column="product_name" />
+        <result property="quantity" column="quantity" />
+        <result property="isSelected" column="is_selected" />
+        <result property="isDeleted" column="is_deleted" />
+        <result property="createTime" column="created_at" />
+        <result property="updateTime" column="updated_at" />
+    </resultMap>
+    
+    <insert id="insert" parameterType="com.wyc.domain.po.CartItems" useGeneratedKeys="true" keyProperty="itemId">
+        INSERT INTO CartItems (
+            user_id, product_sku_id, product_name, quantity, is_selected, is_deleted, created_at, updated_at
+        ) VALUES (
+            #{userId}, #{skuId}, #{productName}, #{quantity}, #{isSelected}, FALSE, NOW(), NOW()
+        )
+    </insert>
+    
+    <select id="selectById" resultMap="CartItemsResultMap" parameterType="long">
+        SELECT * FROM CartItems WHERE cart_item_id = #{cartItemId} AND is_deleted = FALSE
+    </select>
+    
+    <select id="selectByUserId" resultMap="CartItemsResultMap">
+        SELECT * FROM CartItems WHERE user_id = #{userId} AND is_deleted = FALSE
+    </select>
+    
+    <select id="selectByUserIdAndProductId" resultMap="CartItemsResultMap">
+        SELECT * FROM CartItems WHERE user_id = #{userId} AND product_sku_id = #{productId} AND is_deleted = FALSE
+    </select>
+    
+    <select id="selectByItemIdAndUserId" resultMap="CartItemsResultMap">
+        SELECT * FROM CartItems WHERE cart_item_id = #{itemId} AND user_id = #{userId} AND is_deleted = FALSE
+    </select>
+    
+    <update id="updateById" parameterType="com.wyc.domain.po.CartItems">
+        UPDATE CartItems
+        SET quantity = #{quantity},
+            is_selected = #{isSelected},
+            updated_at = NOW()
+        WHERE cart_item_id = #{itemId} AND is_deleted = FALSE
+    </update>
+    
+    <update id="updateQuantity">
+        UPDATE CartItems
+        SET quantity = #{quantity},
+            updated_at = NOW()
+        WHERE cart_item_id = #{cartItemId} AND is_deleted = FALSE
+    </update>
+    
+    <update id="updateSelected">
+        UPDATE CartItems
+        SET is_selected = #{isSelected},
+            updated_at = NOW()
+        WHERE cart_item_id = #{cartItemId} AND is_deleted = FALSE
+    </update>
+    
+    <update id="updateAllSelected">
+        UPDATE CartItems
+        SET is_selected = #{isSelected},
+            updated_at = NOW()
+        WHERE user_id = #{userId} AND is_deleted = FALSE
+    </update>
+    
+    <update id="deleteById" parameterType="long">
+        UPDATE CartItems 
+        SET is_deleted = TRUE, 
+            updated_at = NOW() 
+        WHERE cart_item_id = #{cartItemId} AND is_deleted = FALSE
+    </update>
+    
+    <update id="deleteByUserId" parameterType="long">
+        UPDATE CartItems 
+        SET is_deleted = TRUE, 
+            updated_at = NOW() 
+        WHERE user_id = #{userId} AND is_deleted = FALSE
+    </update>
+    
+    <update id="deleteSelectedByUserId" parameterType="long">
+        UPDATE CartItems 
+        SET is_deleted = TRUE, 
+            updated_at = NOW() 
+        WHERE user_id = #{userId} AND is_selected = 1 AND is_deleted = FALSE
+    </update>
+    
+    <update id="update" parameterType="com.wyc.domain.po.CartItems">
+        UPDATE CartItems
+        SET quantity = #{quantity},
+            is_selected = #{isSelected},
+            updated_at = NOW()
+        WHERE cart_item_id = #{itemId} AND is_deleted = FALSE
+    </update>
+    
+    <update id="softDelete">
+        UPDATE CartItems 
+        SET is_deleted = TRUE, 
+            updated_at = NOW() 
+        WHERE cart_item_id = #{itemId} AND user_id = #{userId} AND is_deleted = FALSE
+    </update>
+</mapper> 

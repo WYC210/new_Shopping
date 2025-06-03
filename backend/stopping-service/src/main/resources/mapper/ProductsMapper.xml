@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wyc.mapper.ProductsMapper">
+    
+    <resultMap id="ProductsResultMap" type="com.wyc.domain.po.Products">
+        <id property="productId" column="product_id" />
+        <result property="name" column="name" />
+        <result property="categoryId" column="category_id" />
+        <result property="brand" column="brand" />
+        <result property="price" column="price" />
+        <result property="stock" column="stock" />
+        <result property="isOnSale" column="is_on_sale" />
+        <result property="mainImageUrl" column="main_image_url" />
+        <result property="createdAt" column="created_at" />
+        <result property="updatedAt" column="updated_at" />
+    </resultMap>
+    
+    <select id="selectById" resultMap="ProductsResultMap" parameterType="long">
+        SELECT p.*, pi.image_url as main_image_url 
+        FROM Products p
+        LEFT JOIN ProductImages pi ON p.product_id = pi.product_id AND pi.is_main = true
+        WHERE p.product_id = #{productId}
+    </select>
+    
+    <update id="updateStock">
+        UPDATE Products 
+        SET stock = stock + #{quantity},
+            updated_at = NOW()
+        WHERE product_id = #{productId}
+    </update>
+    
+</mapper> 
