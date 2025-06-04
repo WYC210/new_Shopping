@@ -1,21 +1,21 @@
 <template>
-  <div class="profile-favorites">
-    <h2 class="section-title">我的收藏</h2>
+  <div class="profile-history">
+    <h2 class="section-title">浏览记录</h2>
     
-    <!-- 收藏列表 -->
-    <div class="favorites-list" v-loading="loading">
-      <el-empty v-if="favorites.length === 0" description="暂无收藏商品"></el-empty>
+    <!-- 浏览记录列表 -->
+    <div class="history-list" v-loading="loading">
+      <el-empty v-if="history.length === 0" description="暂无浏览记录"></el-empty>
       
-      <div v-else class="favorites-grid">
+      <div v-else class="history-grid">
         <div
-          v-for="item in favorites"
-          :key="item.id"
-          class="favorite-item"
+          v-for="item in history"
+          :key="item.recordId"
+          class="history-item"
         >
-          <div class="favorite-content">
+          <div class="history-content">
             <el-image
-              :src="item.image"
-              :alt="item.name"
+              :src="item.productImage"
+              :alt="item.productName"
               class="product-image"
               @click="handleViewProduct(item)"
             >
@@ -28,17 +28,14 @@
             
             <div class="product-info">
               <div class="product-name" @click="handleViewProduct(item)">
-                {{ item.name }}
+                {{ item.productName }}
               </div>
-              <div class="product-price">
-                <span class="price">¥{{ item.price }}</span>
-                <span class="original-price" v-if="item.originalPrice">
-                  ¥{{ item.originalPrice }}
-                </span>
+              <div class="view-time">
+                浏览时间：{{ formatTime(item.viewedAt) }}
               </div>
             </div>
             
-            <div class="favorite-actions">
+            <div class="history-actions">
               <el-button
                 type="primary"
                 size="small"
@@ -51,7 +48,7 @@
                 size="small"
                 @click="handleRemove(item)"
               >
-                取消收藏
+                删除记录
               </el-button>
             </div>
           </div>
@@ -82,56 +79,61 @@ import { useCartStore } from '../../stores/cart'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 import { profileApi } from '../../api/profile'
+import dayjs from 'dayjs'
 
 const router = useRouter()
 const userStore = useUserStore()
 const cartStore = useCartStore()
 const loading = ref(false)
-const favorites = ref([])
+const history = ref([])
 const currentPage = ref(1)
 const pageSize = ref(12)
 const total = ref(0)
 
-// 获取收藏列表
-const fetchFavorites = async () => {
+// 获取浏览记录
+const fetchHistory = async () => {
   loading.value = true
   try {
-    console.log('开始获取收藏列表...')
-    const response = await profileApi.getFavorites()
-    console.log('收藏列表响应:', response)
+    const response = await profileApi.getBrowsingHistory()
     if (response.code === 200) {
-      favorites.value = response.data
+      history.value = response.data
+      total.value = response.data.length
     }
   } catch (error) {
-    console.error('获取收藏列表失败:', error)
-    ElMessage.error('获取收藏列表失败')
+    console.error('获取浏览记录失败:', error)
+    ElMessage.error('获取浏览记录失败')
   } finally {
     loading.value = false
   }
 }
 
+// 格式化时间
+const formatTime = (time) => {
+  return dayjs(time).format('YYYY-MM-DD HH:mm:ss')
+}
+
 // 切换每页数量
 const handleSizeChange = (val) => {
   pageSize.value = val
-  fetchFavorites()
+  fetchHistory()
 }
 
 // 切换页码
 const handleCurrentChange = (val) => {
   currentPage.value = val
-  fetchFavorites()
+  fetchHistory()
 }
 
 // 查看商品详情
 const handleViewProduct = (item) => {
-  router.push(`/product/${item.id}`)
+  router.push(`/product/${item.productId}`)
 }
 
 // 加入购物车
 const handleAddToCart = async (item) => {
   try {
     await cartStore.addToCart({
-      productId: item.id,
+      productId: item.productId,
       quantity: 1
     })
     ElMessage.success('已加入购物车')
@@ -140,30 +142,30 @@ const handleAddToCart = async (item) => {
   }
 }
 
-// 取消收藏
+// 删除记录
 const handleRemove = async (item) => {
   try {
-    await ElMessageBox.confirm('确定要取消收藏该商品吗？', '提示', {
+    await ElMessageBox.confirm('确定要删除该浏览记录吗？', '提示', {
       type: 'warning'
     })
     
-    await userStore.removeFavorite(item.id)
-    ElMessage.success('已取消收藏')
-    fetchFavorites()
+    await profileApi.deleteBrowsingHistory(item.recordId)
+    ElMessage.success('已删除浏览记录')
+    fetchHistory()
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('取消收藏失败')
+      ElMessage.error('删除浏览记录失败')
     }
   }
 }
 
 onMounted(() => {
-  fetchFavorites()
+  fetchHistory()
 })
 </script>
 
 <style scoped>
-.profile-favorites {
+.profile-history {
   padding: 20px;
 }
 
@@ -174,18 +176,18 @@ onMounted(() => {
   margin-bottom: 30px;
 }
 
-.favorites-list {
+.history-list {
   min-height: 200px;
 }
 
-.favorites-grid {
+.history-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
 }
 
-.favorite-item {
+.history-item {
   background: #fff;
   border-radius: 8px;
   overflow: hidden;
@@ -193,12 +195,12 @@ onMounted(() => {
   transition: all 0.3s;
 }
 
-.favorite-item:hover {
+.history-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
-.favorite-content {
+.history-content {
   display: flex;
   flex-direction: column;
 }
@@ -241,25 +243,12 @@ onMounted(() => {
   color: #409eff;
 }
 
-.product-price {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.price {
-  color: #f56c6c;
-  font-size: 18px;
-  font-weight: 500;
-}
-
-.original-price {
+.view-time {
   color: #999;
-  font-size: 14px;
-  text-decoration: line-through;
+  font-size: 12px;
 }
 
-.favorite-actions {
+.history-actions {
   padding: 15px;
   display: flex;
   gap: 10px;

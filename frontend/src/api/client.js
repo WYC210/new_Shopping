@@ -23,13 +23,15 @@ apiClient.interceptors.request.use(
       config.headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
     }
     
-    // 打印请求信息，用于调试
-    console.log('Request:', {
-      url: config.url,
-      method: config.method,
-      headers: config.headers,
-      data: config.data
-    })
+    // 只在开发环境下打印请求信息
+    if (import.meta.env.DEV) {
+      console.debug('Request:', {
+        url: config.url,
+        method: config.method,
+        headers: config.headers,
+        data: config.data
+      })
+    }
     
     return config
   },
@@ -44,12 +46,14 @@ apiClient.interceptors.response.use(
   response => {
     const res = response.data
     
-    // 打印响应信息，用于调试
-    console.log('Response:', {
-      url: response.config.url,
-      status: response.status,
-      data: res
-    })
+    // 只在开发环境下打印响应信息
+    if (import.meta.env.DEV) {
+      console.debug('Response:', {
+        url: response.config.url,
+        status: response.status,
+        data: res
+      })
+    }
     
     // 检查业务状态码
     if (res.code !== 200) {

@@ -1,29 +1,31 @@
 <template>
-  <div class="register-container">
-    <el-card class="register-card">
-      <h2 class="title">注册账号</h2>
-      <el-form :model="registerForm" :rules="rules" ref="registerFormRef" label-position="top">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="registerForm.username" prefix-icon="User" placeholder="请输入用户名" />
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="registerForm.email" prefix-icon="Message" placeholder="请输入邮箱" />
-        </el-form-item>
-        <el-form-item label="手机号" prop="phone">
-          <el-input v-model="registerForm.phone" prefix-icon="Phone" placeholder="请输入手机号" />
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="registerForm.password" prefix-icon="Lock" type="password" placeholder="请输入密码" />
-        </el-form-item>
-        <el-form-item label="确认密码" prop="confirmPassword">
-          <el-input v-model="registerForm.confirmPassword" prefix-icon="Lock" type="password" placeholder="请再次输入密码" />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" :loading="loading" @click="handleRegister" class="register-btn">注册</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-  </div>
+  <page-transition>
+    <div class="register-container">
+      <el-card class="register-card">
+        <h2 class="title">欢迎注册</h2>
+        <el-form :model="registerForm" :rules="rules" ref="registerFormRef" label-position="top">
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model="registerForm.username" prefix-icon="User" placeholder="请输入用户名" />
+          </el-form-item>
+          <el-form-item label="密码" prop="password">
+            <el-input v-model="registerForm.password" prefix-icon="Lock" type="password" placeholder="请输入密码" />
+          </el-form-item>
+          <el-form-item label="确认密码" prop="confirmPassword">
+            <el-input v-model="registerForm.confirmPassword" prefix-icon="Lock" type="password" placeholder="请再次输入密码" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" :loading="loading" @click="handleRegister" class="register-btn">注册</el-button>
+          </el-form-item>
+        </el-form>
+        <div class="form-footer">
+          <span class="login-link" @click="goToLogin">
+            已有账号？立即登录
+            <el-icon><ArrowRight /></el-icon>
+          </span>
+        </div>
+      </el-card>
+    </div>
+  </page-transition>
 </template>
 
 <script setup>
@@ -31,7 +33,8 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
-import { User, Message, Phone, Lock } from '@element-plus/icons-vue'
+import { User, Lock, ArrowRight } from '@element-plus/icons-vue'
+import PageTransition from '../components/PageTransition.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -40,17 +43,15 @@ const registerFormRef = ref(null)
 
 const registerForm = reactive({
   username: '',
-  email: '',
-  phone: '',
   password: '',
   confirmPassword: ''
 })
 
 const validatePass = (rule, value, callback) => {
-  if (!value) {
+  if (value === '') {
     callback(new Error('请输入密码'))
   } else {
-    if (registerForm.confirmPassword) {
+    if (registerForm.confirmPassword !== '') {
       registerFormRef.value?.validateField('confirmPassword')
     }
     callback()
@@ -58,7 +59,7 @@ const validatePass = (rule, value, callback) => {
 }
 
 const validatePass2 = (rule, value, callback) => {
-  if (!value) {
+  if (value === '') {
     callback(new Error('请再次输入密码'))
   } else if (value !== registerForm.password) {
     callback(new Error('两次输入密码不一致!'))
@@ -71,14 +72,6 @@ const rules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
     { min: 2, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
-  ],
-  email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
-  ],
-  phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
   ],
   password: [
     { required: true, validator: validatePass, trigger: 'blur' },
@@ -96,69 +89,254 @@ const handleRegister = async () => {
     await registerFormRef.value.validate()
     loading.value = true
     
-    console.log('开始注册，表单数据:', {
-      username: registerForm.username,
-      email: registerForm.email,
-      phone: registerForm.phone
-    });
-    
-    // 调用store中的register方法,它会调用authApi.register
     await userStore.register({
       username: registerForm.username,
-      email: registerForm.email,
-      phone: registerForm.phone,
       password: registerForm.password
     })
     
     ElMessage.success('注册成功')
     router.push('/login')
   } catch (error) {
-    console.error('注册失败:', error);
-    
-    // 处理特定错误
-    if (error.message && error.message.includes('用户名已存在')) {
-      ElMessage.error('用户名已被注册，请更换用户名');
-      // 聚焦用户名输入框
-      registerFormRef.value.fields.find(f => f.prop === 'username')?.focus();
-    } else if (error.message && error.message.includes('邮箱已存在')) {
-      ElMessage.error('邮箱已被注册，请更换邮箱');
-      // 聚焦邮箱输入框
-      registerFormRef.value.fields.find(f => f.prop === 'email')?.focus();
-    } else if (error.message && error.message.includes('手机号已存在')) {
-      ElMessage.error('手机号已被注册，请更换手机号');
-      // 聚焦手机号输入框
-      registerFormRef.value.fields.find(f => f.prop === 'phone')?.focus();
-    } else {
-      // 其他错误
-      ElMessage.error(error.message || '注册失败，请稍后重试');
+    if (error.message) {
+      ElMessage.error(error.message)
     }
   } finally {
     loading.value = false
   }
 }
+
+const goToLogin = () => {
+  router.push('/login')
+}
 </script>
 
 <style scoped>
 .register-container {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #eef1f6;
+  background: var(--primary-gradient);
+  position: relative;
+  overflow: hidden;
+}
+
+.register-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/src/assets/pattern.png') repeat;
+  opacity: 0.1;
+  z-index: 0;
 }
 
 .register-card {
-  width: 500px;
+  width: 400px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 20px !important;
   padding: 30px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.register-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: scan 3s linear infinite;
+  mix-blend-mode: overlay;
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateY(100%) rotate(45deg);
+  }
+}
+
+.register-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
 .title {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 600;
   text-align: center;
-  font-size: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0.5;
+    width: 50px;
+  }
+  50% {
+    opacity: 1;
+    width: 100px;
+  }
+}
+
+:deep(.el-form-item__label) {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500;
+}
+
+:deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-input__wrapper:hover) {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-2px);
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+}
+
+:deep(.el-input__inner) {
+  color: #fff !important;
+}
+
+:deep(.el-input__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+:deep(.el-input__prefix-inner) {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .register-btn {
   width: 100%;
+  height: 45px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 12px !important;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.register-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.register-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.register-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.register-btn:active {
+  transform: translateY(0);
+}
+
+.form-footer {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.login-link {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+
+.login-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.login-link .el-icon {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.login-link:hover .el-icon {
+  transform: translateX(3px);
+}
+
+@media (max-width: 576px) {
+  .register-card {
+    width: 90%;
+    padding: 20px;
+  }
+  
+  .title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .register-btn {
+    height: 40px;
+    font-size: 15px;
+  }
 }
 </style>

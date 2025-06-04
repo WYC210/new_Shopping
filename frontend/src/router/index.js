@@ -69,9 +69,9 @@ const router = createRouter({
           component: () => import('../views/profile/ProfileCoupons.vue')
         },
         {
-          path: 'favorites',
-          name: 'profile-favorites',
-          component: () => import('../views/profile/ProfileFavorites.vue')
+          path: 'history',
+          name: 'profile-history',
+          component: () => import('../views/profile/ProfileHistory.vue')
         },
         {
           path: 'info',
@@ -91,7 +91,7 @@ const router = createRouter({
 // Navigation guard
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
-  
+
   if (to.meta.requiresAuth && !userStore.isLoggedIn) {
     next('/login')
   } else {

@@ -6,10 +6,9 @@
     <div class="order-tabs">
       <el-tabs v-model="activeTab" @tab-click="handleTabChange">
         <el-tab-pane label="全部" name="all"></el-tab-pane>
-        <el-tab-pane label="待付款" name="unpaid"></el-tab-pane>
-        <el-tab-pane label="待发货" name="unshipped"></el-tab-pane>
-        <el-tab-pane label="待收货" name="shipped"></el-tab-pane>
-        <el-tab-pane label="已完成" name="completed"></el-tab-pane>
+        <el-tab-pane label="待付款" name="pending"></el-tab-pane>
+        <el-tab-pane label="已付款" name="paid"></el-tab-pane>
+        <el-tab-pane label="已取消" name="cancelled"></el-tab-pane>
       </el-tabs>
     </div>
 
@@ -29,7 +28,7 @@
               <span class="order-time">{{ order.createTime }}</span>
             </div>
             <div class="order-status">
-              <el-tag :type="getStatusType(order.status)">
+              <el-tag :type="getStatusType(order.status) || 'info'">
                 {{ getStatusText(order.status) }}
               </el-tag>
             </div>
@@ -125,13 +124,11 @@ const getStatusType = (status) => {
     case 'pending':
       return 'warning'
     case 'paid':
-      return 'info'
-    case 'shipped':
       return 'primary'
-    case 'completed':
-      return 'success'
+    case 'cancelled':
+      return 'info'
     default:
-      return ''
+      return 'info'
   }
 }
 
@@ -141,13 +138,11 @@ const getStatusText = (status) => {
     case 'pending':
       return '待付款'
     case 'paid':
-      return '待发货'
-    case 'shipped':
-      return '待收货'
-    case 'completed':
-      return '已完成'
+      return '已付款'
+    case 'cancelled':
+      return '已取消'
     default:
-      return status
+      return '未知状态'
   }
 }
 
@@ -161,20 +156,21 @@ const getTotalQuantity = (items) => {
 const fetchOrders = async () => {
   loading.value = true
   try {
+    const status = activeTab.value === 'all' ? '' : activeTab.value
     console.log('开始获取订单列表...', {
-      status: activeTab.value,
+      status,
       page: currentPage.value,
       pageSize: pageSize.value
     })
     const response = await profileApi.getOrders({
-      status: activeTab.value,
+      status,
       page: currentPage.value,
       pageSize: pageSize.value
     })
     console.log('订单列表响应:', response)
     if (response.code === 200) {
       orders.value = response.data
-      total.value = response.data.length // 如果后端没有返回总数，暂时使用数组长度
+      total.value = response.total || response.data.length
     }
   } catch (error) {
     console.error('获取订单列表失败:', error)
@@ -185,7 +181,9 @@ const fetchOrders = async () => {
 }
 
 // 切换标签
-const handleTabChange = () => {
+const handleTabChange = (tab) => {
+  console.log('切换标签:', tab.props.name)
+  activeTab.value = tab.props.name
   currentPage.value = 1
   fetchOrders()
 }
@@ -291,7 +289,9 @@ const handleDelete = async (order) => {
   }
 }
 
+// 初始化加载
 onMounted(() => {
+  console.log('组件挂载，初始状态:', activeTab.value)
   fetchOrders()
 })
 </script>

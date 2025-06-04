@@ -16,9 +16,9 @@
             <el-icon><Document /></el-icon>
             <span>我的订单</span>
           </el-menu-item>
-          <el-menu-item index="favorites">
-            <el-icon><Star /></el-icon>
-            <span>我的收藏</span>
+          <el-menu-item index="history">
+            <el-icon><Clock /></el-icon>
+            <span>浏览记录</span>
           </el-menu-item>
           <el-menu-item index="address">
             <el-icon><Location /></el-icon>
@@ -50,7 +50,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Document, Location, Ticket, User, Lock, Star } from '@element-plus/icons-vue'
+import { Document, Location, Ticket, User, Lock, Clock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()

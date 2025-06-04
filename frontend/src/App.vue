@@ -1,55 +1,120 @@
 <template>
   <el-container class="app-container">
-    <el-header height="70px" class="main-header">
-      <nav class="nav-header">
+    <el-header height="70px" class="main-header glass-nav">
+      <div class="nav-header">
         <div class="logo">
-          <router-link to="/">E-Commerce</router-link>
+          <router-link to="/">ShopSphere</router-link>
         </div>
         <div class="search-bar-header">
           <el-input
             v-model="searchQuery"
             placeholder="搜索商品..."
             @keyup.enter="handleSearch"
-            clearable
           >
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
             <template #append>
-              <el-button :icon="Search" @click="handleSearch"></el-button>
+              <el-button type="primary" @click="handleSearch">
+                搜索
+              </el-button>
             </template>
           </el-input>
         </div>
         <div class="nav-links">
-          <router-link to="/category" class="nav-item">商品分类</router-link>
-          <router-link to="/cart" class="nav-item cart-icon">
-            <el-badge :value="cartItemsCount" :hidden="cartItemsCount === 0" :max="99" type="danger">
+          <el-dropdown trigger="hover" class="nav-item" @command="handleCategoryCommand">
+            <div class="nav-link">
+              <el-icon><Menu /></el-icon>
+              <span>商品分类</span>
+            </div>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item 
+                  v-for="category in categories" 
+                  :key="category.categoryId" 
+                  :command="category.categoryId"
+                >
+                  {{ category.name }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+
+          <el-dropdown trigger="hover" class="nav-item">
+            <div class="nav-link">
               <el-icon><ShoppingCart /></el-icon>
-            </el-badge>
-            <span>购物车</span>
-          </router-link>
+              <span>购物车</span>
+              <el-badge :value="cartItemsCount" :hidden="!cartItemsCount" class="cart-badge" />
+            </div>
+            <template #dropdown>
+              <el-dropdown-menu class="cart-dropdown">
+                <div v-if="!cartItemsCount" class="empty-cart">
+                  <el-empty description="购物车是空的" />
+                </div>
+                <template v-else>
+                  <div v-for="item in cartItems" :key="item.id" class="cart-item">
+                    <el-image :src="item.image" class="cart-item-image" />
+                    <div class="cart-item-info">
+                      <div class="cart-item-name">{{ item.name }}</div>
+                      <div class="cart-item-price">¥{{ item.price }}</div>
+                    </div>
+                  </div>
+                  <el-dropdown-item divided>
+                    <div class="cart-footer">
+                      <span>总计: ¥{{ cartTotal }}</span>
+                      <el-button type="primary" size="small" @click="goToCart">去结算</el-button>
+                    </div>
+                  </el-dropdown-item>
+                </template>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
 
           <template v-if="isAuthenticated">
-            <el-dropdown trigger="click" @command="handleCommand">
-              <div class="user-profile">
-                <el-avatar :size="32" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=80&h=80" />
-                <span class="username">用户名</span>
+            <el-dropdown trigger="hover" class="nav-item" @command="handleCommand">
+              <div class="nav-link">
+                <el-avatar :size="32" :src="userStore.avatar" />
+                <span>{{ userStore.username }}</span>
                 <el-icon><CaretBottom /></el-icon>
               </div>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="profile">个人中心</el-dropdown-item>
-                  <el-dropdown-item command="orders">我的订单</el-dropdown-item>
-                  <el-dropdown-item command="coupons">优惠券</el-dropdown-item>
-                  <el-dropdown-item command="address">收货地址</el-dropdown-item>
-                  <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+                  <el-dropdown-item command="profile">
+                    <el-icon><User /></el-icon>
+                    <span>个人中心</span>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="orders">
+                    <el-icon><Document /></el-icon>
+                    <span>我的订单</span>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="coupons">
+                    <el-icon><Ticket /></el-icon>
+                    <span>我的优惠券</span>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="address">
+                    <el-icon><Location /></el-icon>
+                    <span>收货地址</span>
+                  </el-dropdown-item>
+                  <el-dropdown-item divided command="logout">
+                    <el-icon><SwitchButton /></el-icon>
+                    <span>退出登录</span>
+                  </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
           </template>
           <template v-else>
-            <router-link to="/login" class="nav-item auth-link">登录</router-link>
-            <router-link to="/register" class="nav-item auth-link">注册</router-link>
+            <router-link to="/login" class="nav-item auth-link">
+              <el-icon><User /></el-icon>
+              <span>登录</span>
+            </router-link>
+            <router-link to="/register" class="nav-item auth-link primary-link">
+              <el-icon><Plus /></el-icon>
+              <span>注册</span>
+            </router-link>
           </template>
         </div>
-      </nav>
+      </div>
     </el-header>
 
     <el-main class="main-content">
@@ -60,9 +125,9 @@
       </router-view>
     </el-main>
 
-    <el-footer height="70px" class="main-footer">
+    <el-footer height="70px" class="main-footer glass-nav">
       <div class="footer-content">
-        <p>&copy; {{ currentYear }} E-Commerce. All rights reserved.</p>
+        <p>&copy; {{ currentYear }} ShopSphere. All rights reserved.</p>
         <div class="social-links">
           <a href="#" target="_blank" aria-label="WeChat"><el-icon><ChatDotRound /></el-icon></a>
           <a href="#" target="_blank" aria-label="Weibo"><el-icon><Share /></el-icon></a>
@@ -74,24 +139,77 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from './stores/user'
 import { useCartStore } from './stores/cart'
-import { ShoppingCart, ChatDotRound, Share, Message, Search, CaretBottom } from '@element-plus/icons-vue'
+import { categoryApi } from './api/category'
+import { 
+  ShoppingCart, 
+  ChatDotRound, 
+  Share, 
+  Message, 
+  Search, 
+  CaretBottom,
+  Menu,
+  User,
+  Document,
+  Ticket,
+  Location,
+  SwitchButton,
+  Plus
+} from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
 const cartStore = useCartStore()
+
+// 商品分类数据
+const categories = ref([])
+
+// 获取商品分类数据
+const fetchCategories = async () => {
+  try {
+    const res = await categoryApi.getCategories()
+    // 检查响应数据结构
+    if (res && res.data) {
+      // 如果响应中有data字段，使用data字段
+      categories.value = Array.isArray(res.data) ? res.data : (res.data.data || [])
+    } else {
+      // 如果响应直接是数组，直接使用
+      categories.value = Array.isArray(res) ? res : []
+    }
+    console.log('获取到的分类数据:', categories.value)
+  } catch (error) {
+    console.error('获取商品分类失败:', error)
+    categories.value = []
+  }
+}
+
+// 组件挂载时获取分类数据
+onMounted(() => {
+  fetchCategories()
+})
 
 const isAuthenticated = computed(() => userStore.isAuthenticated)
 const cartItemsCount = computed(() => cartStore.cartItemsCount)
 const currentYear = ref(new Date().getFullYear())
 const searchQuery = ref('')
 
+const cartItems = computed(() => cartStore.items)
+const cartTotal = computed(() => cartStore.totalPrice)
+
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
     router.push({ name: 'SearchResults', query: { q: searchQuery.value } })
+  }
+}
+
+const handleCategoryCommand = (categoryId) => {
+  if (categoryId) {
+    router.push({ name: 'category-with-id', params: { id: categoryId } })
+  } else {
+    router.push({ name: 'category' })
   }
 }
 
@@ -119,6 +237,10 @@ const handleLogout = () => {
   userStore.logout()
   router.push('/login')
 }
+
+const goToCart = () => {
+  router.push('/cart')
+}
 </script>
 
 <style scoped>
@@ -127,19 +249,19 @@ const handleLogout = () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #f5f7fa;
 }
 
 /* 头部样式 */
 .main-header {
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border-bottom: 1px solid #ebeef5;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   padding: 0 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
 }
 
 .nav-header {
@@ -155,12 +277,14 @@ const handleLogout = () => {
   font-size: 28px;
   font-weight: 900;
   text-decoration: none;
-  color: #42b983;
-  transition: color 0.3s ease;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 }
 
 .logo a:hover {
-  color: #36a372;
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
 }
 
 .search-bar-header {
@@ -172,109 +296,192 @@ const handleLogout = () => {
 .search-bar-header .el-input {
   border-radius: 25px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .search-bar-header :deep(.el-input__wrapper) {
-  border-radius: 25px 0 0 25px;
-  padding-left: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  padding: 0 15px;
+  box-shadow: none;
+  height: 40px;
+}
+
+.search-bar-header :deep(.el-input__inner) {
+  color: #fff;
+  height: 40px;
+  line-height: 40px;
+}
+
+.search-bar-header :deep(.el-input__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.search-bar-header :deep(.el-input__prefix) {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
 }
 
 .search-bar-header :deep(.el-input-group__append) {
-  background-color: #42b983;
-  border-radius: 0 25px 25px 0;
-  padding: 0 15px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-left: 10px;
 }
 
 .search-bar-header :deep(.el-button) {
+  border-radius: 20px;
+  height: 40px;
+  padding: 0 25px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.search-bar-header :deep(.el-button:hover) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.search-bar-header :deep(.el-button:active) {
+  transform: translateY(0);
 }
 
 .nav-links {
   display: flex;
-  gap: 25px;
+  gap: 20px;
   align-items: center;
 }
 
-.nav-links .nav-item {
-  text-decoration: none;
-  color: #555;
-  font-size: 16px;
-  font-weight: 500;
-  position: relative;
-  transition: color 0.3s ease, transform 0.2s ease;
+.nav-item {
+  cursor: pointer;
 }
 
-.nav-links .nav-item:hover {
-  color: #42b983;
-  transform: translateY(-2px);
-}
-
-.nav-links .nav-item::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: #42b983;
-  transition: width 0.3s ease;
-}
-
-.nav-links .nav-item:hover::after {
-  width: 100%;
-}
-
-.cart-icon {
+.nav-link {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: #555;
-}
-
-.cart-icon .el-icon {
-  font-size: 20px;
-  color: #42b983;
-}
-
-.cart-icon .el-badge {
-  --el-badge-bg-color: #ff4d4f;
-}
-
-/* 登录注册按钮样式 */
-.auth-link {
-  padding: 8px 15px;
-  border-radius: 6px;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 20px;
   transition: all 0.3s ease;
+  color: #fff;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link .el-icon {
+  font-size: 18px;
+}
+
+.cart-badge {
+  margin-top: -2px;
+}
+
+.cart-dropdown {
+  min-width: 300px;
+  padding: 10px;
+}
+
+.empty-cart {
+  padding: 20px;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cart-item-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+}
+
+.cart-item-info {
+  flex: 1;
+}
+
+.cart-item-name {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.cart-item-price {
+  font-size: 14px;
+  color: #f56c6c;
+}
+
+.cart-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+
+.auth-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  color: #fff;
+  text-decoration: none;
 }
 
 .auth-link:hover {
-  background-color: #f0f0f0;
-  color: #42b983;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .auth-link.primary-link {
-  background-color: #fff;
-  color: #000000;
-  font-weight: 600;
-  border: 1px solid #42b983;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .auth-link.primary-link:hover {
-  background-color: #36a372;
-  border-color: #36a372;
+  background: rgba(255, 255, 255, 0.3);
 }
 
-.logout-btn {
-  font-size: 14px;
-  padding: 6px 12px;
-  border-radius: 5px;
+:deep(.el-dropdown-menu) {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.el-dropdown-menu__item) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  color: #333;
+}
+
+:deep(.el-dropdown-menu__item:hover) {
+  background: rgba(64, 158, 255, 0.1);
+  color: #409EFF;
+}
+
+:deep(.el-dropdown-menu__item .el-icon) {
+  font-size: 16px;
 }
 
 /* 主内容区 */
 .main-content {
   flex-grow: 1;
-  padding: 30px 0;
+  padding: 90px 0 30px;
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
@@ -282,15 +489,10 @@ const handleLogout = () => {
 
 /* 底部样式 */
 .main-footer {
-  background-color: #333;
-  color: #e0e0e0;
   padding: 20px 40px;
   text-align: center;
   font-size: 14px;
-  border-top: 1px solid #444;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: #fff;
 }
 
 .footer-content {
@@ -309,13 +511,13 @@ const handleLogout = () => {
 }
 
 .social-links a {
-  color: #e0e0e0;
+  color: #fff;
   font-size: 20px;
-  transition: color 0.3s ease, transform 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .social-links a:hover {
-  color: #42b983;
+  color: rgba(255, 255, 255, 0.9);
   transform: translateY(-3px);
 }
 
@@ -358,6 +560,14 @@ const handleLogout = () => {
     flex-grow: 1;
     gap: 10px;
   }
+
+  .search-bar-header {
+    max-width: 100%;
+  }
+  
+  .search-bar-header :deep(.el-button) {
+    padding: 0 20px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -383,14 +593,13 @@ const handleLogout = () => {
   }
 
   .nav-links .nav-item,
-  .auth-link,
-  .logout-btn {
+  .auth-link {
     font-size: 14px;
     padding: 6px 10px;
   }
 
   .main-content {
-    padding: 20px 15px;
+    padding: 80px 15px 20px;
   }
 
   .footer-content {
@@ -408,8 +617,7 @@ const handleLogout = () => {
   }
 
   .nav-links .nav-item,
-  .auth-link,
-  .logout-btn {
+  .auth-link {
     font-size: 13px;
     padding: 5px 8px;
   }
@@ -419,8 +627,8 @@ const handleLogout = () => {
     padding-right: 15px;
   }
 
-  .search-bar-header :deep(.el-input-group__append) {
-    padding: 0 10px;
+  .search-bar-header :deep(.el-button) {
+    padding: 0 15px;
   }
 }
 
@@ -432,15 +640,23 @@ const handleLogout = () => {
   padding: 4px 8px;
   border-radius: 4px;
   transition: all 0.3s ease;
+  color: #fff;
 }
 
 .user-profile:hover {
-  background-color: #f5f7fa;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .username {
   font-size: 14px;
-  color: #606266;
+}
+
+:deep(.el-dropdown-menu) {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 :deep(.el-dropdown-menu__item) {
@@ -448,10 +664,11 @@ const handleLogout = () => {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
+  color: #333;
 }
 
 :deep(.el-dropdown-menu__item:hover) {
-  background-color: #f5f7fa;
+  background: rgba(64, 158, 255, 0.1);
   color: #409EFF;
 }
 </style>

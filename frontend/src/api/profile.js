@@ -340,5 +340,53 @@ export const profileApi = {
       })
       throw error
     })
+  },
+
+  // 获取浏览记录
+  getBrowsingHistory() {
+    console.log('获取浏览记录请求:', {
+      url: '/users/browsing-history',
+      method: 'get',
+      headers: apiClient.defaults.headers
+    })
+    return apiClient.get('/users/browsing-history').then(response => {
+      console.log('获取浏览记录响应:', {
+        status: response.status,
+        data: response.data,
+        headers: response.headers
+      })
+      return response
+    }).catch(error => {
+      console.error('获取浏览记录失败:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      })
+      throw error
+    })
+  },
+
+  // 删除浏览记录
+  deleteBrowsingHistory(recordId) {
+    console.log('删除浏览记录请求:', {
+      url: `/users/history/${recordId}`,
+      method: 'delete',
+      headers: apiClient.defaults.headers
+    })
+    return apiClient.delete(`/users/history/${recordId}`).then(response => {
+      console.log('删除浏览记录响应:', {
+        status: response.status,
+        data: response.data,
+        headers: response.headers
+      })
+      return response
+    }).catch(error => {
+      console.error('删除浏览记录失败:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      })
+      throw error
+    })
   }
 } 

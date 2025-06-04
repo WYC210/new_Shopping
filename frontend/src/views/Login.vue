@@ -17,6 +17,12 @@
           <el-button type="primary" :loading="loading" @click="handleLogin" class="login-btn">登录</el-button>
         </el-form-item>
       </el-form>
+      <div class="form-footer">
+        <span class="register-link" @click="goToRegister">
+          还没有账号？立即注册
+          <el-icon><ArrowRight /></el-icon>
+        </span>
+      </div>
     </el-card>
   </div>
 </template>
@@ -26,7 +32,7 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
-import { User, Lock } from '@element-plus/icons-vue'
+import { User, Lock, ArrowRight } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -69,43 +75,299 @@ const handleLogin = async () => {
     loading.value = false
   }
 }
+
+const goToRegister = () => {
+  router.push('/register')
+}
 </script>
 
 <style scoped>
 .login-container {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f4f6f9;
+  background: var(--primary-gradient);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/src/assets/pattern.png') repeat;
+  opacity: 0.1;
+  z-index: 0;
 }
 
 .login-card {
   width: 400px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 20px !important;
   padding: 30px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: scan 3s linear infinite;
+  mix-blend-mode: overlay;
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateY(100%) rotate(45deg);
+  }
+}
+
+.login-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
 .title {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 600;
   text-align: center;
-  font-size: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0.5;
+    width: 50px;
+  }
+  50% {
+    opacity: 1;
+    width: 100px;
+  }
+}
+
+.test-account {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 25px;
+  position: relative;
+  overflow: hidden;
+}
+
+.test-account::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: shine 2s linear infinite;
+  mix-blend-mode: overlay;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.test-account p {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 5px 0;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.test-account p::before {
+  content: '•';
+  color: #fff;
+  font-size: 18px;
+}
+
+:deep(.el-form-item__label) {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500;
+}
+
+:deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-input__wrapper:hover) {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-2px);
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+}
+
+:deep(.el-input__inner) {
+  color: #fff !important;
+}
+
+:deep(.el-input__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+:deep(.el-input__prefix-inner) {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .login-btn {
   width: 100%;
+  height: 45px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 12px !important;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.test-account {
+.login-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.login-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.login-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 576px) {
+  .login-card {
+    width: 90%;
+    padding: 20px;
+  }
+  
+  .title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .test-account {
+    padding: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .test-account p {
+    font-size: 13px;
+  }
+  
+  .login-btn {
+    height: 40px;
+    font-size: 15px;
+  }
+}
+
+.form-footer {
+  margin-top: 20px;
   text-align: center;
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #f0f9eb;
-  border-radius: 4px;
-  color: #67c23a;
-  font-size: 14px;
 }
 
-.test-account p {
-  margin: 5px 0;
+.register-link {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+
+.register-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.register-link .el-icon {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.register-link:hover .el-icon {
+  transform: translateX(3px);
 }
 </style>

@@ -7,34 +7,36 @@
         <!-- Product Images -->
         <div class="product-images">
           <div class="image-container">
-            <div class="main-image" 
-              ref="mainImageRef"
-              @mousemove="handleMouseMove"
-              @mouseenter="handleMouseEnter"
-              @mouseleave="handleMouseLeave"
-            >
-              <el-image
-                :src="currentImage"
-                fit="contain"
-                :preview-src-list="product?.images"
-                :initial-index="currentImageIndex"
-              />
-              <div class="magnifier-lens" v-show="showMagnifier" :style="lensStyle"></div>
+            <div class="main-image-container">
+              <div class="main-image" 
+                ref="mainImageRef"
+                @mousemove="handleMouseMove"
+                @mouseenter="handleMouseEnter"
+                @mouseleave="handleMouseLeave"
+              >
+                <el-image
+                  :src="currentImage"
+                  fit="contain"
+                  :preview-src-list="product?.images"
+                  :initial-index="currentImageIndex"
+                />
+                <div class="magnifier-lens" v-show="showMagnifier" :style="lensStyle"></div>
+              </div>
+              <div class="magnifier-preview" v-show="showMagnifier">
+                <div class="magnifier-image" :style="magnifierStyle"></div>
+              </div>
             </div>
-            <div class="magnifier-preview" v-show="showMagnifier">
-              <div class="magnifier-image" :style="magnifierStyle"></div>
-            </div>
-          </div>
-          <div class="thumbnail-list">
-            <div
-              v-for="(image, index) in product?.images"
-              :key="index"
-              class="thumbnail"
-              :class="{ active: currentImageIndex === index }"
-              @click="handleThumbnailClick(index)"
-              @mouseenter="handleThumbnailHover(index)"
-            >
-              <el-image :src="image" fit="cover" />
+            <div class="thumbnail-list">
+              <div
+                v-for="(image, index) in product?.images"
+                :key="index"
+                class="thumbnail-item"
+                :class="{ active: currentImageIndex === index }"
+                @click="handleThumbnailClick(index)"
+                @mouseenter="handleThumbnailHover(index)"
+              >
+                <el-image :src="image" fit="cover" />
+              </div>
             </div>
           </div>
         </div>
@@ -104,13 +106,18 @@
           </div>
 
           <div class="quantity-section">
-            <span class="label">数量</span>
-            <el-input-number
-              v-model="quantity"
-              :min="1"
-              :max="selectedSku ? selectedSku.stock : product?.stock"
-              size="large"
-            />
+            <div class="quantity-wrapper">
+              <span class="label">数量</span>
+              <div class="quantity-selector">
+                <el-input-number
+                  v-model="quantity"
+                  :min="1"
+                  :max="selectedSku ? selectedSku.stock : product?.stock"
+                  size="large"
+                  class="custom-input-number"
+                />
+              </div>
+            </div>
             <span class="stock">库存: {{ selectedSku ? selectedSku.stock : product?.stock }}件</span>
           </div>
 
@@ -122,6 +129,7 @@
                 :icon="ShoppingCart"
                 @click="addToCart"
                 :disabled="product?.skus && product.skus.length > 0 && !selectedSku"
+                class="action-btn"
               >
                 加入购物车
               </el-button>
@@ -131,6 +139,7 @@
                 :icon="ShoppingBag"
                 @click="buyNow"
                 :disabled="product?.skus && product.skus.length > 0 && !selectedSku"
+                class="action-btn"
               >
                 立即购买
               </el-button>
@@ -239,15 +248,18 @@ const showMagnifier = ref(false)
 const selectedSpecs = ref({})
 const selectedSku = ref(null)
 const isFavorite = ref(false)
-const mainImageRef = ref(null)
+const mainImageRef = ref(null) // Reference to the main image element
 
 const lensPosition = ref({ x: 0, y: 0 })
 const magnifierPosition = ref({ x: 0, y: 0 })
-const LENS_SIZE = 100
-const MAGNIFIER_WIDTH = 400
-const MAGNIFIER_HEIGHT = 400
-let isMouseInImage = false
+const LENS_SIZE = 100 // Size of the magnifier lens
+const MAGNIFIER_WIDTH = 400 // Width of the magnifier preview box
+const MAGNIFIER_HEIGHT = 400 // Height of the magnifier preview box
+const MAGNIFICATION_SCALE = 3; // How much to magnify the image
 
+let isMouseInImage = false // Flag to track if mouse is currently over the image
+
+// Throttling function to limit the rate of function calls
 const throttle = (fn, delay) => {
   let lastCall = 0
   return function (...args) {
@@ -259,14 +271,32 @@ const throttle = (fn, delay) => {
   }
 }
 
+// 生成随机销量（100-9999之间）
+const randomSales = computed(() => {
+  return Math.floor(Math.random() * (9999 - 100 + 1)) + 100
+})
+
+// 生成随机评分（3.5-5.0之间，保留一位小数）
+const randomRating = computed(() => {
+  return (Math.random() * (5.0 - 3.5) + 3.5).toFixed(1)
+})
+
+// 生成随机评价数量（10-999之间）
+const randomReviewCount = computed(() => {
+  return Math.floor(Math.random() * (999 - 10 + 1)) + 10
+})
+
+// Computed property for product details, normalizing data if necessary
 const product = computed(() => {
   if (!productStore.productDetails) return null
   const details = JSON.parse(JSON.stringify(productStore.productDetails))
 
+  // Ensure 'images' array exists, using 'imageUrls' if present
   if (details.imageUrls && !details.images) {
     details.images = details.imageUrls
   }
 
+  // Parse specifications if they are a string
   if (details.specifications && typeof details.specifications === 'string') {
     try {
       details.specifications = JSON.parse(details.specifications)
@@ -275,65 +305,83 @@ const product = computed(() => {
     }
   }
 
+  // Normalize SKU attributes
   if (details.skus && details.skus.length > 0) {
     details.skus = details.skus.map(sku => ({
       ...sku,
-      specs: sku.attributes || {}
+      specs: sku.attributes || {} // Use 'attributes' or 'specs' for consistency
     }))
   }
+
+  // 添加随机生成的销量和评分
+  details.sales = randomSales.value
+  details.rating = parseFloat(randomRating.value)
+  details.reviewCount = randomReviewCount.value
 
   return details
 })
 
+// Computed property for product loading state
 const loading = computed(() => productStore.loading.detail)
 
+// Computed property for the currently displayed main image
 const currentImage = computed(() => {
-  if (!product.value?.images) return ''
+  if (!product.value?.images || product.value.images.length === 0) return ''
   return product.value.images[currentImageIndex.value]
 })
 
+// Computed style for the magnifier lens
 const lensStyle = computed(() => ({
   left: `${lensPosition.value.x}px`,
-  top: `${lensPosition.value.y}px`
+  top: `${lensPosition.value.y}px`,
+  width: `${LENS_SIZE}px`,
+  height: `${LENS_SIZE}px`,
 }))
 
+// Computed style for the magnifier preview, handling background position and size
 const magnifierStyle = computed(() => ({
   backgroundImage: `url(${currentImage.value})`,
-  backgroundSize: `${MAGNIFIER_WIDTH * 2}px ${MAGNIFIER_HEIGHT * 2}px`,
+  backgroundSize: `${mainImageRef.value ? mainImageRef.value.offsetWidth * MAGNIFICATION_SCALE : 0}px ${mainImageRef.value ? mainImageRef.value.offsetHeight * MAGNIFICATION_SCALE : 0}px`,
   backgroundPosition: `${magnifierPosition.value.x}px ${magnifierPosition.value.y}px`
 }))
 
+// Handles mouse entering the main image area
 const handleMouseEnter = () => {
   if (!currentImage.value) return
   isMouseInImage = true
+  // Preload the image to ensure it's ready for magnification
   const img = new Image()
   img.src = currentImage.value
   img.onload = () => {
-    if (isMouseInImage) {
+    if (isMouseInImage) { // Only show magnifier if mouse is still in image
       showMagnifier.value = true
     }
   }
 }
 
+// Handles mouse leaving the main image area
 const handleMouseLeave = () => {
   isMouseInImage = false
   showMagnifier.value = false
 }
 
+// Handles mouse movement over the image for magnifier calculations
 const handleMouseMove = throttle((event) => {
-  if (!isMouseInImage || !currentImage.value) {
+  if (!isMouseInImage || !currentImage.value || !mainImageRef.value) {
     showMagnifier.value = false
     return
   }
 
   try {
-    const imgElement = event.currentTarget.querySelector('.el-image img')
+    const imgElement = mainImageRef.value.querySelector('img')
     if (!imgElement) return
 
     const { left, top, width, height } = imgElement.getBoundingClientRect()
+    // Mouse position relative to the image element
     const x = event.clientX - left
     const y = event.clientY - top
 
+    // If mouse goes out of bounds of the actual image
     if (x < 0 || x > width || y < 0 || y > height) {
       showMagnifier.value = false
       return
@@ -341,6 +389,7 @@ const handleMouseMove = throttle((event) => {
 
     showMagnifier.value = true
 
+    // Calculate lens position: centered on mouse, clamped within image boundaries
     const lensX = Math.min(Math.max(0, x - LENS_SIZE / 2), width - LENS_SIZE)
     const lensY = Math.min(Math.max(0, y - LENS_SIZE / 2), height - LENS_SIZE)
 
@@ -349,42 +398,75 @@ const handleMouseMove = throttle((event) => {
       y: lensY
     }
 
-    // 使用2倍的放大比例
-    const scale = 2
-    // 计算背景位置，使鼠标位置在放大镜中居中显示
-    const bgX = -((x / width) * (width * scale) - MAGNIFIER_WIDTH / 2)
-    const bgY = -((y / height) * (height * scale) - MAGNIFIER_HEIGHT / 2)
+    // --- Refined Magnifier Background Position Calculation ---
+    // We want the point (x, y) on the original image to be at the center
+    // of the magnified view within the magnifier preview box.
+    const bgX = MAGNIFIER_WIDTH / 2 - x * MAGNIFICATION_SCALE;
+    const bgY = MAGNIFIER_HEIGHT / 2 - y * MAGNIFICATION_SCALE;
 
-    // 限制背景位置，防止显示空白区域
-    const maxBgX = -(width * scale - MAGNIFIER_WIDTH)
-    const maxBgY = -(height * scale - MAGNIFIER_HEIGHT)
+    // Limit background position to prevent displaying blank areas
+    // The maximum possible value for bgX is 0 (when the left edge of magnified image aligns with magnifier's left edge).
+    // The minimum possible value for bgX is -(magnified image width - magnifier width).
+    const maxBgX = -(width * MAGNIFICATION_SCALE - MAGNIFIER_WIDTH);
+    const maxBgY = -(height * MAGNIFICATION_SCALE - MAGNIFIER_HEIGHT);
 
     magnifierPosition.value = {
       x: Math.min(0, Math.max(bgX, maxBgX)),
       y: Math.min(0, Math.max(bgY, maxBgY))
+    };
+
+    // Update magnifier preview box position relative to the viewport
+    const previewElement = document.querySelector('.magnifier-preview')
+    if (previewElement) {
+      const previewWidth = MAGNIFIER_WIDTH
+      const previewHeight = MAGNIFIER_HEIGHT
+      const margin = 20 // Margin from the mouse pointer
+
+      // Calculate preview box position, trying to place it to the right of the mouse
+      let previewLeft = event.clientX + margin
+      let previewTop = event.clientY - previewHeight / 2 // Center vertically with mouse
+
+      // Adjust if preview box goes off the right edge of the window
+      if (previewLeft + previewWidth > window.innerWidth) {
+        // Place it to the left of the mouse instead
+        previewLeft = event.clientX - previewWidth - margin
+      }
+
+      // Adjust if preview box goes off the top edge of the window
+      if (previewTop < 0) {
+        previewTop = 0
+      }
+      // Adjust if preview box goes off the bottom edge of the window
+      else if (previewTop + previewHeight > window.innerHeight) {
+        previewTop = window.innerHeight - previewHeight
+      }
+
+      previewElement.style.left = `${previewLeft}px`
+      previewElement.style.top = `${previewTop}px`
     }
   } catch (error) {
     console.error('Error in handleMouseMove:', error)
     showMagnifier.value = false
   }
-}, 16)
+}, 16) // Throttled to roughly 60 FPS
 
+// Handles clicking on a thumbnail image
 const handleThumbnailClick = (index) => {
   currentImageIndex.value = index
 }
 
+// Handles hovering over a thumbnail image (for quick preview)
 const handleThumbnailHover = (index) => {
   currentImageIndex.value = index
 }
 
+// Generates an object of available specifications for the product
 const getSpecifications = () => {
   if (!product.value?.skus || !product.value.skus.length) return {}
 
   const specs = {}
-
   product.value.skus.forEach(sku => {
     const skuSpecs = sku.attributes || sku.specs || {}
-
     Object.entries(skuSpecs).forEach(([key, value]) => {
       if (!specs[key]) {
         specs[key] = []
@@ -394,10 +476,10 @@ const getSpecifications = () => {
       }
     })
   })
-
   return specs
 }
 
+// Checks if a specific specification option is available given current selections
 const isSpecAvailable = (specName, option) => {
   if (!product.value?.skus) return true
 
@@ -405,28 +487,43 @@ const isSpecAvailable = (specName, option) => {
 
   return product.value.skus.some(sku => {
     const skuSpecs = sku.attributes || sku.specs || {}
-
     return Object.entries(tempSpecs).every(([key, value]) => {
+      // If a value is selected, it must match the SKU's spec value
+      // If value is null/undefined (spec not selected yet), it always matches
       return !value || skuSpecs[key] === value
     })
   })
 }
 
+// Handles changes in selected product specifications
 const handleSpecChange = () => {
-  if (!product.value?.skus) return
+  if (!product.value?.skus) {
+    selectedSku.value = null;
+    return;
+  }
 
+  // Find the SKU that matches all currently selected specifications
   selectedSku.value = product.value.skus.find(sku => {
     const skuSpecs = sku.attributes || sku.specs || {}
-
     return Object.entries(selectedSpecs.value).every(([key, value]) => {
       return !value || skuSpecs[key] === value
     })
   })
+
+  // Optional: Update main image to SKU-specific image if available
+  if (selectedSku.value?.image) {
+    const imageIndex = product.value.images.indexOf(selectedSku.value.image);
+    if (imageIndex !== -1) {
+      currentImageIndex.value = imageIndex;
+    }
+  }
 }
 
+// Adds the selected product (and SKU) to the cart
 const addToCart = () => {
   if (!product.value) return
 
+  // Require SKU selection if product has SKUs
   if (product.value.skus && !selectedSku.value) {
     ElMessage.warning('请选择商品规格')
     return
@@ -439,16 +536,18 @@ const addToCart = () => {
   ElMessage.success('已添加到购物车')
 }
 
+// Initiates the purchase process for the selected product (and SKU)
 const buyNow = () => {
   if (!product.value) return
 
+  // Require SKU selection if product has SKUs
   if (product.value.skus && !selectedSku.value) {
     ElMessage.warning('请选择商品规格')
     return
   }
 
   const productId = product.value.productId || product.value.id
-  const productImage = product.value.images?.[0] || ''
+  const productImage = product.value.images?.[0] || '' // Use first image as default
   const skuId = selectedSku.value ? selectedSku.value.skuId : null
 
   const checkoutItem = {
@@ -456,12 +555,13 @@ const buyNow = () => {
     productId: productId,
     skuId: skuId,
     name: product.value.name,
-    price: selectedSku.value ? selectedSku.value.price : product.value.price,
+    price: selectedSku.value ? selectedSku.value.price : product.value.price, // Use SKU price if available
     image: productImage,
     quantity: quantity.value,
-    specs: selectedSku.value ? selectedSku.value.attributes : null
+    specs: selectedSku.value ? selectedSku.value.attributes : null // Include selected SKU specs
   }
 
+  // Navigate to checkout page with item details
   router.push({
     name: 'checkout',
     query: {
@@ -470,446 +570,547 @@ const buyNow = () => {
   })
 }
 
+// Toggles product favorite status
 const toggleFavorite = () => {
   isFavorite.value = !isFavorite.value
   ElMessage.success(isFavorite.value ? '已添加到收藏' : '已取消收藏')
 }
 
+// Global mouse move handler to hide magnifier if mouse moves off the main image area
 const handleGlobalMouseMove = throttle((event) => {
+  // Only act if magnifier is shown and we have a reference to the main image
   if (!showMagnifier.value || !mainImageRef.value || !isMouseInImage) return
 
   const imageRect = mainImageRef.value.getBoundingClientRect()
   const { clientX, clientY } = event
 
+  // If the mouse pointer is outside the main image's bounding rectangle
   if (
     clientX < imageRect.left ||
     clientX > imageRect.right ||
     clientY < imageRect.top ||
     clientY > imageRect.bottom
   ) {
-    isMouseInImage = false
-    showMagnifier.value = false
+    isMouseInImage = false // Reset mouse-in-image flag
+    showMagnifier.value = false // Hide magnifier
   }
 }, 16)
 
+// Lifecycle hook: on component mount
 onMounted(() => {
   const productId = route.params.id
   if (productId) {
-    productStore.fetchProductDetail(productId)
+    productStore.fetchProductDetail(productId) // Fetch product details when component mounts
   }
 
+  // Add global mouse move listener
   window.addEventListener('mousemove', handleGlobalMouseMove)
 })
 
+// Lifecycle hook: before component unmount
 onBeforeUnmount(() => {
-  productStore.clearCurrentProduct()
+  productStore.clearCurrentProduct() // Clear product data from store
+  // Remove global mouse move listener to prevent memory leaks
   window.removeEventListener('mousemove', handleGlobalMouseMove)
 })
 
+// Watch for changes in the current image; hide magnifier when image changes
 watch(currentImage, () => {
   showMagnifier.value = false
 })
+
+// Watch for changes in selected specifications to update the selected SKU
+watch(selectedSpecs, handleSpecChange, { deep: true });
 </script>
 
 <style scoped>
 .product-detail-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 1400px;
+  margin: 20px auto;
   padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  min-height: calc(100vh - 120px);
+}
+
+.product-breadcrumb {
+  margin-bottom: 25px;
+  padding: 10px 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .product-content {
   display: flex;
-  gap: 40px;
-  margin-bottom: 40px;
+  gap: 30px;
+  margin-bottom: 30px;
 }
 
-/* Product Images */
 .product-images {
-  flex: 0 0 500px;
+  width: 500px;
+  flex-shrink: 0;
 }
 
 .image-container {
   position: relative;
-  display: flex;
-  gap: 20px;
+}
+
+.main-image-container {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  border-radius: 16px;
+  overflow: visible;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 20px;
+  z-index: 1;
 }
 
 .main-image {
-  position: relative;
-  width: 500px;
-  height: 500px;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: move;
-}
-
-.main-image .el-image {
   width: 100%;
   height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.main-image :deep(.el-image) {
+  width: 100%;
+  height: 100%;
+}
+
+.main-image :deep(.el-image__inner) {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .magnifier-lens {
   position: absolute;
   width: 100px;
   height: 100px;
-  border: 2px solid #409EFF;
-  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid #fff;
+  border-radius: 50%;
   pointer-events: none;
-  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  z-index: 2;
 }
 
 .magnifier-preview {
-  position: absolute;
-  left: 520px;
-  top: 0;
+  position: fixed;
   width: 400px;
   height: 400px;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
-  background: white;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  z-index: 100;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
 }
 
 .magnifier-image {
   width: 100%;
   height: 100%;
   background-repeat: no-repeat;
-  background-color: white;
+  background-size: 300% 300%;
 }
 
 .thumbnail-list {
   display: flex;
   gap: 10px;
-  margin-top: 20px;
+  overflow-x: auto;
+  padding: 5px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
-.thumbnail {
+.thumbnail-list::-webkit-scrollbar {
+  height: 6px;
+}
+
+.thumbnail-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thumbnail-list::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.thumbnail-item {
   width: 80px;
   height: 80px;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: 8px;
   overflow: hidden;
-  transition: all 0.3s;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
-.thumbnail:hover,
-.thumbnail.active {
+.thumbnail-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.thumbnail-item.active {
   border-color: #409EFF;
 }
 
-.thumbnail .el-image {
+.thumbnail-image {
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
-/* Product Info */
+.thumbnail-item:hover .thumbnail-image {
+  transform: scale(1.1);
+}
+
 .product-info {
   flex: 1;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-info:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .product-name {
-  font-size: 24px;
-  color: #303133;
-  margin: 0 0 20px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 15px;
+  line-height: 1.4;
 }
 
 .product-meta {
   display: flex;
-  gap: 40px;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.sales-info,
-.rating-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.label {
-  color: #909399;
-  font-size: 14px;
-}
-
-.value {
-  color: #303133;
-  font-size: 14px;
-}
-
-.price-section {
-  display: flex;
   align-items: center;
   gap: 20px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.sales-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.rating-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rating-info :deep(.el-rate) {
+  height: 20px;
+  line-height: 20px;
+}
+
+.rating-info :deep(.el-rate__icon) {
+  font-size: 18px;
+  margin-right: 2px;
+}
+
+.rating-info :deep(.el-rate__text) {
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+.product-price-section {
+  margin: 25px 0;
   padding: 20px;
-  background: #fafafa;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .current-price {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.price {
-  font-size: 28px;
-  color: #f56c6c;
-  font-weight: bold;
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .original-price {
   font-size: 16px;
-  color: #909399;
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: line-through;
+  margin-bottom: 15px;
 }
 
-.product-tags {
+.discount-tag {
+  display: inline-block;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  margin-left: 10px;
+}
+
+.product-description {
+  margin: 25px 0;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.8;
+  font-size: 15px;
+}
+
+.product-actions {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.tag {
-  margin-right: 10px;
+  gap: 15px;
+  margin-top: 30px;
 }
 
 .quantity-section {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
-  margin-bottom: 30px;
+  margin: 20px 0;
+}
+
+.quantity-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.quantity-selector {
+  width: 150px;
+}
+
+.custom-input-number :deep(.el-input-number__decrease),
+.custom-input-number :deep(.el-input-number__increase) {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.custom-input-number :deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.custom-input-number :deep(.el-input__inner) {
+  color: #fff;
+  text-align: center;
+}
+
+.custom-input-number :deep(.el-input-number__decrease:hover),
+.custom-input-number :deep(.el-input-number__increase:hover) {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 
 .stock {
-  margin-left: 20px;
-  color: #909399;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 14px;
+  margin-left: 15px;
 }
 
 .action-buttons {
   display: flex;
+  gap: 15px;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 30px;
+  margin-top: 30px;
 }
 
 .main-actions {
   display: flex;
-  gap: 20px;
+  gap: 15px;
   flex: 1;
 }
 
-.main-actions .el-button {
+.action-btn {
   flex: 1;
-  height: 50px;
+  height: 45px;
   font-size: 16px;
 }
 
 .favorite-btn {
-  width: 50px;
-  height: 50px;
-  padding: 0;
+  width: 45px !important;
+  height: 45px !important;
+  padding: 0 !important;
   font-size: 20px;
 }
 
-.service-info {
-  display: flex;
-  justify-content: space-around;
-  padding: 20px;
-  background: #fafafa;
-  border-radius: 8px;
+.favorite-btn :deep(.el-icon) {
+  font-size: 20px;
 }
 
-.service-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #606266;
+.product-tabs {
+  margin-top: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
-/* Product Details */
-.product-details {
-  margin-top: 40px;
+:deep(.el-tabs__nav) {
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.detail-content {
-  padding: 20px;
+:deep(.el-tabs__item) {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  padding: 0 25px;
+  height: 50px;
+  line-height: 50px;
+  transition: all 0.3s ease;
 }
 
-.reviews-section {
-  padding: 20px;
+:deep(.el-tabs__item.is-active) {
+  color: #fff;
+  font-weight: 600;
 }
 
-.review-summary {
-  margin-bottom: 30px;
-  padding: 20px;
-  background: #fafafa;
-  border-radius: 8px;
+:deep(.el-tabs__item:hover) {
+  color: #fff;
 }
 
-.rating-overview {
-  display: flex;
-  align-items: center;
-  gap: 40px;
+:deep(.el-tabs__active-bar) {
+  background-color: #409EFF;
+  height: 3px;
+  border-radius: 3px;
 }
 
-.average-rating {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.tab-content {
+  padding: 30px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.8;
 }
 
-.rating-number {
-  font-size: 36px;
-  color: #f56c6c;
-  font-weight: bold;
+.specifications-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.rating-count {
-  color: #909399;
-  font-size: 14px;
+.specifications-table th,
+.specifications-table td {
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
 }
 
-.review-item {
-  padding: 20px;
-  border-bottom: 1px solid #ebeef5;
+.specifications-table th {
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.review-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+.specifications-table tr:last-child td {
+  border-bottom: none;
 }
 
-.review-info {
-  flex: 1;
-}
-
-.username {
-  font-weight: bold;
-  color: #303133;
-}
-
-.review-date {
-  color: #909399;
-  font-size: 14px;
-}
-
-.review-content {
-  margin: 10px 0;
-  color: #606266;
-  line-height: 1.6;
-}
-
-.review-images {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.review-images .el-image {
-  width: 100px;
-  height: 100px;
-  border-radius: 4px;
-}
-
-:deep(.el-button--primary) {
-  background: linear-gradient(135deg, #409EFF 0%, #36D1DC 100%);
-  border: none;
-}
-
-:deep(.el-button--primary:hover) {
-  background: linear-gradient(135deg, #36D1DC 0%, #409EFF 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
-}
-
-:deep(.el-button--danger) {
-  background: linear-gradient(135deg, #f56c6c 0%, #ff9f9f 100%);
-  border: none;
-}
-
-:deep(.el-button--danger:hover) {
-  background: linear-gradient(135deg, #ff9f9f 0%, #f56c6c 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(245, 108, 108, 0.2);
-}
-
-/* SKU Selection Styles */
-.sku-section {
-  margin: 20px 0;
-  padding: 20px;
-  background: #fafafa;
-  border-radius: 8px;
-}
-
-.spec-group {
-  margin-bottom: 15px;
-}
-
-.spec-group:last-child {
-  margin-bottom: 0;
-}
-
-.spec-options {
-  margin-top: 10px;
-}
-
-.spec-options :deep(.el-radio-button__inner) {
-  min-width: 80px;
-  text-align: center;
-}
-
-.spec-options :deep(.el-radio-button.is-disabled .el-radio-button__inner) {
-  background-color: #f5f7fa;
-  border-color: #dcdfe6;
-  color: #c0c4cc;
-  cursor: not-allowed;
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
   .product-content {
     flex-direction: column;
   }
   
   .product-images {
-    flex: 0 0 auto;
     width: 100%;
   }
   
-  .main-image {
+  .main-image-container {
+    height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .product-detail-container {
+    padding: 15px;
+  }
+  
+  .main-image-container {
+    height: 300px;
+  }
+  
+  .product-name {
+    font-size: 24px;
+  }
+  
+  .current-price {
+    font-size: 28px;
+  }
+  
+  .product-actions {
+    flex-direction: column;
+  }
+  
+  .quantity-selector {
     width: 100%;
-    height: auto;
-    aspect-ratio: 1;
   }
   
-  .thumbnail-list {
-    overflow-x: auto;
-    padding-bottom: 10px;
+  .action-buttons {
+    flex-direction: column;
   }
   
-  .thumbnail {
-    flex: 0 0 60px;
-    height: 60px;
+  .action-buttons .el-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .product-detail-container {
+    padding: 10px;
   }
   
-  .spec-options :deep(.el-radio-button__inner) {
-    min-width: 60px;
-    padding: 8px 15px;
+  .main-image-container {
+    height: 250px;
+  }
+  
+  .product-name {
+    font-size: 20px;
+  }
+  
+  .current-price {
+    font-size: 24px;
+  }
+  
+  .product-meta {
+    gap: 10px;
+  }
+  
+  .product-brand {
+    font-size: 12px;
+  }
+  
+  .product-sales {
+    font-size: 12px;
+  }
+  
+  .tab-content {
+    padding: 20px;
+  }
+  
+  .specifications-table th,
+  .specifications-table td {
+    padding: 8px 12px;
+    font-size: 14px;
   }
 }
 </style>
