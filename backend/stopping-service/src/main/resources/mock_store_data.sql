@@ -1,240 +1,206 @@
-INSERT INTO Categories (category_id, name, parent_id, sort_order, is_visible, created_at, updated_at) VALUES (1, '电子产品', NULL, 1, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Categories (category_id, name, parent_id, sort_order, is_visible, created_at, updated_at) VALUES (2, '服装鞋帽', NULL, 2, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Categories (category_id, name, parent_id, sort_order, is_visible, created_at, updated_at) VALUES (3, '图书音像', NULL, 3, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Categories (category_id, name, parent_id, sort_order, is_visible, created_at, updated_at) VALUES (4, '家居生活', NULL, 4, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Categories (category_id, name, parent_id, sort_order, is_visible, created_at, updated_at) VALUES (5, '食品饮料', NULL, 5, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Categories (category_id, name, parent_id, sort_order, is_visible, created_at, updated_at) VALUES (6, '母婴用品', NULL, 6, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Categories (category_id, name, parent_id, sort_order, is_visible, created_at, updated_at) VALUES (7, '运动户外', NULL, 7, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Categories (category_id, name, parent_id, sort_order, is_visible, created_at, updated_at) VALUES (8, '汽车用品', NULL, 8, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (1, '测试商品1', 7, '品牌4', 1654.69, 74, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (1, '这是测试商品1的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (2, '测试商品2', 8, '品牌4', 482.8, 225, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (2, '这是测试商品2的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (3, '测试商品3', 1, '品牌6', 306.87, 207, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (3, '这是测试商品3的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (4, '测试商品4', 3, '品牌8', 1719.33, 167, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (4, '这是测试商品4的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (5, '测试商品5', 4, '品牌9', 808.81, 114, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (5, '这是测试商品5的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (6, '测试商品6', 2, '品牌2', 1320.48, 125, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (6, '这是测试商品6的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (7, '测试商品7', 6, '品牌10', 21.32, 290, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (7, '这是测试商品7的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (8, '测试商品8', 8, '品牌9', 1484.28, 253, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (8, '这是测试商品8的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (9, '测试商品9', 1, '品牌8', 1637.82, 141, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (9, '这是测试商品9的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (10, '测试商品10', 5, '品牌10', 800.26, 279, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (10, '这是测试商品10的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (11, '测试商品11', 8, '品牌7', 1238.4, 64, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (11, '这是测试商品11的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (12, '测试商品12', 5, '品牌9', 1388.37, 478, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (12, '这是测试商品12的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (13, '测试商品13', 8, '品牌2', 1569.25, 200, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (13, '这是测试商品13的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (14, '测试商品14', 4, '品牌8', 171.29, 274, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (14, '这是测试商品14的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (15, '测试商品15', 2, '品牌9', 12.64, 144, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (15, '这是测试商品15的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (16, '测试商品16', 8, '品牌9', 1237.09, 89, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (16, '这是测试商品16的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (17, '测试商品17', 2, '品牌6', 1822.44, 209, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (17, '这是测试商品17的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (18, '测试商品18', 5, '品牌6', 316.25, 236, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (18, '这是测试商品18的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (19, '测试商品19', 3, '品牌10', 1478.91, 15, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (19, '这是测试商品19的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (20, '测试商品20', 6, '品牌7', 839.55, 450, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (20, '这是测试商品20的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (21, '测试商品21', 1, '品牌1', 372.59, 410, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (21, '这是测试商品21的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (22, '测试商品22', 8, '品牌4', 1283.5, 227, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (22, '这是测试商品22的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (23, '测试商品23', 8, '品牌6', 283.29, 476, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (23, '这是测试商品23的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (24, '测试商品24', 6, '品牌1', 1680.55, 489, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (24, '这是测试商品24的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (25, '测试商品25', 1, '品牌5', 1062.67, 227, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (25, '这是测试商品25的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (26, '测试商品26', 1, '品牌9', 1300.21, 306, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (26, '这是测试商品26的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (27, '测试商品27', 3, '品牌9', 647.83, 375, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (27, '这是测试商品27的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (28, '测试商品28', 7, '品牌2', 1416.67, 428, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (28, '这是测试商品28的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (29, '测试商品29', 2, '品牌7', 151.03, 333, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (29, '这是测试商品29的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (30, '测试商品30', 5, '品牌2', 1824.48, 278, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (30, '这是测试商品30的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (31, '测试商品31', 3, '品牌4', 1962.49, 165, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (31, '这是测试商品31的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (32, '测试商品32', 7, '品牌8', 819.5, 101, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (32, '这是测试商品32的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (33, '测试商品33', 8, '品牌6', 1241.98, 464, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (33, '这是测试商品33的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (34, '测试商品34', 7, '品牌6', 678.8, 301, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (34, '这是测试商品34的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (35, '测试商品35', 8, '品牌9', 86.17, 139, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (35, '这是测试商品35的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (36, '测试商品36', 3, '品牌1', 850.19, 81, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (36, '这是测试商品36的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (37, '测试商品37', 7, '品牌2', 1302.21, 328, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (37, '这是测试商品37的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (38, '测试商品38', 1, '品牌10', 1875.81, 146, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (38, '这是测试商品38的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (39, '测试商品39', 6, '品牌10', 239.4, 236, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (39, '这是测试商品39的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (40, '测试商品40', 5, '品牌4', 122.81, 480, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (40, '这是测试商品40的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (41, '测试商品41', 2, '品牌8', 1405.58, 491, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (41, '这是测试商品41的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (42, '测试商品42', 4, '品牌3', 1754.09, 341, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (42, '这是测试商品42的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (43, '测试商品43', 5, '品牌10', 521.18, 156, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (43, '这是测试商品43的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (44, '测试商品44', 8, '品牌9', 1423.81, 247, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (44, '这是测试商品44的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (45, '测试商品45', 1, '品牌6', 820.05, 438, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (45, '这是测试商品45的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (46, '测试商品46', 5, '品牌9', 1579.22, 345, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (46, '这是测试商品46的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (47, '测试商品47', 7, '品牌9', 1368.51, 271, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (47, '这是测试商品47的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (48, '测试商品48', 4, '品牌5', 1731.31, 214, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (48, '这是测试商品48的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (49, '测试商品49', 4, '品牌10', 1369.62, 458, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (49, '这是测试商品49的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO Products (product_id, name, category_id, brand, price, stock, is_on_sale, created_at, updated_at) VALUES (50, '测试商品50', 7, '品牌10', 1133.31, 63, TRUE, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductDetails (product_id, description, specifications, created_at, updated_at) VALUES (50, '这是测试商品50的描述', '{"颜色":"红色","尺寸":"M"}', '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (1, 1, '3d28d94b-e', '{"颜色":"蓝色","尺寸":"L"}', 43.98, 40, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (2, 2, '7b683662-d', '{"颜色":"蓝色","尺寸":"L"}', 292.78, 159, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (3, 3, 'd259c10f-2', '{"颜色":"蓝色","尺寸":"L"}', 950.15, 65, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (4, 4, 'c51a4e71-c', '{"颜色":"蓝色","尺寸":"L"}', 1215.24, 215, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (5, 5, '7ab4cea3-3', '{"颜色":"蓝色","尺寸":"L"}', 651.01, 175, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (6, 6, '51961fda-5', '{"颜色":"蓝色","尺寸":"L"}', 219.77, 173, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (7, 7, '2047b8c0-2', '{"颜色":"蓝色","尺寸":"L"}', 388.84, 297, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (8, 8, '14b443c9-a', '{"颜色":"蓝色","尺寸":"L"}', 1658.69, 288, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (9, 9, '115aa3f5-1', '{"颜色":"蓝色","尺寸":"L"}', 902.99, 99, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (10, 10, 'cc651e58-7', '{"颜色":"蓝色","尺寸":"L"}', 1933.16, 169, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (11, 11, '6d49e09a-2', '{"颜色":"蓝色","尺寸":"L"}', 982.04, 229, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (12, 12, 'c058c319-6', '{"颜色":"蓝色","尺寸":"L"}', 367.19, 120, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (13, 13, '5b24b8e2-c', '{"颜色":"蓝色","尺寸":"L"}', 533.81, 226, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (14, 14, '21569de7-9', '{"颜色":"蓝色","尺寸":"L"}', 1889.3, 282, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (15, 15, '204382e3-9', '{"颜色":"蓝色","尺寸":"L"}', 1050.42, 101, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (16, 16, '0fee8c5e-c', '{"颜色":"蓝色","尺寸":"L"}', 1555.41, 257, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (17, 17, '9b034bc6-9', '{"颜色":"蓝色","尺寸":"L"}', 138.71, 99, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (18, 18, 'db781e52-0', '{"颜色":"蓝色","尺寸":"L"}', 1459.32, 63, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (19, 19, '46f551e7-d', '{"颜色":"蓝色","尺寸":"L"}', 37.47, 258, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (20, 20, '416f272e-a', '{"颜色":"蓝色","尺寸":"L"}', 1844.23, 273, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (21, 21, '27d58ad0-7', '{"颜色":"蓝色","尺寸":"L"}', 1262.72, 292, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (22, 22, '7673ee53-7', '{"颜色":"蓝色","尺寸":"L"}', 1033.87, 248, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (23, 23, '411d2fb1-a', '{"颜色":"蓝色","尺寸":"L"}', 1590.46, 99, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (24, 24, '808e3d09-d', '{"颜色":"蓝色","尺寸":"L"}', 1676.7, 236, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (25, 25, '0bdaea73-e', '{"颜色":"蓝色","尺寸":"L"}', 317.69, 275, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (26, 26, '1112764a-e', '{"颜色":"蓝色","尺寸":"L"}', 1686.55, 103, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (27, 27, 'e6532134-a', '{"颜色":"蓝色","尺寸":"L"}', 729.83, 147, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (28, 28, '69a1cbb3-7', '{"颜色":"蓝色","尺寸":"L"}', 569.93, 131, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (29, 29, '7da43588-9', '{"颜色":"蓝色","尺寸":"L"}', 1516.94, 271, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (30, 30, '626e97dc-a', '{"颜色":"蓝色","尺寸":"L"}', 1297.52, 27, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (31, 31, '8104d17c-7', '{"颜色":"蓝色","尺寸":"L"}', 821.77, 16, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (32, 32, 'ba7dd5aa-1', '{"颜色":"蓝色","尺寸":"L"}', 287.5, 11, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (33, 33, '5b785076-7', '{"颜色":"蓝色","尺寸":"L"}', 978.85, 288, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (34, 34, '6008da2a-b', '{"颜色":"蓝色","尺寸":"L"}', 1910.65, 71, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (35, 35, 'd5e4ca90-9', '{"颜色":"蓝色","尺寸":"L"}', 544.13, 170, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (36, 36, 'ff0f824e-7', '{"颜色":"蓝色","尺寸":"L"}', 1525.65, 243, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (37, 37, '96cff171-c', '{"颜色":"蓝色","尺寸":"L"}', 908.77, 157, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (38, 38, 'c37b7614-4', '{"颜色":"蓝色","尺寸":"L"}', 1712.8, 106, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (39, 39, '50475d01-3', '{"颜色":"蓝色","尺寸":"L"}', 1857.65, 165, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (40, 40, '32b62ccf-7', '{"颜色":"蓝色","尺寸":"L"}', 1292.79, 114, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (41, 41, '9ecd06e3-a', '{"颜色":"蓝色","尺寸":"L"}', 1473.67, 233, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (42, 42, 'b3b15365-5', '{"颜色":"蓝色","尺寸":"L"}', 256.17, 175, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (43, 43, '85c72cb0-c', '{"颜色":"蓝色","尺寸":"L"}', 861.53, 93, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (44, 44, '3775b714-4', '{"颜色":"蓝色","尺寸":"L"}', 1875.78, 68, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (45, 45, '3f16f22c-1', '{"颜色":"蓝色","尺寸":"L"}', 710.53, 132, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (46, 46, 'e587228f-a', '{"颜色":"蓝色","尺寸":"L"}', 295.04, 235, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (47, 47, 'b7ef8917-3', '{"颜色":"蓝色","尺寸":"L"}', 825.59, 36, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (48, 48, 'b94014ef-f', '{"颜色":"蓝色","尺寸":"L"}', 1868.89, 82, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (49, 49, 'dab072e3-0', '{"颜色":"蓝色","尺寸":"L"}', 1192.26, 63, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductSKUs (sku_id, product_id, sku_code, attributes, price, stock, created_at, updated_at) VALUES (50, 50, '1c6c67f2-e', '{"颜色":"蓝色","尺寸":"L"}', 1387.16, 249, '2025-06-01 00:59:56', '2025-06-01 00:59:56');
-INSERT INTO ProductTags (tag_id, name, created_at) VALUES (1, '热销', '2025-06-01 00:59:56');
-INSERT INTO ProductTags (tag_id, name, created_at) VALUES (2, '新品', '2025-06-01 00:59:56');
-INSERT INTO ProductTags (tag_id, name, created_at) VALUES (3, '折扣', '2025-06-01 00:59:56');
-INSERT INTO ProductTags (tag_id, name, created_at) VALUES (4, '限量', '2025-06-01 00:59:56');
-INSERT INTO ProductTags (tag_id, name, created_at) VALUES (5, '推荐', '2025-06-01 00:59:56');
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (1, 1, 4);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (2, 2, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (3, 3, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (4, 3, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (5, 4, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (6, 5, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (7, 5, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (8, 6, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (9, 7, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (10, 7, 4);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (11, 8, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (12, 9, 4);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (13, 9, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (14, 10, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (15, 10, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (16, 11, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (17, 12, 5);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (18, 12, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (19, 13, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (20, 14, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (21, 14, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (22, 15, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (23, 16, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (24, 16, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (25, 17, 4);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (26, 18, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (27, 19, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (28, 19, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (29, 20, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (30, 21, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (31, 21, 5);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (32, 22, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (33, 23, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (34, 23, 4);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (35, 24, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (36, 25, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (37, 25, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (38, 26, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (39, 27, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (40, 27, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (41, 28, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (42, 29, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (43, 30, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (44, 31, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (45, 31, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (46, 32, 4);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (47, 32, 5);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (48, 33, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (49, 33, 4);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (50, 34, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (51, 34, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (52, 35, 5);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (53, 36, 5);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (54, 36, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (55, 37, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (56, 37, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (57, 38, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (58, 38, 5);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (59, 39, 4);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (60, 39, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (61, 40, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (62, 40, 5);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (63, 41, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (64, 42, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (65, 42, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (66, 43, 4);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (67, 44, 4);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (68, 45, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (69, 45, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (70, 46, 1);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (71, 47, 4);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (72, 48, 5);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (73, 48, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (74, 49, 3);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (75, 49, 5);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (76, 50, 2);
-INSERT INTO ProductTagRelations (id, product_id, tag_id) VALUES (77, 50, 3);
+INSERT INTO `users` (`user_id`, `username`, `email`, `phone`, `password_hash`, `is_deleted`, `created_at`, `updated_at`, `balance`, `balance_updated_at`, `Uuid`) VALUES
+(1, 'user1', 'user1@example.com', '13800000001', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-06-16 22:52:18', '2024-06-16 22:52:18', 4201.19, '2024-06-16 22:52:18', '5daa57a4-aac7-4ee4-88a9-aafad4881186'),
+(2, 'user2', 'user2@example.com', '13800000002', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-03-16 21:51:23', '2025-03-16 21:51:23', 853.5, '2025-03-16 21:51:23', 'd5e083cb-4751-41f6-b51d-527350068a35'),
+(3, 'user3', 'user3@example.com', '13800000003', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-03-19 02:52:59', '2025-03-19 02:52:59', 497.21, '2025-03-19 02:52:59', '1e740200-5571-4a5a-973c-427658730758'),
+(4, 'user4', 'user4@example.com', '13800000004', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-09-12 18:36:16', '2024-09-12 18:36:16', 4170.43, '2024-09-12 18:36:16', '464eb4d1-ec14-44a9-87c7-49a7785a6744'),
+(5, 'user5', 'user5@example.com', '13800000005', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-01-31 11:54:44', '2025-01-31 11:54:44', 3331.74, '2025-01-31 11:54:44', '32095718-b89e-4635-abee-e6bb21a54d19'),
+(6, 'user6', 'user6@example.com', '13800000006', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-05-10 18:30:07', '2025-05-10 18:30:07', 2324.87, '2025-05-10 18:30:07', 'f135ad19-859c-4005-a6bb-f89870740e49'),
+(7, 'user7', 'user7@example.com', '13800000007', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-08-10 05:16:25', '2024-08-10 05:16:25', 4780.49, '2024-08-10 05:16:25', '3b4dba51-786a-4f8f-a42d-dedeb66aa895'),
+(8, 'user8', 'user8@example.com', '13800000008', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-09-28 08:08:28', '2024-09-28 08:08:28', 3011.6, '2024-09-28 08:08:28', 'e8a66a5b-cf61-43af-bde4-9e60d455472c'),
+(9, 'user9', 'user9@example.com', '13800000009', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-04-30 05:40:34', '2025-04-30 05:40:34', 128.45, '2025-04-30 05:40:34', '59091a74-f7cb-47eb-a55e-095ed967ccf1'),
+(10, 'user10', 'user10@example.com', '13800000010', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-08-24 04:57:50', '2024-08-24 04:57:50', 4851.88, '2024-08-24 04:57:50', '672d89b4-227c-4884-927e-2c348d7f9baa'),
+(11, 'user11', 'user11@example.com', '13800000011', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-09-15 04:15:20', '2024-09-15 04:15:20', 3315.25, '2024-09-15 04:15:20', '7357857f-b871-4366-a2d2-34b2800a7f12'),
+(12, 'user12', 'user12@example.com', '13800000012', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-03-06 14:38:41', '2025-03-06 14:38:41', 4759.39, '2025-03-06 14:38:41', 'f0be0989-8bed-48db-a343-b08f6b290b09'),
+(13, 'user13', 'user13@example.com', '13800000013', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-12-07 07:06:57', '2024-12-07 07:06:57', 1692.09, '2024-12-07 07:06:57', 'd379c448-a303-4eeb-8683-a97e7fef5a32'),
+(14, 'user14', 'user14@example.com', '13800000014', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-01-05 16:20:49', '2025-01-05 16:20:49', 3684.57, '2025-01-05 16:20:49', '83832b73-6530-4dd0-ac8f-9a3706cbd943'),
+(15, 'user15', 'user15@example.com', '13800000015', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-07-02 04:48:24', '2024-07-02 04:48:24', 3698.17, '2024-07-02 04:48:24', '1f105f05-cd82-4c6d-985b-e90af526e15e'),
+(16, 'user16', 'user16@example.com', '13800000016', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-06-26 21:35:05', '2024-06-26 21:35:05', 4791.27, '2024-06-26 21:35:05', '7925d508-89c8-4cf9-814d-4f17d71874ed'),
+(17, 'user17', 'user17@example.com', '13800000017', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-11-29 03:04:46', '2024-11-29 03:04:46', 2888.88, '2024-11-29 03:04:46', '7894e7d6-f68d-449b-afcd-65f8a043b18b'),
+(18, 'user18', 'user18@example.com', '13800000018', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-08-03 04:52:06', '2024-08-03 04:52:06', 1135.7, '2024-08-03 04:52:06', '6a5bd708-c67d-4456-8254-c4ce05d38352'),
+(19, 'user19', 'user19@example.com', '13800000019', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-12-24 16:55:34', '2024-12-24 16:55:34', 338.54, '2024-12-24 16:55:34', 'e512c96d-dc08-4324-99e2-de0997a20496'),
+(20, 'user20', 'user20@example.com', '13800000020', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-11-27 13:38:37', '2024-11-27 13:38:37', 3253.86, '2024-11-27 13:38:37', '06f0531a-8911-46f0-a954-e771dd83bb7a'),
+(21, 'user21', 'user21@example.com', '13800000021', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-02-27 22:41:22', '2025-02-27 22:41:22', 1683.54, '2025-02-27 22:41:22', 'b57fe338-068c-489c-b618-4a0af91f57d7'),
+(22, 'user22', 'user22@example.com', '13800000022', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-08-17 15:33:06', '2024-08-17 15:33:06', 372.12, '2024-08-17 15:33:06', '90777b2b-98c1-45c7-b73b-f0db3dfe51e2'),
+(23, 'user23', 'user23@example.com', '13800000023', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-06-20 22:20:44', '2024-06-20 22:20:44', 446.55, '2024-06-20 22:20:44', 'aa5131bd-c143-4c9a-acc0-1ba5a9202ba2'),
+(24, 'user24', 'user24@example.com', '13800000024', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-04-29 09:28:05', '2025-04-29 09:28:05', 4764.31, '2025-04-29 09:28:05', '53938dbd-0171-42a0-b369-d1643ff54a0e'),
+(25, 'user25', 'user25@example.com', '13800000025', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-10-25 10:07:03', '2024-10-25 10:07:03', 1968.82, '2024-10-25 10:07:03', '6e05478d-fe89-4f7e-87fd-70c56cec64dd'),
+(26, 'user26', 'user26@example.com', '13800000026', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-07-22 10:48:39', '2024-07-22 10:48:39', 2054.41, '2024-07-22 10:48:39', '3b9beaf7-d420-48a0-919a-03b54dcb4eaa'),
+(27, 'user27', 'user27@example.com', '13800000027', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-03-30 02:13:47', '2025-03-30 02:13:47', 972.25, '2025-03-30 02:13:47', 'fde20ad0-c63e-4388-b9ad-89bea347bfc6'),
+(28, 'user28', 'user28@example.com', '13800000028', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-06-07 16:20:54', '2025-06-07 16:20:54', 4828.74, '2025-06-07 16:20:54', '42af2d36-193e-4c94-a409-e5d692a5ba4e'),
+(29, 'user29', 'user29@example.com', '13800000029', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-04-22 05:22:00', '2025-04-22 05:22:00', 4341.03, '2025-04-22 05:22:00', '7bd79051-3b96-492b-9e93-f3ad83394e13'),
+(30, 'user30', 'user30@example.com', '13800000030', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-10-30 05:40:51', '2024-10-30 05:40:51', 537.02, '2024-10-30 05:40:51', '5827f697-f092-4ec7-b571-ee0d7e878be5'),
+(31, 'user31', 'user31@example.com', '13800000031', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-02-15 02:21:48', '2025-02-15 02:21:48', 4276.49, '2025-02-15 02:21:48', '42b68ea0-c16e-4327-a2dc-352ddc5cfce6'),
+(32, 'user32', 'user32@example.com', '13800000032', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-11-18 11:17:43', '2024-11-18 11:17:43', 898.41, '2024-11-18 11:17:43', 'f6fccc05-4f82-43f2-add2-3ccad55d71cb'),
+(33, 'user33', 'user33@example.com', '13800000033', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-09-19 12:02:50', '2024-09-19 12:02:50', 3919.51, '2024-09-19 12:02:50', '649e9b74-65ce-4428-8e67-c3542e47b481'),
+(34, 'user34', 'user34@example.com', '13800000034', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-10-13 05:39:57', '2024-10-13 05:39:57', 1496.19, '2024-10-13 05:39:57', 'acd8b502-1cb5-445e-9b9d-7f74df078f6a'),
+(35, 'user35', 'user35@example.com', '13800000035', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-03-25 11:38:29', '2025-03-25 11:38:29', 3787.54, '2025-03-25 11:38:29', 'aed8c954-c726-41f6-91e3-e193a10229bf'),
+(36, 'user36', 'user36@example.com', '13800000036', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-04-26 10:18:54', '2025-04-26 10:18:54', 3304.92, '2025-04-26 10:18:54', 'c5dd5379-b400-45b8-adcb-5ffc3f352378'),
+(37, 'user37', 'user37@example.com', '13800000037', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-10-10 22:54:26', '2024-10-10 22:54:26', 690.95, '2024-10-10 22:54:26', '07d07b60-415f-4feb-bc2c-f26fea62084c'),
+(38, 'user38', 'user38@example.com', '13800000038', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-06-06 07:15:02', '2025-06-06 07:15:02', 2505.14, '2025-06-06 07:15:02', '5d680731-a18e-430d-a7f5-392d06305563'),
+(39, 'user39', 'user39@example.com', '13800000039', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-04-30 02:31:23', '2025-04-30 02:31:23', 2218.56, '2025-04-30 02:31:23', '917e438f-9ae7-4695-8824-4009435edb62'),
+(40, 'user40', 'user40@example.com', '13800000040', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-04-08 21:53:25', '2025-04-08 21:53:25', 4051.13, '2025-04-08 21:53:25', '1ac79657-f21d-4360-b303-cdb7bd2560da'),
+(41, 'user41', 'user41@example.com', '13800000041', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-12-16 06:28:48', '2024-12-16 06:28:48', 1619.5, '2024-12-16 06:28:48', '441447fd-206f-4862-a7bd-e549fd51a844'),
+(42, 'user42', 'user42@example.com', '13800000042', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-01-11 01:49:41', '2025-01-11 01:49:41', 3456.31, '2025-01-11 01:49:41', 'f84d379d-e8fe-4dcc-bad6-732e2d7d6959'),
+(43, 'user43', 'user43@example.com', '13800000043', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-11-01 15:54:47', '2024-11-01 15:54:47', 743.3, '2024-11-01 15:54:47', '78491c2e-a642-4fbb-b726-38ab34b291da'),
+(44, 'user44', 'user44@example.com', '13800000044', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-12-25 02:16:30', '2024-12-25 02:16:30', 3361.05, '2024-12-25 02:16:30', '542fcbba-731a-4a59-8359-05e9f5dc0cf4'),
+(45, 'user45', 'user45@example.com', '13800000045', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-10-26 01:09:57', '2024-10-26 01:09:57', 4177.06, '2024-10-26 01:09:57', 'f4d58da4-b517-4eb6-828d-f89492af2501'),
+(46, 'user46', 'user46@example.com', '13800000046', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-11-04 06:40:16', '2024-11-04 06:40:16', 2612.0, '2024-11-04 06:40:16', '46392b95-f851-45fb-81a0-7296bf64a2e6'),
+(47, 'user47', 'user47@example.com', '13800000047', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-08-13 00:32:27', '2024-08-13 00:32:27', 2499.15, '2024-08-13 00:32:27', '3c2a6061-e9c4-4fdd-8f06-c359e933e460'),
+(48, 'user48', 'user48@example.com', '13800000048', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-01-12 02:47:49', '2025-01-12 02:47:49', 4438.52, '2025-01-12 02:47:49', '6d6b734f-9031-4c5e-b505-2c4b18f9d916'),
+(49, 'user49', 'user49@example.com', '13800000049', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2024-08-10 06:50:17', '2024-08-10 06:50:17', 2434.55, '2024-08-10 06:50:17', '12d41be6-d122-440c-a6eb-5620c27c58e6'),
+(50, 'user50', 'user50@example.com', '13800000050', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 0, '2025-01-26 09:20:00', '2025-01-26 09:20:00', 2858.98, '2025-01-26 09:20:00', '861b989b-6dee-45c0-8bbf-3ce2bb4645ca');
+
+INSERT INTO `useraddresses` (`user_id`, `province`, `city`, `district`, `detail_address`, `is_default`, `is_deleted`, `created_at`, `updated_at`, `receiver_name`, `receiver_phone`) VALUES
+(1, '台湾省', '武汉', '孝南', '合山路J座', 0, 0, '2025-04-28 20:47:23', '2025-04-28 20:47:23', '任颖', '13900000001'),
+(2, '云南省', '上海', '梁平', '洪街D座', 0, 0, '2025-03-17 01:03:04', '2025-03-17 01:03:04', '赵敏', '13900000002'),
+(3, '甘肃省', '武汉', '长寿', '李街R座', 0, 0, '2024-07-29 07:25:52', '2024-07-29 07:25:52', '潘霞', '13900000003'),
+(4, '江苏省', '成都', '双滦', '胡街B座', 0, 0, '2025-06-08 12:38:40', '2025-06-08 12:38:40', '赵娜', '13900000004'),
+(5, '江西省', '广州', '萧山', '张路a座', 1, 0, '2024-11-05 22:27:12', '2024-11-05 22:27:12', '刘斌', '13900000005'),
+(6, '黑龙江省', '武汉', '兴山', '王街l座', 0, 0, '2024-11-09 01:45:06', '2024-11-09 01:45:06', '史玉华', '13900000006'),
+(7, '甘肃省', '武汉', '龙潭', '王路M座', 0, 0, '2024-09-23 17:46:30', '2024-09-23 17:46:30', '杨建军', '13900000007'),
+(8, '甘肃省', '上海', '高明', '刘街r座', 0, 0, '2024-12-24 11:43:42', '2024-12-24 11:43:42', '秦建平', '13900000008'),
+(9, '安徽省', '北京', '翔安', '南京路p座', 0, 0, '2025-05-01 14:11:12', '2025-05-01 14:11:12', '张秀兰', '13900000009'),
+(10, '山西省', '成都', '滨城', '张路j座', 1, 0, '2024-09-28 06:05:01', '2024-09-28 06:05:01', '王志强', '13900000010'),
+(11, '黑龙江省', '西安', '门头沟', '蔡路y座', 0, 0, '2025-02-21 12:01:30', '2025-02-21 12:01:30', '刘文', '13900000011'),
+(12, '福建省', '深圳', '白云', '郭路A座', 0, 0, '2024-09-04 05:15:14', '2024-09-04 05:15:14', '张莉', '13900000012'),
+(13, '黑龙江省', '广州', '高坪', '深圳街Z座', 0, 0, '2025-05-17 13:02:14', '2025-05-17 13:02:14', '阎芳', '13900000013'),
+(14, '河南省', '西安', '普陀', '武汉路I座', 0, 0, '2024-09-14 10:36:03', '2024-09-14 10:36:03', '曾冬梅', '13900000014'),
+(15, '天津市', '上海', '新城', '汤街A座', 1, 0, '2024-12-23 20:02:53', '2024-12-23 20:02:53', '李琳', '13900000015'),
+(16, '北京市', '杭州', '高港', '兴安盟街T座', 0, 0, '2025-03-12 05:37:00', '2025-03-12 05:37:00', '贾波', '13900000016'),
+(17, '贵州省', '西安', '淄川', '苏街y座', 0, 0, '2024-08-07 23:55:44', '2024-08-07 23:55:44', '段玲', '13900000017'),
+(18, '广东省', '武汉', '白云', '南宁路v座', 0, 0, '2024-07-20 03:08:53', '2024-07-20 03:08:53', '王璐', '13900000018'),
+(19, '香港特别行政区', '上海', '朝阳', '太原路e座', 0, 0, '2024-07-30 09:32:36', '2024-07-30 09:32:36', '李玉', '13900000019'),
+(20, '海南省', '西安', '梁平', '长沙路D座', 1, 0, '2024-12-11 23:14:00', '2024-12-11 23:14:00', '彭萍', '13900000020'),
+(21, '河南省', '杭州', '西峰', '银川路o座', 0, 0, '2024-09-20 14:37:58', '2024-09-20 14:37:58', '邱辉', '13900000021'),
+(22, '天津市', '广州', '大东', '邓街V座', 0, 0, '2024-07-19 19:13:32', '2024-07-19 19:13:32', '孔想', '13900000022'),
+(23, '安徽省', '广州', '黄浦', '聂路U座', 0, 0, '2024-09-11 17:06:15', '2024-09-11 17:06:15', '周桂香', '13900000023'),
+(24, '贵州省', '杭州', '高明', '重庆街a座', 0, 0, '2025-04-24 09:06:56', '2025-04-24 09:06:56', '李桂珍', '13900000024'),
+(25, '陕西省', '深圳', '璧山', '白路j座', 1, 0, '2024-11-28 03:45:43', '2024-11-28 03:45:43', '田想', '13900000025'),
+(26, '江西省', '武汉', '徐汇', '张路M座', 0, 0, '2025-05-14 16:14:12', '2025-05-14 16:14:12', '单建华', '13900000026'),
+(27, '湖北省', '杭州', '萧山', '王街P座', 0, 0, '2024-08-26 16:35:26', '2024-08-26 16:35:26', '许淑珍', '13900000027'),
+(28, '西藏自治区', '北京', '六枝特', '梁路M座', 0, 0, '2025-04-03 12:28:12', '2025-04-03 12:28:12', '孙静', '13900000028'),
+(29, '重庆市', '上海', '六枝特', '杜路J座', 0, 0, '2024-07-06 08:29:48', '2024-07-06 08:29:48', '黄瑜', '13900000029'),
+(30, '香港特别行政区', '北京', '六枝特', '秦路k座', 1, 0, '2024-08-31 22:52:23', '2024-08-31 22:52:23', '李鹏', '13900000030'),
+(31, '河南省', '上海', '南湖', '曾路d座', 0, 0, '2024-11-14 15:36:56', '2024-11-14 15:36:56', '方丹', '13900000031'),
+(32, '贵州省', '武汉', '梁平', '蔡街l座', 0, 0, '2024-11-27 22:39:18', '2024-11-27 22:39:18', '董峰', '13900000032'),
+(33, '四川省', '武汉', '梁平', '乌鲁木齐街U座', 0, 0, '2024-09-29 13:39:31', '2024-09-29 13:39:31', '易斌', '13900000033'),
+(34, '辽宁省', '上海', '兴山', '柳州路W座', 0, 0, '2024-11-22 01:34:09', '2024-11-22 01:34:09', '郭桂芝', '13900000034'),
+(35, '云南省', '西安', '南溪', '香港路r座', 1, 0, '2024-10-31 16:18:35', '2024-10-31 16:18:35', '高丽娟', '13900000035'),
+(36, '吉林省', '杭州', '海港', '乌鲁木齐街l座', 0, 0, '2025-03-25 17:30:33', '2025-03-25 17:30:33', '黄晶', '13900000036'),
+(37, '黑龙江省', '成都', '东城', '兴城街Y座', 0, 0, '2025-04-23 02:20:52', '2025-04-23 02:20:52', '王秀芳', '13900000037'),
+(38, '广东省', '杭州', '城东', '王街p座', 0, 0, '2024-08-27 23:14:03', '2024-08-27 23:14:03', '李帅', '13900000038'),
+(39, '北京市', '上海', '孝南', '马街U座', 0, 0, '2025-03-19 21:06:18', '2025-03-19 21:06:18', '童梅', '13900000039'),
+(40, '重庆市', '北京', '兴山', '哈尔滨路J座', 1, 0, '2025-03-19 03:57:35', '2025-03-19 03:57:35', '孔建平', '13900000040'),
+(41, '香港特别行政区', '上海', '东丽', '拉萨街K座', 0, 0, '2025-05-18 14:38:25', '2025-05-18 14:38:25', '冯欣', '13900000041'),
+(42, '宁夏回族自治区', '西安', '白云', '辛集街d座', 0, 0, '2024-09-24 03:14:13', '2024-09-24 03:14:13', '张畅', '13900000042'),
+(43, '贵州省', '广州', '淄川', '澳门路W座', 0, 0, '2025-06-06 11:04:19', '2025-06-06 11:04:19', '张淑兰', '13900000043'),
+(44, '黑龙江省', '广州', '高明', '李街h座', 0, 0, '2025-04-29 05:40:17', '2025-04-29 05:40:17', '陈海燕', '13900000044'),
+(45, '新疆维吾尔自治区', '武汉', '黄浦', '淮安路q座', 1, 0, '2025-05-23 05:18:28', '2025-05-23 05:18:28', '袁亮', '13900000045'),
+(46, '澳门特别行政区', '北京', '南湖', '阜新路q座', 0, 0, '2025-02-24 13:35:28', '2025-02-24 13:35:28', '杨帅', '13900000046'),
+(47, '河南省', '上海', '滨城', '贵阳街E座', 0, 0, '2025-04-04 19:21:28', '2025-04-04 19:21:28', '王萍', '13900000047'),
+(48, '江西省', '武汉', '孝南', '济南路V座', 0, 0, '2025-01-13 11:51:31', '2025-01-13 11:51:31', '邓英', '13900000048'),
+(49, '贵州省', '杭州', '花溪', '白路t座', 0, 0, '2024-11-06 21:40:34', '2024-11-06 21:40:34', '徐欢', '13900000049'),
+(50, '江西省', '成都', '秀英', '嘉禾街J座', 1, 0, '2025-01-08 06:23:43', '2025-01-08 06:23:43', '胡云', '13900000050');
+
+INSERT INTO `orders` (`order_id`, `user_id`, `status`, `total_amount`, `created_at`, `updated_at`) VALUES
+(1, 38, 'completed', 7585.67, '2025-06-02 11:19:42', '2025-06-02 11:19:42'),
+(2, 29, 'cancelled', 8087.95, '2024-11-01 19:21:46', '2024-11-01 19:21:46'),
+(3, 22, 'paid', 2150.13, '2025-03-09 00:38:22', '2025-03-09 00:38:22'),
+(4, 6, 'cancelled', 2630.21, '2024-07-03 11:24:49', '2024-07-03 11:24:49'),
+(5, 44, 'pending', 4366.3, '2024-09-27 22:53:23', '2024-09-27 22:53:23'),
+(6, 2, 'pending', 3979.59, '2025-01-21 05:34:00', '2025-01-21 05:34:00'),
+(7, 1, 'paid', 6575.22, '2024-11-12 21:17:32', '2024-11-12 21:17:32'),
+(8, 30, 'completed', 8694.37, '2024-10-13 15:53:42', '2024-10-13 15:53:42'),
+(9, 48, 'cancelled', 7272.82, '2025-02-03 13:56:17', '2025-02-03 13:56:17'),
+(10, 20, 'cancelled', 8140.67, '2025-01-22 19:25:23', '2025-01-22 19:25:23'),
+(11, 40, 'shipped', 6922.09, '2025-02-02 00:43:19', '2025-02-02 00:43:19'),
+(12, 45, 'completed', 8056.18, '2025-01-14 09:54:39', '2025-01-14 09:54:39'),
+(13, 6, 'paid', 1394.38, '2025-02-10 00:25:10', '2025-02-10 00:25:10'),
+(14, 13, 'pending', 8168.88, '2024-08-27 09:58:56', '2024-08-27 09:58:56'),
+(15, 45, 'paid', 8597.17, '2025-01-22 03:31:53', '2025-01-22 03:31:53'),
+(16, 14, 'completed', 6503.8, '2025-01-11 10:54:38', '2025-01-11 10:54:38'),
+(17, 42, 'paid', 4386.1, '2024-11-19 13:58:29', '2024-11-19 13:58:29'),
+(18, 41, 'cancelled', 1949.6, '2025-03-31 03:25:21', '2025-03-31 03:25:21'),
+(19, 20, 'completed', 1524.25, '2025-05-12 15:26:32', '2025-05-12 15:26:32'),
+(20, 28, 'pending', 1208.77, '2024-09-23 19:53:30', '2024-09-23 19:53:30'),
+(21, 10, 'completed', 9640.48, '2024-06-11 15:52:24', '2024-06-11 15:52:24'),
+(22, 31, 'pending', 8604.97, '2024-12-14 12:22:38', '2024-12-14 12:22:38'),
+(23, 38, 'paid', 2053.32, '2025-01-24 21:18:44', '2025-01-24 21:18:44'),
+(24, 37, 'completed', 556.68, '2025-01-22 01:02:22', '2025-01-22 01:02:22'),
+(25, 1, 'pending', 6322.58, '2024-08-23 22:02:21', '2024-08-23 22:02:21'),
+(26, 46, 'completed', 9795.9, '2025-02-09 21:28:54', '2025-02-09 21:28:54'),
+(27, 32, 'cancelled', 5978.6, '2024-11-28 16:40:22', '2024-11-28 16:40:22'),
+(28, 36, 'shipped', 418.32, '2024-08-17 06:59:14', '2024-08-17 06:59:14'),
+(29, 26, 'completed', 5157.89, '2024-08-20 13:17:07', '2024-08-20 13:17:07'),
+(30, 47, 'cancelled', 9356.05, '2024-12-14 03:50:56', '2024-12-14 03:50:56'),
+(31, 32, 'paid', 7157.19, '2024-11-17 05:27:56', '2024-11-17 05:27:56'),
+(32, 34, 'pending', 4248.95, '2024-06-15 21:31:45', '2024-06-15 21:31:45'),
+(33, 21, 'cancelled', 681.93, '2024-08-09 02:41:59', '2024-08-09 02:41:59'),
+(34, 42, 'completed', 8896.95, '2025-04-16 04:39:10', '2025-04-16 04:39:10'),
+(35, 8, 'completed', 6245.83, '2024-09-03 00:47:38', '2024-09-03 00:47:38'),
+(36, 42, 'shipped', 4510.84, '2024-07-21 22:04:54', '2024-07-21 22:04:54'),
+(37, 28, 'pending', 1655.27, '2025-03-11 13:47:01', '2025-03-11 13:47:01'),
+(38, 47, 'paid', 4718.94, '2024-07-19 22:34:45', '2024-07-19 22:34:45'),
+(39, 29, 'paid', 5100.98, '2024-07-02 06:36:01', '2024-07-02 06:36:01'),
+(40, 38, 'shipped', 9221.27, '2024-11-30 18:30:02', '2024-11-30 18:30:02'),
+(41, 46, 'completed', 1355.03, '2025-01-02 13:37:37', '2025-01-02 13:37:37'),
+(42, 19, 'completed', 9600.04, '2024-06-16 11:59:34', '2024-06-16 11:59:34'),
+(43, 44, 'shipped', 7969.93, '2025-05-06 18:26:53', '2025-05-06 18:26:53'),
+(44, 11, 'cancelled', 2111.73, '2025-03-28 08:14:33', '2025-03-28 08:14:33'),
+(45, 45, 'pending', 6687.21, '2025-03-22 22:18:34', '2025-03-22 22:18:34'),
+(46, 9, 'paid', 2034.87, '2025-01-09 14:38:21', '2025-01-09 14:38:21'),
+(47, 39, 'completed', 1053.99, '2024-09-12 17:28:11', '2024-09-12 17:28:11'),
+(48, 27, 'completed', 3071.34, '2024-07-17 21:16:50', '2024-07-17 21:16:50'),
+(49, 14, 'cancelled', 518.14, '2025-02-23 00:11:47', '2025-02-23 00:11:47'),
+(50, 2, 'shipped', 8815.02, '2024-12-11 20:03:34', '2024-12-11 20:03:34'),
+(51, 23, 'paid', 1788.41, '2024-07-18 10:08:54', '2024-07-18 10:08:54'),
+(52, 33, 'pending', 8077.81, '2024-08-28 14:17:22', '2024-08-28 14:17:22'),
+(53, 22, 'completed', 1183.99, '2024-11-23 04:35:33', '2024-11-23 04:35:33'),
+(54, 15, 'pending', 5641.72, '2024-09-05 09:17:55', '2024-09-05 09:17:55'),
+(55, 32, 'shipped', 9936.95, '2024-07-05 07:15:05', '2024-07-05 07:15:05'),
+(56, 23, 'pending', 7712.44, '2025-05-31 15:00:17', '2025-05-31 15:00:17'),
+(57, 36, 'shipped', 8968.36, '2025-03-24 14:30:06', '2025-03-24 14:30:06'),
+(58, 45, 'cancelled', 6062.68, '2024-11-12 01:34:01', '2024-11-12 01:34:01'),
+(59, 7, 'pending', 9269.99, '2025-05-10 18:31:57', '2025-05-10 18:31:57'),
+(60, 29, 'completed', 9628.34, '2024-09-09 14:38:05', '2024-09-09 14:38:05'),
+(61, 49, 'pending', 9747.86, '2024-06-29 01:27:03', '2024-06-29 01:27:03'),
+(62, 40, 'cancelled', 7832.45, '2024-12-07 11:53:32', '2024-12-07 11:53:32'),
+(63, 7, 'cancelled', 467.6, '2024-08-14 22:23:12', '2024-08-14 22:23:12'),
+(64, 7, 'paid', 6317.76, '2025-01-17 12:25:15', '2025-01-17 12:25:15'),
+(65, 14, 'shipped', 1612.47, '2024-07-12 16:41:46', '2024-07-12 16:41:46'),
+(66, 19, 'completed', 7631.55, '2024-07-17 21:23:02', '2024-07-17 21:23:02'),
+(67, 32, 'pending', 1585.24, '2025-04-18 06:00:35', '2025-04-18 06:00:35'),
+(68, 24, 'shipped', 8200.65, '2024-12-19 11:49:24', '2024-12-19 11:49:24'),
+(69, 8, 'paid', 4419.13, '2024-06-17 19:05:47', '2024-06-17 19:05:47'),
+(70, 27, 'pending', 2490.89, '2025-06-04 19:08:29', '2025-06-04 19:08:29'),
+(71, 31, 'shipped', 2903.25, '2025-02-19 12:01:09', '2025-02-19 12:01:09'),
+(72, 11, 'pending', 2696.86, '2024-10-14 12:33:50', '2024-10-14 12:33:50'),
+(73, 46, 'completed', 3638.4, '2025-06-08 03:10:10', '2025-06-08 03:10:10'),
+(74, 43, 'paid', 1558.53, '2024-12-11 13:32:59', '2024-12-11 13:32:59'),
+(75, 49, 'cancelled', 4246.14, '2025-02-18 10:16:20', '2025-02-18 10:16:20'),
+(76, 15, 'paid', 8027.6, '2025-03-27 09:45:41', '2025-03-27 09:45:41'),
+(77, 27, 'completed', 8985.75, '2025-04-22 19:14:12', '2025-04-22 19:14:12'),
+(78, 34, 'shipped', 9440.22, '2025-03-07 02:54:19', '2025-03-07 02:54:19'),
+(79, 29, 'paid', 7713.01, '2025-02-01 22:28:40', '2025-02-01 22:28:40'),
+(80, 46, 'cancelled', 9439.25, '2025-03-14 09:16:02', '2025-03-14 09:16:02'),
+(81, 6, 'shipped', 3182.31, '2025-02-18 12:28:05', '2025-02-18 12:28:05'),
+(82, 50, 'paid', 4369.02, '2025-05-27 10:21:55', '2025-05-27 10:21:55'),
+(83, 26, 'pending', 6618.75, '2024-07-18 17:00:52', '2024-07-18 17:00:52'),
+(84, 42, 'paid', 9029.99, '2025-02-14 06:20:56', '2025-02-14 06:20:56'),
+(85, 4, 'cancelled', 9727.98, '2025-05-24 09:43:35', '2025-05-24 09:43:35'),
+(86, 27, 'completed', 8863.54, '2024-07-06 20:54:03', '2024-07-06 20:54:03'),
+(87, 45, 'cancelled', 8741.79, '2024-07-15 03:59:30', '2024-07-15 03:59:30'),
+(88, 47, 'shipped', 9096.85, '2024-11-06 11:42:25', '2024-11-06 11:42:25'),
+(89, 1, 'shipped', 9007.07, '2024-12-20 17:47:16', '2024-12-20 17:47:16'),
+(90, 40, 'paid', 7017.94, '2025-05-01 01:14:48', '2025-05-01 01:14:48'),
+(91, 29, 'paid', 8881.42, '2024-07-20 06:52:43', '2024-07-20 06:52:43'),
+(92, 40, 'cancelled', 6537.77, '2025-03-12 02:59:31', '2025-03-12 02:59:31'),
+(93, 45, 'shipped', 8882.37, '2025-01-17 14:53:03', '2025-01-17 14:53:03'),
+(94, 42, 'completed', 7765.23, '2025-02-04 10:11:20', '2025-02-04 10:11:20'),
+(95, 20, 'pending', 417.85, '2025-01-02 11:21:37', '2025-01-02 11:21:37'),
+(96, 22, 'completed', 7264.73, '2025-04-09 09:37:20', '2025-04-09 09:37:20'),
+(97, 48, 'paid', 5228.67, '2025-02-15 19:13:59', '2025-02-15 19:13:59'),
+(98, 35, 'shipped', 2176.66, '2025-01-06 18:04:14', '2025-01-06 18:04:14'),
+(99, 33, 'cancelled', 3156.91, '2024-09-27 04:56:36', '2024-09-27 04:56:36'),
+(100, 22, 'paid', 283.05, '2024-09-10 22:07:06', '2024-09-10 22:07:06');
+

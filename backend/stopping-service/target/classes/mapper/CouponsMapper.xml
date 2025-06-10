@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wyc.mapper.CouponsMapper">
+
+    <resultMap id="CouponResultMap" type="com.wyc.domain.po.Coupons">
+        <id property="couponId" column="coupon_id"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="value" column="discount_amount"/>
+        <result property="threshold" column="min_order_amount"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="totalCount" column="total_quantity"/>
+        <result property="usedCount" column="used_count"/>
+        <result property="perLimit" column="per_limit"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="couponType" column="coupon_type"/>
+        <result property="discountPercentage" column="discount_percentage"/>
+        <result property="applicableScope" column="applicable_scope"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="couponId">
+        INSERT INTO coupons (
+            name, 
+            description, 
+            discount_amount, 
+            min_order_amount, 
+            start_time, 
+            end_time, 
+            total_quantity, 
+            remaining_quantity,
+            is_active, 
+            created_at, 
+            updated_at, 
+            coupon_type, 
+            discount_percentage, 
+            applicable_scope,
+            per_limit
+        ) VALUES (
+            #{name}, 
+            #{description}, 
+            #{value}, 
+            #{threshold}, 
+            #{startTime}, 
+            #{endTime}, 
+            #{totalCount}, 
+            #{totalCount}, 
+            1, 
+            #{createdAt}, 
+            #{updatedAt}, 
+            #{couponType}, 
+            #{discountPercentage}, 
+            #{applicableScope},
+            #{perLimit}
+        )
+    </insert>
+
+    <select id="selectById" resultMap="CouponResultMap">
+        SELECT 
+            coupon_id,
+            name,
+            description,
+            discount_amount,
+            min_order_amount,
+            start_time,
+            end_time,
+            total_quantity,
+            remaining_quantity,
+            (total_quantity - remaining_quantity) as used_count,
+            per_limit,
+            created_at,
+            updated_at,
+            coupon_type,
+            discount_percentage,
+            applicable_scope
+        FROM coupons
+        WHERE coupon_id = #{couponId}
+    </select>
+
+    <select id="selectAvailable" resultMap="CouponResultMap">
+        SELECT 
+            coupon_id,
+            name,
+            description,
+            discount_amount,
+            min_order_amount,
+            start_time,
+            end_time,
+            total_quantity,
+            remaining_quantity,
+            (total_quantity - remaining_quantity) as used_count,
+            per_limit,
+            created_at,
+            updated_at,
+            coupon_type,
+            discount_percentage,
+            applicable_scope
+        FROM coupons
+        WHERE is_active = 1
+        AND start_time &lt;= #{now}
+        AND end_time &gt;= #{now}
+        AND remaining_quantity > 0
+        ORDER BY created_at DESC
+    </select>
+
+    <update id="updateUsedCount">
+        UPDATE coupons
+        SET remaining_quantity = remaining_quantity - #{count}
+        WHERE coupon_id = #{couponId}
+        AND remaining_quantity >= #{count}
+    </update>
+
+    <update id="updateById">
+        UPDATE coupons
+        SET 
+            name = #{name},
+            description = #{description},
+            discount_amount = #{value},
+            min_order_amount = #{threshold},
+            start_time = #{startTime},
+            end_time = #{endTime},
+            is_active = 1,
+            updated_at = NOW(),
+            coupon_type = #{couponType},
+            discount_percentage = #{discountPercentage},
+            applicable_scope = #{applicableScope},
+            per_limit = #{perLimit}
+        WHERE coupon_id = #{couponId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM coupons
+        WHERE coupon_id = #{couponId}
+    </delete>
+
+</mapper> 

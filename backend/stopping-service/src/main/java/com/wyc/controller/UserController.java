@@ -117,6 +117,15 @@ public class UserController {
         return R.ok(coupons);
     }
 
+    @ApiOperation("领取优惠券")
+    @PostMapping("/coupons/{couponId}")
+    public R<?> claimCoupon(
+            @ApiParam(value = "优惠券ID", required = true) @PathVariable Long couponId) {
+        Long userId = SecurityContext.getUserId();
+        userService.claimCoupon(userId, couponId);
+        return R.ok("优惠券领取成功");
+    }
+
     @ApiOperation("获取浏览记录")
     @GetMapping("/browsing-history")
     public R<List<BrowsingRecordVO>> getBrowsingHistory() {

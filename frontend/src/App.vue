@@ -41,7 +41,7 @@
           </el-dropdown>
 
           <el-dropdown trigger="hover" class="nav-item">
-            <div class="nav-link">
+            <div class="nav-link" @click="goToCart">
               <el-icon><ShoppingCart /></el-icon>
               <span>购物车</span>
               <el-badge :value="cartItemsCount" :hidden="!cartItemsCount" class="cart-badge" />
@@ -136,10 +136,13 @@
       </div>
     </el-footer>
   </el-container>
+ 
+ 
+
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from './stores/user'
 import { useCartStore } from './stores/cart'
@@ -189,15 +192,27 @@ const fetchCategories = async () => {
 // 组件挂载时获取分类数据
 onMounted(() => {
   fetchCategories()
+  // 只有在用户已登录的情况下才获取购物车数据
+  if (userStore.isAuthenticated) {
+    cartStore.fetchCartItems()
+  }
+})
+
+// 监听登录状态变化
+watch(() => userStore.isAuthenticated, (isLoggedIn) => {
+  if (isLoggedIn) {
+    // 登录后获取购物车数据
+    cartStore.fetchCartItems()
+  }
 })
 
 const isAuthenticated = computed(() => userStore.isAuthenticated)
-const cartItemsCount = computed(() => cartStore.cartItemsCount)
+const cartItemsCount = computed(() => isAuthenticated.value ? cartStore.totalItems : 0)
 const currentYear = ref(new Date().getFullYear())
 const searchQuery = ref('')
 
-const cartItems = computed(() => cartStore.items)
-const cartTotal = computed(() => cartStore.totalPrice)
+const cartItems = computed(() => isAuthenticated.value ? cartStore.items : [])
+const cartTotal = computed(() => isAuthenticated.value ? cartStore.totalPrice : 0)
 
 const handleSearch = () => {
   if (searchQuery.value.trim()) {

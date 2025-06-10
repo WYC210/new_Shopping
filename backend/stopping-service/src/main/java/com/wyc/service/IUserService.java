@@ -62,6 +62,14 @@ public interface IUserService {
     List<UserCouponVO> getUserCoupons(Long userId, String status);
 
     /**
+     * 领取优惠券
+     *
+     * @param userId   用户ID
+     * @param couponId 优惠券ID
+     */
+    void claimCoupon(Long userId, Long couponId);
+
+    /**
      * 获取用户浏览历史
      *
      * @param userId 用户ID

@@ -62,14 +62,20 @@ const handleLogin = async () => {
     await loginFormRef.value.validate()
     loading.value = true
     
-    // 调用store中的login方法,它会调用authApi.login
-    await userStore.login(loginForm)
+    console.log('提交登录表单:', loginForm)
+    // 调用store中的login方法
+    const loginResult = await userStore.login(loginForm)
     
-    // 登录成功后直接跳转，不需要额外提示
-    router.push('/')
+    if (loginResult) {
+      // 登录成功后跳转
+      router.push('/')
+    }
   } catch (error) {
+    console.error('登录过程出错:', error)
     if (error.message) {
       ElMessage.error(error.message)
+    } else {
+      ElMessage.error('登录失败，请稍后再试')
     }
   } finally {
     loading.value = false

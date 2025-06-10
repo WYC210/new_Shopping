@@ -31,4 +31,26 @@
         ORDER BY uc.created_at DESC
     </select>
     
+    <select id="countUserCoupon" resultType="int">
+        SELECT COUNT(*)
+        FROM usercoupons
+        WHERE user_id = #{userId} AND coupon_id = #{couponId}
+    </select>
+    
+    <insert id="addUserCoupon">
+        INSERT INTO usercoupons (
+            user_id,
+            coupon_id,
+            coupon_name,
+            status,
+            created_at
+        ) VALUES (
+            #{userId},
+            #{couponId},
+            #{couponName},
+            'unused',
+            NOW()
+        )
+    </insert>
+    
 </mapper> 

@@ -28,6 +28,11 @@ export const useCartStore = defineStore('cart', {
     // 获取选中商品的总金额
     selectedAmount: (state) => {
       return state.selectedItems.reduce((total, item) => total + (item.price * item.quantity), 0)
+    },
+    
+    // 获取购物车商品总金额
+    totalPrice: (state) => {
+      return state.items.reduce((total, item) => total + (item.price * item.quantity), 0)
     }
   },
 
@@ -129,11 +134,11 @@ export const useCartStore = defineStore('cart', {
     },
 
     // 删除购物车商品
-    async removeItem(cartItemId) {
+    async removeItem(cartItemId, silent = false) {
       try {
         // 检查cartItemId是否有效
         if (!cartItemId && cartItemId !== 0) {
-          ElMessage.error('商品ID无效，无法删除')
+          if (!silent) ElMessage.error('商品ID无效，无法删除')
           return
         }
 
@@ -144,12 +149,12 @@ export const useCartStore = defineStore('cart', {
         if (response.code === 200) {
           // 删除成功后刷新购物车列表
           await this.fetchCartItems()
-          ElMessage.success('删除成功')
+          if (!silent) ElMessage.success('删除成功')
         } else {
           throw new Error(response.msg || '删除商品失败')
         }
       } catch (error) {
-        ElMessage.error(error.message || '删除商品失败')
+        if (!silent) ElMessage.error(error.message || '删除商品失败')
         throw error
       }
     },

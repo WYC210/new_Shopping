@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wyc.mapper.DashboardMapper">
+
+    <resultMap id="DashboardOverviewMap" type="com.wyc.domain.vo.DashboardOverviewVO">
+        <result property="orderCount" column="order_count"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="paidOrderCount" column="paid_order_count"/>
+        <result property="paidTotalAmount" column="paid_total_amount"/>
+        <result property="userCount" column="user_count"/>
+        <result property="productCount" column="product_count"/>
+    </resultMap>
+
+    <select id="getDashboardOverview" resultMap="DashboardOverviewMap">
+        SELECT
+            (SELECT COUNT(*) FROM orders) AS order_count,
+            (SELECT IFNULL(SUM(total_amount),0) FROM orders) AS total_amount,
+            (SELECT COUNT(*) FROM orders WHERE status IN ('PAID','COMPLETED')) AS paid_order_count,
+            (SELECT IFNULL(SUM(total_amount),0) FROM orders WHERE status IN ('PAID','COMPLETED')) AS paid_total_amount,
+            (SELECT COUNT(*) FROM users WHERE is_deleted = 0) AS user_count,
+            (SELECT COUNT(*) FROM products) AS product_count
+    </select>
+
+    <resultMap id="CityUserStatMap" type="com.wyc.domain.vo.CityUserStatVO">
+        <result property="city" column="city"/>
+        <result property="userCount" column="user_count"/>
+    </resultMap>
+
+    <select id="getCityUserDistribution" resultMap="CityUserStatMap">
+        SELECT city, COUNT(DISTINCT user_id) AS user_count
+        FROM useraddresses
+        GROUP BY city
+        ORDER BY user_count DESC
+    </select>
+    
+    <resultMap id="DashboardTrendMap" type="com.wyc.domain.vo.DashboardTrendVO">
+        <result property="date" column="date"/>
+        <result property="orderCount" column="order_count"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="paidOrderCount" column="paid_order_count"/>
+        <result property="paidTotalAmount" column="paid_total_amount"/>
+        <result property="userCount" column="user_count"/>
+    </resultMap>
+    
+    <select id="getDashboardTrend" resultMap="DashboardTrendMap">
+        WITH daily_orders AS (
+            SELECT 
+                DATE(created_at) AS order_date, 
+                COUNT(order_id) AS order_count,
+                IFNULL(SUM(total_amount), 0) AS total_amount,
+                SUM(CASE WHEN status IN ('PAID', 'COMPLETED') THEN 1 ELSE 0 END) AS paid_order_count,
+                IFNULL(SUM(CASE WHEN status IN ('PAID', 'COMPLETED') THEN total_amount ELSE 0 END), 0) AS paid_total_amount
+            FROM orders
+            WHERE created_at BETWEEN #{startDate} AND #{endDate}
+            GROUP BY DATE(created_at)
+        ),
+        daily_users AS (
+            SELECT 
+                DATE(created_at) AS user_date, 
+                COUNT(*) AS user_count
+            FROM users
+            WHERE created_at BETWEEN #{startDate} AND #{endDate}
+            GROUP BY DATE(created_at)
+        )
+        SELECT 
+            o.order_date AS date,
+            o.order_count,
+            o.total_amount,
+            o.paid_order_count,
+            o.paid_total_amount,
+            IFNULL(u.user_count, 0) AS user_count
+        FROM daily_orders o
+        LEFT JOIN daily_users u ON o.order_date = u.user_date
+        ORDER BY date ASC
+    </select>
+</mapper> 

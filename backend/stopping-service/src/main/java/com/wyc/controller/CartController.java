@@ -3,6 +3,7 @@ package com.wyc.controller;
 import com.wyc.domain.po.CartItems;
 import com.wyc.service.ICartService;
 import com.wyc.utils.R;
+import com.wyc.security.SecurityUserDetails;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -29,13 +30,13 @@ public class CartController {
     @ApiOperation("添加商品到购物车")
     @PostMapping("/items")
     public R<Long> addToCart(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal SecurityUserDetails userDetails,
             @ApiParam(value = "商品ID", required = true) @RequestParam(required = false) Long productId,
             @ApiParam(value = "SKU ID") @RequestParam(required = false) Long skuId,
             @ApiParam(value = "数量", required = true) @RequestParam(required = false) Integer quantity,
             @RequestBody(required = false) Map<String, Object> requestBody) {
 
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = userDetails.getUserId();
 
         // 尝试从请求体中获取参数
         if (productId == null && requestBody != null && requestBody.containsKey("productId")) {
@@ -69,10 +70,10 @@ public class CartController {
     @ApiOperation("更新购物车商品数量")
     @PutMapping("/items/{cartItemId}/quantity")
     public R<Void> updateQuantity(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal SecurityUserDetails userDetails,
             @ApiParam(value = "购物车项ID", required = true) @PathVariable Long cartItemId,
             @ApiParam(value = "数量", required = true) @RequestParam Integer quantity) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = userDetails.getUserId();
         cartService.updateQuantity(userId, cartItemId, quantity);
         return R.ok();
     }
@@ -80,10 +81,10 @@ public class CartController {
     @ApiOperation("更新购物车商品选中状态")
     @PutMapping("/items/{cartItemId}/selected")
     public R<Void> updateSelected(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal SecurityUserDetails userDetails,
             @ApiParam(value = "购物车项ID", required = true) @PathVariable Long cartItemId,
             @ApiParam(value = "是否选中（0-未选中，1-已选中）", required = true) @RequestParam Integer isSelected) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = userDetails.getUserId();
         cartService.updateSelected(userId, cartItemId, isSelected);
         return R.ok();
     }
@@ -91,9 +92,9 @@ public class CartController {
     @ApiOperation("更新所有购物车商品选中状态")
     @PutMapping("/items/selected")
     public R<Void> updateAllSelected(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal SecurityUserDetails userDetails,
             @ApiParam(value = "是否选中（0-未选中，1-已选中）", required = true) @RequestParam Integer isSelected) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = userDetails.getUserId();
         cartService.updateAllSelected(userId, isSelected);
         return R.ok();
     }
@@ -101,10 +102,10 @@ public class CartController {
     @ApiOperation("删除购物车商品")
     @DeleteMapping("/items/{cartItemId}")
     public R<Void> deleteCartItem(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal SecurityUserDetails userDetails,
             @ApiParam(value = "购物车项ID", required = true) @PathVariable String cartItemId) {
 
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = userDetails.getUserId();
 
         // 处理前端传入的undefined值
         if (cartItemId == null || "undefined".equals(cartItemId)) {
@@ -125,8 +126,8 @@ public class CartController {
     @ApiOperation("清空购物车")
     @DeleteMapping("/items")
     public R<Void> clearCart(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+            @AuthenticationPrincipal SecurityUserDetails userDetails) {
+        Long userId = userDetails.getUserId();
         cartService.clearCart(userId);
         return R.ok();
     }
@@ -134,8 +135,8 @@ public class CartController {
     @ApiOperation("删除选中的购物车商品")
     @DeleteMapping("/items/selected")
     public R<Void> deleteSelected(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+            @AuthenticationPrincipal SecurityUserDetails userDetails) {
+        Long userId = userDetails.getUserId();
         cartService.deleteSelected(userId);
         return R.ok();
     }
@@ -143,8 +144,8 @@ public class CartController {
     @ApiOperation("获取购物车列表")
     @GetMapping("/items")
     public R<List<CartItems>> getCartItems(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+            @AuthenticationPrincipal SecurityUserDetails userDetails) {
+        Long userId = userDetails.getUserId();
         List<CartItems> cartItems = cartService.getCartItems(userId);
 
         return R.ok(cartItems);
@@ -153,8 +154,8 @@ public class CartController {
     @ApiOperation("获取选中的购物车商品列表")
     @GetMapping("/items/selected")
     public R<List<CartItems>> getSelectedItems(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+            @AuthenticationPrincipal SecurityUserDetails userDetails) {
+        Long userId = userDetails.getUserId();
         List<CartItems> selectedItems = cartService.getSelectedItems(userId);
 
         return R.ok(selectedItems);

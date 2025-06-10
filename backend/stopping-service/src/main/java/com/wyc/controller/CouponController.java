@@ -3,6 +3,7 @@ package com.wyc.controller;
 import com.wyc.domain.po.Coupons;
 import com.wyc.domain.po.UserCoupons;
 import com.wyc.security.SecurityContext;
+import com.wyc.security.SecurityUserDetails;
 import com.wyc.service.ICouponService;
 import com.wyc.utils.R;
 import io.swagger.annotations.Api;
@@ -10,7 +11,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,7 +46,6 @@ public class CouponController {
     @ApiOperation("领取优惠券")
     @PostMapping("/{couponId}/receive")
     public R<Long> receiveCoupon(
-            @AuthenticationPrincipal UserDetails userDetails,
             @ApiParam(value = "优惠券ID", required = true) @PathVariable Long couponId) {
         Long userId = SecurityContext.getUserId();
         return R.ok(couponService.receiveCoupon(userId, couponId));
@@ -55,29 +54,26 @@ public class CouponController {
     @ApiOperation("获取用户的优惠券列表")
     @GetMapping("/user")
     public R<List<UserCoupons>> getUserCoupons(
-            @AuthenticationPrincipal UserDetails userDetails,
             @ApiParam(value = "优惠券状态", required = false) @RequestParam(required = false) String status) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = SecurityContext.getUserId();
         return R.ok(couponService.getUserCoupons(userId, status));
     }
 
     @ApiOperation("计算订单优惠金额")
     @GetMapping("/calculate")
     public R<Double> calculateDiscount(
-            @AuthenticationPrincipal UserDetails userDetails,
             @ApiParam(value = "优惠券ID", required = true) @RequestParam Long couponId,
             @ApiParam(value = "订单金额", required = true) @RequestParam Double amount) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = SecurityContext.getUserId();
         return R.ok(couponService.calculateDiscount(userId, couponId, amount));
     }
 
     @ApiOperation("检查优惠券是否可用")
     @GetMapping("/check")
     public R<Boolean> isCouponAvailable(
-            @AuthenticationPrincipal UserDetails userDetails,
             @ApiParam(value = "优惠券ID", required = true) @RequestParam Long couponId,
             @ApiParam(value = "订单金额", required = true) @RequestParam Double amount) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = SecurityContext.getUserId();
         return R.ok(couponService.isCouponAvailable(userId, couponId, amount));
     }
 }

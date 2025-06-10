@@ -24,7 +24,7 @@
       <div v-else class="coupon-items">
         <div
           v-for="coupon in coupons"
-          :key="coupon.id"
+          :key="coupon.userCouponId || coupon.id"
           class="coupon-item"
           :class="{
             'is-used': coupon.status === 'used',
@@ -34,22 +34,42 @@
           <div class="coupon-content">
             <div class="coupon-left">
               <div class="coupon-amount">
-                <span class="currency">¥</span>
-                <span class="number">{{ coupon.amount }}</span>
+                <template v-if="coupon.couponType === 'fixed'">
+                  <span class="currency">¥</span>
+                  <span class="number">{{ coupon.discountAmount }}</span>
+                </template>
+                <template v-else-if="coupon.couponType === 'percentage'">
+                  <span class="number">{{ (coupon.discountPercentage / 10).toFixed(1) }}</span>
+                  <span class="unit">折</span>
+                </template>
+                <template v-else-if="coupon.couponType === 'shipping'">
+                  <span class="number">免运费</span>
+                </template>
+                <template v-else>
+                  <span class="number">其他</span>
+                </template>
               </div>
               <div class="coupon-condition">
-                满{{ coupon.minAmount }}元可用
+                <template v-if="coupon.couponType === 'shipping' && coupon.threshold">
+                  满{{ coupon.threshold }}元包邮
+                </template>
+                <template v-else-if="coupon.threshold">
+                  满{{ coupon.threshold }}元可用
+                </template>
+                <template v-else>
+                  无门槛
+                </template>
+              </div>
+              <div class="coupon-scope" v-if="coupon.applicableScope && coupon.applicableScope !== 'all'">
+                适用范围：{{ coupon.applicableScope === 'category' ? '指定品类' : coupon.applicableScope }}
               </div>
             </div>
             
             <div class="coupon-right">
               <div class="coupon-info">
-                <div class="coupon-name">{{ coupon.name }}</div>
+                <div class="coupon-name">{{ coupon.couponName || coupon.name }}</div>
                 <div class="coupon-time">
-                  {{ coupon.startTime }} - {{ coupon.endTime }}
-                </div>
-                <div class="coupon-scope">
-                  适用范围：{{ coupon.scope }}
+                  {{ coupon.startTime || coupon.createdAt }}<template v-if="coupon.endTime"> - {{ coupon.endTime }}</template>
                 </div>
               </div>
               

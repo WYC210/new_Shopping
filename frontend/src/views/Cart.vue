@@ -130,11 +130,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
+import { useUserStore } from '../stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const cartStore = useCartStore()
+const userStore = useUserStore()
 const loading = ref(false)
 
 const cartItems = computed(() => cartStore.items)
@@ -259,6 +261,13 @@ const navigateToProduct = (productId) => {
 
 onMounted(async () => {
   try {
+    // 检查用户是否已登录
+    if (!userStore.isAuthenticated) {
+      ElMessage.warning('请先登录')
+      router.push('/login')
+      return
+    }
+    
     // 获取购物车数据
     await cartStore.fetchCartItems()
   } catch (error) {

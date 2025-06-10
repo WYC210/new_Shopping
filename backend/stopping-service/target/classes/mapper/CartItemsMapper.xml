@@ -15,91 +15,91 @@
     </resultMap>
     
     <insert id="insert" parameterType="com.wyc.domain.po.CartItems" useGeneratedKeys="true" keyProperty="itemId">
-        INSERT INTO CartItems (
+        INSERT INTO cartitems (
             user_id, product_sku_id, product_name, quantity, is_selected, is_deleted, created_at, updated_at
         ) VALUES (
-            #{userId}, #{skuId}, #{productName}, #{quantity}, #{isSelected}, FALSE, NOW(), NOW()
+            #{userId}, #{skuId}, #{productName}, #{quantity}, #{isSelected}, #{isDeleted}, NOW(), NOW()
         )
     </insert>
     
     <select id="selectById" resultMap="CartItemsResultMap" parameterType="long">
-        SELECT * FROM CartItems WHERE cart_item_id = #{cartItemId} AND is_deleted = FALSE
+        SELECT * FROM cartitems WHERE cart_item_id = #{cartItemId} AND is_deleted = 0
     </select>
     
     <select id="selectByUserId" resultMap="CartItemsResultMap">
-        SELECT * FROM CartItems WHERE user_id = #{userId} AND is_deleted = FALSE
+        SELECT * FROM cartitems WHERE user_id = #{userId} AND is_deleted = 0
     </select>
     
     <select id="selectByUserIdAndProductId" resultMap="CartItemsResultMap">
-        SELECT * FROM CartItems WHERE user_id = #{userId} AND product_sku_id = #{productId} AND is_deleted = FALSE
+        SELECT * FROM cartitems WHERE user_id = #{userId} AND product_sku_id = #{productId} AND is_deleted = 0
     </select>
     
     <select id="selectByItemIdAndUserId" resultMap="CartItemsResultMap">
-        SELECT * FROM CartItems WHERE cart_item_id = #{itemId} AND user_id = #{userId} AND is_deleted = FALSE
+        SELECT * FROM cartitems WHERE cart_item_id = #{itemId} AND user_id = #{userId} AND is_deleted = 0
     </select>
     
     <update id="updateById" parameterType="com.wyc.domain.po.CartItems">
-        UPDATE CartItems
+        UPDATE cartitems
         SET quantity = #{quantity},
             is_selected = #{isSelected},
             updated_at = NOW()
-        WHERE cart_item_id = #{itemId} AND is_deleted = FALSE
+        WHERE cart_item_id = #{itemId} AND is_deleted = 0
     </update>
     
     <update id="updateQuantity">
-        UPDATE CartItems
+        UPDATE cartitems
         SET quantity = #{quantity},
             updated_at = NOW()
-        WHERE cart_item_id = #{cartItemId} AND is_deleted = FALSE
+        WHERE cart_item_id = #{cartItemId} AND is_deleted = 0
     </update>
     
     <update id="updateSelected">
-        UPDATE CartItems
+        UPDATE cartitems
         SET is_selected = #{isSelected},
             updated_at = NOW()
-        WHERE cart_item_id = #{cartItemId} AND is_deleted = FALSE
+        WHERE cart_item_id = #{cartItemId} AND is_deleted = 0
     </update>
     
     <update id="updateAllSelected">
-        UPDATE CartItems
+        UPDATE cartitems
         SET is_selected = #{isSelected},
             updated_at = NOW()
-        WHERE user_id = #{userId} AND is_deleted = FALSE
+        WHERE user_id = #{userId} AND is_deleted = 0
     </update>
     
     <update id="deleteById" parameterType="long">
-        UPDATE CartItems 
-        SET is_deleted = TRUE, 
+        UPDATE cartitems 
+        SET is_deleted = 1, 
             updated_at = NOW() 
-        WHERE cart_item_id = #{cartItemId} AND is_deleted = FALSE
+        WHERE cart_item_id = #{cartItemId} AND is_deleted = 0
     </update>
     
     <update id="deleteByUserId" parameterType="long">
-        UPDATE CartItems 
-        SET is_deleted = TRUE, 
+        UPDATE cartitems 
+        SET is_deleted = 1, 
             updated_at = NOW() 
-        WHERE user_id = #{userId} AND is_deleted = FALSE
+        WHERE user_id = #{userId} AND is_deleted = 0
     </update>
     
     <update id="deleteSelectedByUserId" parameterType="long">
-        UPDATE CartItems 
-        SET is_deleted = TRUE, 
+        UPDATE cartitems 
+        SET is_deleted = 1, 
             updated_at = NOW() 
-        WHERE user_id = #{userId} AND is_selected = 1 AND is_deleted = FALSE
+        WHERE user_id = #{userId} AND is_selected = 1 AND is_deleted = 0
     </update>
     
     <update id="update" parameterType="com.wyc.domain.po.CartItems">
-        UPDATE CartItems
+        UPDATE cartitems
         SET quantity = #{quantity},
             is_selected = #{isSelected},
             updated_at = NOW()
-        WHERE cart_item_id = #{itemId} AND is_deleted = FALSE
+        WHERE cart_item_id = #{itemId} AND is_deleted = 0
     </update>
     
     <update id="softDelete">
-        UPDATE CartItems 
-        SET is_deleted = TRUE, 
+        UPDATE cartitems 
+        SET is_deleted = 1, 
             updated_at = NOW() 
-        WHERE cart_item_id = #{itemId} AND user_id = #{userId} AND is_deleted = FALSE
+        WHERE cart_item_id = #{itemId} AND user_id = #{userId} AND is_deleted = 0
     </update>
 </mapper> 

@@ -2,6 +2,7 @@ package com.wyc.service.impl;
 
 import com.wyc.domain.dto.LoginDTO;
 import com.wyc.domain.po.Users;
+import com.wyc.domain.po.Coupons;
 import com.wyc.domain.vo.BrowsingRecordVO;
 import com.wyc.domain.vo.PasswordUpdateVO;
 import com.wyc.domain.vo.UserCouponVO;
@@ -9,6 +10,7 @@ import com.wyc.domain.vo.UserDetailsVO;
 import com.wyc.domain.vo.UserProfileUpdateVO;
 import com.wyc.domain.vo.UserRegisterVO;
 import com.wyc.exception.ServiceException;
+import com.wyc.mapper.CouponsMapper;
 import com.wyc.mapper.UserCouponMapper;
 import com.wyc.mapper.UsersMapper;
 import com.wyc.mapper.VisitorBrowsingRecordMapper;
@@ -33,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +48,9 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private UserCouponMapper userCouponMapper;
+
+    @Autowired
+    private CouponsMapper couponsMapper;
 
     @Autowired
     private VisitorBrowsingRecordMapper browsingRecordMapper;
@@ -236,6 +242,58 @@ public class UserServiceImpl implements IUserService {
     @Override
     public List<UserCouponVO> getUserCoupons(Long userId, String status) {
         return userCouponMapper.getUserCoupons(userId, status);
+    }
+
+    @Override
+    @Transactional
+    public void claimCoupon(Long userId, Long couponId) {
+        logger.info("用户{}开始领取优惠券{}", userId, couponId);
+
+        // 检查用户是否存在
+        Users user = usersMapper.selectById(userId);
+        if (user == null) {
+            logger.error("用户不存在: {}", userId);
+            throw new ServiceException("用户不存在");
+        }
+
+        // 检查优惠券是否存在
+        Coupons coupon = couponsMapper.selectById(couponId);
+        if (coupon == null) {
+            logger.error("优惠券不存在: {}", couponId);
+            throw new ServiceException("优惠券不存在");
+        }
+
+        // 检查优惠券是否有效
+        Date now = new Date();
+        if (coupon.getStartTime().after(now) || coupon.getEndTime().before(now)) {
+            logger.error("优惠券不在有效期内: {}", couponId);
+            throw new ServiceException("优惠券不在有效期内");
+        }
+
+        // 检查优惠券是否已领完
+        if (coupon.getUsedCount() >= coupon.getTotalCount()) {
+            logger.error("优惠券已领完: {}", couponId);
+            throw new ServiceException("优惠券已领完");
+        }
+
+        // 检查用户是否已领取过该优惠券
+        int count = userCouponMapper.countUserCoupon(userId, couponId);
+        if (count > 0) {
+            logger.error("用户已领取过该优惠券: userId={}, couponId={}", userId, couponId);
+            throw new ServiceException("您已领取过该优惠券");
+        }
+
+        // 添加用户优惠券记录
+        int result = userCouponMapper.addUserCoupon(userId, couponId, coupon.getName());
+        if (result <= 0) {
+            logger.error("领取优惠券失败: userId={}, couponId={}", userId, couponId);
+            throw new ServiceException("领取优惠券失败");
+        }
+
+        // 更新优惠券已领取数量
+        couponsMapper.updateUsedCount(couponId, 1);
+
+        logger.info("用户{}成功领取优惠券{}", userId, couponId);
     }
 
     @Override

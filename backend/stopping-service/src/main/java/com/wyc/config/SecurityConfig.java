@@ -51,6 +51,12 @@ public class SecurityConfig {
                         "/wyc/recommendations/**",
                         "/wyc/products/**")
                 .permitAll()
+                .antMatchers("/wyc/dashboard/**").permitAll()
+                // 允许不登录访问优惠券查询接口
+                .antMatchers(
+                        "/wyc/coupons/available",
+                        "/wyc/coupons/{couponId}")
+                .permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

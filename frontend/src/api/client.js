@@ -23,20 +23,25 @@ apiClient.interceptors.request.use(
       config.headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
     }
     
-    // 只在开发环境下打印请求信息
-    if (import.meta.env.DEV) {
-      console.debug('Request:', {
-        url: config.url,
-        method: config.method,
-        headers: config.headers,
-        data: config.data
-      })
+    // 修复URL路径，防止出现/wyc/wyc/这样的重复路径
+    if (config.url && config.url.startsWith('/wyc/')) {
+      config.url = config.url.replace('/wyc/', '/')
     }
+    
+    // 添加详细的请求日志
+    console.log('🚀 发送请求:', {
+      url: config.url,
+      method: config.method,
+      headers: config.headers,
+      data: config.data,
+      params: config.params,
+      timestamp: new Date().toISOString()
+    })
     
     return config
   },
   error => {
-    console.error('Request error:', error)
+    console.error('❌ 请求错误:', error)
     return Promise.reject(error)
   }
 )
@@ -46,14 +51,14 @@ apiClient.interceptors.response.use(
   response => {
     const res = response.data
     
-    // 只在开发环境下打印响应信息
-    if (import.meta.env.DEV) {
-      console.debug('Response:', {
-        url: response.config.url,
-        status: response.status,
-        data: res
-      })
-    }
+    // 添加详细的响应日志
+    console.log('✅ 收到响应:', {
+      url: response.config.url,
+      status: response.status,
+      data: res,
+      headers: response.headers,
+      timestamp: new Date().toISOString()
+    })
     
     // 检查业务状态码
     if (res.code !== 200) {
@@ -63,7 +68,14 @@ apiClient.interceptors.response.use(
     return res
   },
   error => {
-    console.error('Response error:', error)
+    // 添加详细的错误日志
+    console.error('❌ 响应错误:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+      timestamp: new Date().toISOString()
+    })
     
     // 处理 401 未授权错误
     if (error.response?.status === 401) {

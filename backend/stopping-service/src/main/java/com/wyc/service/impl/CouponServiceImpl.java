@@ -64,13 +64,14 @@ public class CouponServiceImpl implements ICouponService {
         if (now.before(coupon.getStartTime()) || now.after(coupon.getEndTime())) {
             throw new ServiceException("优惠券不在有效期内");
         }
-        if (coupon.getUsedCount() >= coupon.getTotalCount()) {
-            throw new ServiceException("优惠券已领完");
-        }
 
         // 3. 验证用户是否已达到领取限制
+        Integer perLimit = coupon.getPerLimit();
+        if (perLimit == null) {
+            throw new ServiceException("每人限领数量未设置，请联系管理员！");
+        }
         int receivedCount = userCouponsMapper.countByUserIdAndCouponId(userId, couponId);
-        if (receivedCount >= coupon.getPerLimit()) {
+        if (receivedCount >= perLimit) {
             throw new ServiceException("已达到领取限制");
         }
 

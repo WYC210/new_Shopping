@@ -1,5 +1,6 @@
 <template>
   <div class="product-detail-container" v-loading="loading">
+    <el-button class="back-btn" type="primary" @click="goBack" plain :icon="ArrowLeft" size="large">返回</el-button>
     <el-empty v-if="!loading && !product" description="商品不存在"></el-empty>
     
     <template v-else>
@@ -64,13 +65,29 @@
           <div class="price-section">
             <div class="current-price">
               <span class="label">价格</span>
-              <span class="price">¥{{ selectedSku ? selectedSku.price : product?.price }}</span>
-              <span class="original-price" v-if="selectedSku ? selectedSku.originalPrice : product?.originalPrice">
-                ¥{{ selectedSku ? selectedSku.originalPrice : product?.originalPrice }}
-              </span>
+              <template v-if="product?.skus && product.skus.length">
+                <template v-if="selectedSku">
+                  <span class="price">¥{{ selectedSku.price }}</span>
+                  <span class="original-price" v-if="selectedSku.originalPrice">
+                    ¥{{ selectedSku.originalPrice }}
+                  </span>
+                </template>
+                <template v-else>
+                  <span class="price price-placeholder">请选择规格</span>
+                </template>
+              </template>
+              <template v-else>
+                <span class="price">¥{{ product?.price }}</span>
+                <span class="original-price" v-if="product?.originalPrice">
+                  ¥{{ product?.originalPrice }}
+                </span>
+              </template>
             </div>
-            <div class="discount" v-if="selectedSku ? selectedSku.discount : product?.discount">
-              <el-tag type="danger" effect="dark">{{ selectedSku ? selectedSku.discount : product?.discount }}折</el-tag>
+            <div class="discount" v-if="selectedSku && selectedSku.discount">
+              <el-tag type="danger" effect="dark">{{ selectedSku.discount }}折</el-tag>
+            </div>
+            <div class="discount" v-else-if="!product?.skus || !product.skus.length">
+              <el-tag v-if="product?.discount" type="danger" effect="dark">{{ product.discount }}折</el-tag>
             </div>
           </div>
 
@@ -233,13 +250,15 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
 import { useProductStore } from '../stores/product'
+import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
-import { ShoppingCart, ShoppingBag, Star, StarFilled, Check, Van, Service } from '@element-plus/icons-vue'
+import { ShoppingCart, ShoppingBag, Star, StarFilled, Check, Van, Service, ArrowLeft } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const cartStore = useCartStore()
 const productStore = useProductStore()
+const userStore = useUserStore()
 
 const quantity = ref(1)
 const activeTab = ref('details')
@@ -523,6 +542,13 @@ const handleSpecChange = () => {
 const addToCart = () => {
   if (!product.value) return
 
+  // 检查用户是否已登录
+  if (!userStore.isAuthenticated) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+
   // Require SKU selection if product has SKUs
   if (product.value.skus && !selectedSku.value) {
     ElMessage.warning('请选择商品规格')
@@ -621,6 +647,14 @@ watch(currentImage, () => {
 
 // Watch for changes in selected specifications to update the selected SKU
 watch(selectedSpecs, handleSpecChange, { deep: true });
+
+const goBack = () => {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/')
+  }
+}
 </script>
 
 <style scoped>
@@ -837,27 +871,59 @@ watch(selectedSpecs, handleSpecChange, { deep: true });
   margin-left: 8px;
 }
 
-.product-price-section {
+.price-section {
   margin: 25px 0;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 20px 0 10px 0;
+  background: none;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
 }
 
 .current-price {
-  font-size: 32px;
-  font-weight: 700;
-  color: #fff;
+  font-size: 0;
   margin-bottom: 8px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.current-price .label {
+  font-size: 16px;
+  color: #fff;
+  margin-right: 10px;
+  font-weight: 500;
+}
+
+.price {
+  font-size: 32px;
+  font-weight: bold;
+  color: #ff3b30;
+  letter-spacing: 1px;
+  margin-right: 10px;
+  text-shadow: 0 2px 8px rgba(255,59,48,0.08);
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.price-placeholder {
+  font-size: 20px;
+  color: #ff9800;
+  font-weight: 500;
+  margin-left: 8px;
+  letter-spacing: 0.5px;
+  vertical-align: middle;
 }
 
 .original-price {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  color: #b0b0b0;
   text-decoration: line-through;
-  margin-bottom: 15px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.discount {
+  margin-top: 4px;
 }
 
 .discount-tag {
@@ -1112,5 +1178,21 @@ watch(selectedSpecs, handleSpecChange, { deep: true });
     padding: 8px 12px;
     font-size: 14px;
   }
+}
+
+.back-btn {
+  margin-bottom: 18px;
+  background: rgba(255,255,255,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  color: #fff !important;
+  font-size: 16px !important;
+  font-weight: 500;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: background 0.2s, color 0.2s;
+}
+.back-btn:hover {
+  background: rgba(64,158,255,0.18) !important;
+  color: #409EFF !important;
 }
 </style>

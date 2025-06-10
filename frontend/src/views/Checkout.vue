@@ -547,7 +547,7 @@ const submitOrder = async () => {
         // 清空购物车中已购买的商品
         for (const item of orderItems.value) {
           if (item.itemId) {
-            await cartStore.removeItem(item.itemId)
+            await cartStore.removeItem(item.itemId, true)
           }
         }
         

@@ -16,4 +16,24 @@ public interface UserCouponMapper {
      * @return 优惠券列表
      */
     List<UserCouponVO> getUserCoupons(@Param("userId") Long userId, @Param("status") String status);
+
+    /**
+     * 查询用户是否已领取过该优惠券
+     *
+     * @param userId   用户ID
+     * @param couponId 优惠券ID
+     * @return 已领取的数量
+     */
+    int countUserCoupon(@Param("userId") Long userId, @Param("couponId") Long couponId);
+
+    /**
+     * 添加用户优惠券
+     *
+     * @param userId     用户ID
+     * @param couponId   优惠券ID
+     * @param couponName 优惠券名称
+     * @return 影响行数
+     */
+    int addUserCoupon(@Param("userId") Long userId, @Param("couponId") Long couponId,
+            @Param("couponName") String couponName);
 }

@@ -44,9 +44,7 @@ public class CartServiceImpl implements ICartService {
             throw new ServiceException("商品库存不足");
         }
 
-        // 3. 检查购物车是否已存在该商品 - 在CartItems表中使用product_sku_id查询
-        // 注意：数据库表中没有product_id字段，只有product_sku_id字段
-        // 此处我们用skuId作为查询条件，如果skuId为null，则使用productId
+        // 3. 检查购物车是否已存在该商品
         Long actualSkuId = skuId != null ? skuId : productId;
         List<CartItems> existingItems = cartItemsMapper.selectByUserIdAndProductId(userId, actualSkuId);
         CartItems existingItem = existingItems != null && !existingItems.isEmpty() ? existingItems.get(0) : null;
@@ -62,13 +60,12 @@ public class CartServiceImpl implements ICartService {
         // 4. 创建新的购物车项
         CartItems cartItem = new CartItems();
         cartItem.setUserId(userId);
-        // 在CartItems表中，我们使用product_sku_id字段存储SKU ID或商品ID
-        // productId字段在Java对象中依然设置，但在数据库中不存储
-        cartItem.setProductId(productId); // 这个在Java中使用，但不会存入数据库
-        cartItem.setSkuId(actualSkuId); // 这个会存入数据库的product_sku_id字段
+        cartItem.setProductId(productId);
+        cartItem.setSkuId(actualSkuId);
         cartItem.setProductName(product.getName());
         cartItem.setQuantity(quantity);
         cartItem.setIsSelected(true);
+        cartItem.setIsDeleted(false);
         cartItem.setCreateTime(LocalDateTime.now());
         cartItem.setUpdateTime(LocalDateTime.now());
 
@@ -181,8 +178,9 @@ public class CartServiceImpl implements ICartService {
             }
 
             cartItem.setProductName(product.getName());
-            // 设置skuId用于数据库存储
             cartItem.setSkuId(actualSkuId);
+            cartItem.setIsSelected(true);
+            cartItem.setIsDeleted(false);
             cartItem.setCreateTime(LocalDateTime.now());
             cartItem.setUpdateTime(LocalDateTime.now());
             cartItemsMapper.insert(cartItem);

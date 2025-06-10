@@ -48,25 +48,30 @@
         </collection>
     </resultMap>
 
-    <select id="getHotProducts" resultMap="productMap">
-        SELECT p.*, pd.description, pd.specifications, pi.image_url
-        FROM Products p
-        LEFT JOIN ProductDetails pd ON p.product_id = pd.product_id
-        LEFT JOIN ProductImages pi ON p.product_id = pi.product_id AND pi.is_main = true
-        INNER JOIN ProductTagRelations ptr ON p.product_id = ptr.product_id
-        INNER JOIN ProductTags pt ON ptr.tag_id = pt.tag_id
-        WHERE pt.name = '热销' AND p.is_on_sale = true
+    <select id="getHotProducts" resultType="com.wyc.domain.dto.ProductDTO">
+        SELECT p.product_id, p.name, p.brand, p.price, p.stock, p.is_on_sale,
+               p.created_at, p.updated_at, c.name as category_name,
+               (SELECT image_url FROM productimages WHERE product_id = p.product_id AND is_main = 1 LIMIT 1) as main_image_url
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.category_id
+        INNER JOIN producttagrelations ptr ON p.product_id = ptr.product_id
+        INNER JOIN producttags pt ON ptr.tag_id = pt.tag_id
+        WHERE p.is_on_sale = 1 AND pt.name = '热销'
         ORDER BY p.created_at DESC
+        LIMIT 10
     </select>
 
-    <select id="getNewProducts" resultMap="productMap">
-        SELECT p.*, pd.description, pd.specifications, pi.image_url
-        FROM Products p
-        LEFT JOIN ProductDetails pd ON p.product_id = pd.product_id
-        LEFT JOIN ProductImages pi ON p.product_id = pi.product_id AND pi.is_main = true
-        WHERE p.is_on_sale = true
-        AND p.created_at >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+    <select id="getNewProducts" resultType="com.wyc.domain.dto.ProductDTO">
+        SELECT p.product_id, p.name, p.brand, p.price, p.stock, p.is_on_sale,
+               p.created_at, p.updated_at, c.name as category_name,
+               (SELECT image_url FROM productimages WHERE product_id = p.product_id AND is_main = 1 LIMIT 1) as main_image_url
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.category_id
+        INNER JOIN producttagrelations ptr ON p.product_id = ptr.product_id
+        INNER JOIN producttags pt ON ptr.tag_id = pt.tag_id
+        WHERE p.is_on_sale = 1 AND pt.name = '新品'
         ORDER BY p.created_at DESC
+        LIMIT 10
     </select>
 
     <select id="getProductDetail" resultMap="productDetailMap">

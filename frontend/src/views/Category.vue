@@ -15,7 +15,6 @@
               :class="{ active: activeCategory === '' }"
               @click="handleCategoryClick('')"
             >
-              <el-icon><Star /></el-icon>
               <span>热门商品</span>
             </div>
             <div 
@@ -25,9 +24,6 @@
               :class="{ active: activeCategory === String(getCategoryId(category)) }"
               @click="handleCategoryClick(getCategoryId(category))"
             >
-              <el-icon>
-                <component :is="category.icon" />
-              </el-icon>
               <span>{{ category.name }}</span>
             </div>
           </div>
@@ -73,7 +69,19 @@
           <div class="product-item" v-for="product in paginatedProducts" :key="product.productId || product.id">
             <el-card shadow="hover" class="product-card" @click="navigateToProduct(product.productId || product.id)">
               <div class="product-image-wrapper">
-                <el-image :src="product.mainImageUrl || product.image" fit="cover" loading="lazy" />
+                <el-image 
+                  :src="product.mainImageUrl || product.image" 
+                  fit="cover" 
+                  loading="lazy"
+                  @error="handleImageError($event, product)"
+                >
+                  <template #error>
+                    <div class="image-error-fallback">
+                      <el-icon><Picture /></el-icon>
+                      <span>图片加载失败</span>
+                    </div>
+                  </template>
+                </el-image>
                 <div class="product-tags" v-if="product.tags && product.tags.length">
                   <el-tag v-for="tag in product.tags" :key="tag" size="small" effect="dark" :type="getTagType(tag)">
                     {{ tag }}
@@ -126,18 +134,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, markRaw, nextTick } from 'vue';
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { HomeFilled, ShoppingBag, Present, Food, Reading, ShoppingCart, Plus, Star } from '@element-plus/icons-vue';
+import { ShoppingCart, Plus, Picture } from '@element-plus/icons-vue';
 import { useCartStore } from '@/stores/cart';
 import { useProductStore } from '@/stores/product';
 import { productApi } from '@/api/product';
+import { useUserStore } from '@/stores/user';
 
 const route = useRoute();
 const router = useRouter();
 const cartStore = useCartStore();
 const productStore = useProductStore();
+const userStore = useUserStore();
 
 // --- Reactive State ---
 const loadingProducts = ref(true);
@@ -165,10 +175,7 @@ const fetchCategories = async () => {
       console.warn('没有获取到分类数据或数据为空');
     }
     
-    categories.value = data.map(category => ({
-      ...category,
-      icon: getCategoryIcon(category.name)
-    }));
+    categories.value = data;
     
     // 检查处理后的分类数据
     console.log('处理后的分类数据:', categories.value);
@@ -258,19 +265,6 @@ const fetchProducts = async () => {
   } finally {
     loadingProducts.value = false;
   }
-};
-
-// 根据分类名称返回对应的图标
-const getCategoryIcon = (categoryName) => {
-  const iconMap = {
-    '手机数码': markRaw(HomeFilled),
-    '家用电器': markRaw(HomeFilled),
-    '服装鞋包': markRaw(ShoppingBag),
-    '美妆个护': markRaw(Present),
-    '食品生鲜': markRaw(Food),
-    '图书文具': markRaw(Reading)
-  };
-  return iconMap[categoryName] || markRaw(HomeFilled);
 };
 
 // --- Computed Properties ---
@@ -398,6 +392,13 @@ const addItemToCart = async (product) => {
     return;
   }
   
+  // 检查用户是否已登录
+  if (!userStore.isAuthenticated) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+  
   const stock = product.stock || 0;
   if (stock === 0) {
     ElMessage.warning('抱歉，该商品已售罄！');
@@ -405,14 +406,11 @@ const addItemToCart = async (product) => {
   }
   
   try {
-    await cartStore.addItem({
-      productId: product.productId || product.id,
-      name: product.name,
-      price: product.price,
-      imageUrl: product.mainImageUrl || product.image,
-      quantity: 1,
-      stock: stock
-    });
+    const productId = product.productId;
+    // 如果有多个SKU，应该让用户选择
+    const skuId = product.skus && product.skus.length > 0 ? product.skus[0].skuId : null;
+    await cartStore.addItem(productId, skuId, 1);
+    ElMessage.success('商品已加入购物车');
   } catch (error) {
     console.error('Failed to add item to cart:', error);
     ElMessage.error('添加商品到购物车失败');
@@ -441,6 +439,20 @@ const getCategoryId = (category) => {
   } else {
     console.error('分类既没有ID也没有名称:', category);
     return 'unknown-' + Math.random().toString(36).substring(2, 10);
+  }
+};
+
+// 默认图片
+const defaultImage = 'https://via.placeholder.com/300x300?text=ShopSphere';
+
+// 处理图片加载错误
+const handleImageError = (event, product) => {
+  console.error(`图片加载失败: ${product.name}`, event);
+  // 设置默认图片
+  if (product.mainImageUrl) {
+    product.mainImageUrl = defaultImage;
+  } else {
+    product.image = defaultImage;
   }
 };
 
@@ -612,7 +624,7 @@ watch(() => route.params.id, (newId) => {
 .category-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
   padding: 12px 15px;
   border-radius: 12px;
   cursor: pointer;
@@ -640,7 +652,8 @@ watch(() => route.params.id, (newId) => {
 }
 
 .category-item span {
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .price-range {
@@ -1006,7 +1019,7 @@ watch(() => route.params.id, (newId) => {
 .product-image-wrapper {
   position: relative;
   width: 100%;
-  padding-top: 75%;
+  padding-top: 100%; /* 强制1:1比例 */
   overflow: hidden;
 }
 
@@ -1017,7 +1030,11 @@ watch(() => route.params.id, (newId) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: all 0.4s ease;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card:hover .product-image-wrapper .el-image {
+  transform: scale(1.1);
 }
 
 .product-info {
@@ -1225,5 +1242,28 @@ watch(() => route.params.id, (newId) => {
     height: 32px;
     font-size: 13px;
   }
+}
+
+.image-error-fallback {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.image-error-fallback .el-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.image-error-fallback span {
+  font-size: 14px;
 }
 </style>
