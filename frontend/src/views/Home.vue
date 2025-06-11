@@ -105,7 +105,7 @@
           <el-card shadow="hover" class="product-card" @click="navigateToProduct(product.productId)">
             <div class="product-image-wrapper">
               <el-image 
-                :src="product.mainImageUrl" 
+                :src="product.mainImageUrl || defaultImage" 
                 fit="cover" 
                 loading="lazy"
                 @error="handleImageError($event, product)"
@@ -127,8 +127,8 @@
               <h3>{{ product.name }}</h3>
               <p class="product-description">{{ product.description }}</p>
               <div class="product-price">
-                <span class="current-price">¥{{ product.price.toFixed(2) }}</span>
-                <span class="original-price" v-if="product.originalPrice">¥{{ product.originalPrice.toFixed(2) }}</span>
+                <span class="current-price">¥{{ (product.price ?? 0).toFixed(2) }}</span>
+                <span class="original-price" v-if="product.originalPrice">¥{{ (product.originalPrice ?? 0).toFixed(2) }}</span>
               </div>
               <div class="product-meta">
                 <span class="sales">库存: {{ product.stock }}</span>
@@ -149,7 +149,7 @@
           <el-card shadow="hover" class="product-card" @click="navigateToProduct(product.productId)">
             <div class="product-image-wrapper">
               <el-image 
-                :src="product.mainImageUrl" 
+                :src="product.mainImageUrl || defaultImage" 
                 fit="cover" 
                 loading="lazy"
                 @error="handleImageError($event, product)"
@@ -167,7 +167,7 @@
               <h3>{{ product.name }}</h3>
               <p class="product-description">{{ product.description }}</p>
               <div class="product-price">
-                <span class="current-price">¥{{ product.price.toFixed(2) }}</span>
+                <span class="current-price">¥{{ (product.price ?? 0).toFixed(2) }}</span>
               </div>
               <div class="product-meta">
                 <span class="sales">库存: {{ product.stock }}</span>
@@ -231,8 +231,20 @@ const categories = computed(() => {
     description: cat.description || '探索精选商品系列'
   }));
 });
-const featuredProducts = computed(() => productStore.featuredProducts);
-const newArrivals = computed(() => productStore.newArrivals);
+const featuredProducts = computed(() => {
+  const arr = productStore.featuredProducts;
+  if (Array.isArray(arr) && Array.isArray(arr[0])) {
+    return arr[0];
+  }
+  return arr;
+});
+const newArrivals = computed(() => {
+  const arr = productStore.newArrivals;
+  if (Array.isArray(arr) && Array.isArray(arr[0])) {
+    return arr[0];
+  }
+  return arr;
+});
 
 // 优惠券数据
 const availableCoupons = ref([]);
@@ -449,7 +461,7 @@ const getCategoryIcon = (categoryName) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('/src/assets/pattern.png') repeat;
+
   opacity: 0.1;
   z-index: 0;
 }

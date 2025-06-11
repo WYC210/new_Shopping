@@ -115,4 +115,11 @@
         OR pd.description LIKE CONCAT('%', #{keyword}, '%'))
         ORDER BY p.created_at DESC
     </select>
+
+    <select id="getAllProductIds" resultType="long">
+        SELECT product_id FROM Products
+    </select>
+    <select id="getAllCategoryIds" resultType="long">
+        SELECT DISTINCT category_id FROM Products
+    </select>
 </mapper>

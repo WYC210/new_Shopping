@@ -28,6 +28,7 @@
                 @change="handleToggleSelection(item.itemId, item.isSelected)"
               />
             </div>
+            
             <div class="item-image">
               <el-image :src="item.image" fit="cover" />
             </div>
@@ -144,6 +145,8 @@ const selectedItems = computed(() => cartStore.selectedItems)
 const totalItems = computed(() => cartStore.totalItems)
 const selectedCount = computed(() => cartStore.selectedCount)
 const totalPrice = computed(() => cartStore.selectedAmount)
+console.log("哈哈哈哈")
+console.log(cartItems)
 
 const shipping = ref(10)
 const discount = ref(50)

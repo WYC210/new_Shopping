@@ -17,4 +17,10 @@ public interface ProductMapper {
     List<ProductDTO> getProductsByCategory(@Param("categoryId") Long categoryId);
 
     List<ProductDTO> searchProducts(@Param("keyword") String keyword);
+
+    // 获取所有商品ID
+    List<Long> getAllProductIds();
+
+    // 获取所有分类ID
+    List<Long> getAllCategoryIds();
 }

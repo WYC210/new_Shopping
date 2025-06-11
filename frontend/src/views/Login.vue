@@ -105,7 +105,7 @@ const goToRegister = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('/src/assets/pattern.png') repeat;
+
   opacity: 0.1;
   z-index: 0;
 }
