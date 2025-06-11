@@ -81,4 +81,10 @@ public interface CartItemsMapper {
      * 软删除购物车项
      */
     int softDelete(@Param("itemId") Long itemId, @Param("userId") Long userId);
+
+    // 查询用户+SKU的所有购物车项（不管is_deleted）
+    CartItems selectByUserIdAndSkuIdAll(@Param("userId") Long userId, @Param("skuId") Long skuId);
+
+    // 复活逻辑删除的购物车项
+    int recoverItem(@Param("userId") Long userId, @Param("skuId") Long skuId, @Param("quantity") Integer quantity);
 }

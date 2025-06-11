@@ -110,6 +110,23 @@ public class ProductServiceImpl implements IProductService {
                         CACHE_BASE_TIMEOUT + random.nextInt(CACHE_RANDOM_BOUND), TimeUnit.SECONDS);
                 return EMPTY_PRODUCT_DETAIL_DTO;
             }
+            // 分步查图片、标签、SKU
+            List<String> images = productMapper.getProductImages(productId);
+            if (images == null || images.isEmpty()) {
+                images = new ArrayList<>();
+                images.add("https://img14.360buyimg.com/n1/jfs/t1/123456/40/12345/1234567890.jpg"); // 默认图片
+            }
+            detail.setImageUrls(images);
+            List<String> tags = productMapper.getProductTags(productId);
+            if (tags == null)
+                tags = new ArrayList<>();
+            detail.setTags(tags);
+            List<com.wyc.domain.dto.ProductSKUDTO> skus = productMapper.getProductSKUs(productId);
+            if (skus == null)
+                skus = new ArrayList<>();
+            detail.setSkus(skus);
+            System.out.println(detail);
+            System.out.println(detail.getImageUrls());
             // 兜底处理图片
             if (detail.getImageUrls() == null || detail.getImageUrls().isEmpty()) {
                 List<String> defaultImages = new ArrayList<>();

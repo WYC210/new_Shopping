@@ -324,12 +324,23 @@ const product = computed(() => {
     }
   }
 
-  // Normalize SKU attributes
+  // 兼容skuCode自动补充attributes/specs
   if (details.skus && details.skus.length > 0) {
-    details.skus = details.skus.map(sku => ({
-      ...sku,
-      specs: sku.attributes || {} // Use 'attributes' or 'specs' for consistency
-    }))
+    details.skus = details.skus.map(sku => {
+      // 如果attributes/specs为空，尝试解析skuCode
+      if ((!(sku.attributes && Object.keys(sku.attributes).length) || Object.keys(sku.attributes).length === 0) && sku.skuCode) {
+        const parts = sku.skuCode.split('-')
+        // 这里假设skuCode格式: 型号-容量-颜色
+        sku.attributes = {
+          '容量': parts[1] ? (parts[1].includes('G') ? parts[1] : parts[1] + 'G') : '',
+          '颜色': parts[2] === 'BLK' ? '黑色' : parts[2] === 'WHT' ? '白色' : parts[2] || ''
+        }
+      }
+      return {
+        ...sku,
+        specs: sku.attributes || {}
+      }
+    })
   }
 
   // 添加随机生成的销量和评分
@@ -626,7 +637,11 @@ const handleGlobalMouseMove = throttle((event) => {
 onMounted(() => {
   const productId = route.params.id
   if (productId) {
-    productStore.fetchProductDetail(productId) // Fetch product details when component mounts
+    productStore.fetchProductDetail(productId).then(() => {
+      // 商品详情请求完成后输出一次
+      console.log('🟢 商品详情product:', product.value)
+      console.log('🟢 商品详情skus:', product.value?.skus)
+    })
   }
 
   // Add global mouse move listener
@@ -647,6 +662,20 @@ watch(currentImage, () => {
 
 // Watch for changes in selected specifications to update the selected SKU
 watch(selectedSpecs, handleSpecChange, { deep: true });
+
+// 监听product变化，输出到控制台
+watch(product, (val) => {
+  console.log('🔵 watch product:', val)
+  console.log('🔵 watch skus:', val?.skus)
+}, { immediate: true, deep: true })
+
+// 调试输出sku相关数据
+watch([product, selectedSku], ([p, sku]) => {
+  console.log('【调试】product.skus:', p?.skus)
+  console.log('【调试】selectedSku:', sku)
+  console.log('【调试】product.price:', p?.price)
+  console.log('【调试】product.originalPrice:', p?.originalPrice)
+}, { immediate: true, deep: true })
 
 const goBack = () => {
   if (window.history.length > 1) {

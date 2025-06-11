@@ -122,4 +122,16 @@
     <select id="getAllCategoryIds" resultType="long">
         SELECT DISTINCT category_id FROM Products
     </select>
+
+    <select id="getProductImages" resultType="string">
+        SELECT image_url FROM ProductImages WHERE product_id = #{productId}
+    </select>
+    <select id="getProductTags" resultType="string">
+        SELECT pt.name FROM ProductTagRelations ptr
+        LEFT JOIN ProductTags pt ON ptr.tag_id = pt.tag_id
+        WHERE ptr.product_id = #{productId}
+    </select>
+    <select id="getProductSKUs" resultType="com.wyc.domain.dto.ProductSKUDTO">
+        SELECT * FROM ProductSKUs WHERE product_id = #{productId}
+    </select>
 </mapper>

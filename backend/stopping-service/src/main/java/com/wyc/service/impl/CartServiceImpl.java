@@ -44,17 +44,21 @@ public class CartServiceImpl implements ICartService {
             throw new ServiceException("商品库存不足");
         }
 
-        // 3. 检查购物车是否已存在该商品
+        // 3. 检查购物车是否已存在该商品（不管is_deleted）
         Long actualSkuId = skuId != null ? skuId : productId;
-        List<CartItems> existingItems = cartItemsMapper.selectByUserIdAndProductId(userId, actualSkuId);
-        CartItems existingItem = existingItems != null && !existingItems.isEmpty() ? existingItems.get(0) : null;
-
+        CartItems existingItem = cartItemsMapper.selectByUserIdAndSkuIdAll(userId, actualSkuId);
         if (existingItem != null) {
-            // 更新数量
-            existingItem.setQuantity(existingItem.getQuantity() + quantity);
-            existingItem.setUpdateTime(LocalDateTime.now());
-            cartItemsMapper.updateById(existingItem);
-            return existingItem.getItemId();
+            if (Boolean.TRUE.equals(existingItem.getIsDeleted())) {
+                // 复活逻辑删除的购物车项
+                cartItemsMapper.recoverItem(userId, actualSkuId, quantity);
+                return existingItem.getItemId();
+            } else {
+                // 已存在，更新数量
+                existingItem.setQuantity(existingItem.getQuantity() + quantity);
+                existingItem.setUpdateTime(LocalDateTime.now());
+                cartItemsMapper.updateById(existingItem);
+                return existingItem.getItemId();
+            }
         }
 
         // 4. 创建新的购物车项

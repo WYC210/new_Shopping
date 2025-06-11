@@ -102,4 +102,13 @@
             updated_at = NOW() 
         WHERE cart_item_id = #{itemId} AND user_id = #{userId} AND is_deleted = 0
     </update>
+    
+    <select id="selectByUserIdAndSkuIdAll" resultMap="CartItemsResultMap">
+        SELECT * FROM cartitems WHERE user_id = #{userId} AND product_sku_id = #{skuId} LIMIT 1
+    </select>
+    
+    <update id="recoverItem">
+        UPDATE cartitems SET is_deleted = 0, quantity = #{quantity}, updated_at = NOW()
+        WHERE user_id = #{userId} AND product_sku_id = #{skuId}
+    </update>
 </mapper> 

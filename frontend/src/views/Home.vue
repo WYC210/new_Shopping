@@ -311,7 +311,7 @@ const addItemToCart = (product) => {
 
 // --- Lifecycle Hooks ---
 onMounted(async () => {
-  console.log('🏠 开始加载首页数据')
+
   try {
     console.log('📦 开始获取商品分类')
     await productStore.fetchCategories()

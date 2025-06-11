@@ -109,8 +109,16 @@ export const useProductStore = defineStore('product', {
       try {
         const response = await productApi.getProductDetail(id)
         if (response.code === 200) {
-          this.currentProduct = response.data
-          return response.data
+          // 确保skus字段存在且为数组，且每个sku的attributes字段为对象
+          const data = response.data
+          if (Array.isArray(data.skus)) {
+            data.skus = data.skus.map(sku => ({
+              ...sku,
+              attributes: sku.attributes || sku.specs || {}
+            }))
+          }
+          this.currentProduct = data
+          return data
         } else {
           throw new Error(response.msg || '获取商品详情失败')
         }

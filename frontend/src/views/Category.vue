@@ -164,12 +164,12 @@ const totalFilteredProducts = ref(0);
 const fetchCategories = async () => {
   try {
     const data = await productStore.fetchCategories();
-    console.log('获取到的分类数据:', data);
+   
     
     // 检查每个分类的ID是否存在
     if (data && data.length > 0) {
       data.forEach((cat, index) => {
-        console.log(`分类${index}:`, cat, '有ID?', !!cat.id, '有categoryId?', !!cat.categoryId);
+    
       });
     } else {
       console.warn('没有获取到分类数据或数据为空');
@@ -177,8 +177,7 @@ const fetchCategories = async () => {
     
     categories.value = data;
     
-    // 检查处理后的分类数据
-    console.log('处理后的分类数据:', categories.value);
+ 
     
     // 延迟检查DOM中的分类元素
     nextTick(() => {
@@ -192,9 +191,9 @@ const fetchCategories = async () => {
 
 // 检查DOM中的分类元素
 const inspectCategoryElements = () => {
-  console.log('检查DOM中的分类元素:');
+
   const categoryItems = document.querySelectorAll('.category-item');
-  console.log(`找到 ${categoryItems.length} 个分类元素`);
+
   
   categoryItems.forEach((item, index) => {
     if (index > 0) { // 跳过"热门商品"
@@ -211,12 +210,11 @@ const fetchProducts = async () => {
   try {
     loadingProducts.value = true;
     
-    // 调试日志
-    console.log('fetchProducts - 当前分类ID:', activeCategory.value, '类型:', typeof activeCategory.value);
+   
     
     // 只有当activeCategory有值且不是空字符串时，才请求分类商品
     if (activeCategory.value && activeCategory.value.trim() !== '') {
-      console.log('请求分类商品 - 分类ID:', activeCategory.value);
+     
       
       try {
         const response = await productStore.fetchProductsByCategory(activeCategory.value, {
@@ -224,7 +222,7 @@ const fetchProducts = async () => {
           pageSize: pageSize.value
         });
         
-        console.log('分类商品响应处理:', response);
+       
         
         // 处理响应数据
         if (response) {
@@ -234,7 +232,7 @@ const fetchProducts = async () => {
           
           allProducts.value = productData;
           totalFilteredProducts.value = productData.length;
-          console.log('成功加载分类商品:', allProducts.value.length, '条记录');
+        
         } else {
           console.warn('分类商品响应异常:', response);
           ElMessage.warning('获取分类商品失败，显示热门商品');
@@ -252,7 +250,7 @@ const fetchProducts = async () => {
         totalFilteredProducts.value = data.length;
       }
     } else {
-      console.log('请求热门商品');
+   
       const data = await productStore.fetchHotProducts();
       allProducts.value = data;
       totalFilteredProducts.value = data.length;
@@ -357,21 +355,21 @@ const handleCategoryClick = async (categoryId) => {
 };
 
 const applyFilters = () => {
-  console.log('应用过滤器 - 价格范围:', priceRange.value, '排序方式:', sortBy.value);
+
   // 重置页码
   currentPage.value = 1;
   // 不需要重新请求数据，paginatedProducts计算属性会自动处理过滤和排序
 };
 
 const handlePageSizeChange = (size) => {
-  console.log('改变每页显示数量:', size);
+
   pageSize.value = size;
   currentPage.value = 1;
   // 不需要重新请求数据，paginatedProducts计算属性会自动处理分页
 };
 
 const handlePageChange = (page) => {
-  console.log('切换到页码:', page);
+
   currentPage.value = page;
   // 不需要重新请求数据，paginatedProducts计算属性会自动处理分页
 };
@@ -382,7 +380,6 @@ const navigateToProduct = (productId) => {
     ElMessage.error('无法查看商品详情');
     return;
   }
-  console.log('导航到商品详情页:', productId);
   router.push({ name: 'product', params: { id: productId } });
 };
 
