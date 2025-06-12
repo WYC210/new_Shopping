@@ -167,10 +167,19 @@ const fetchOrders = async () => {
       page: currentPage.value,
       pageSize: pageSize.value
     })
-    console.log('订单列表响应:', response)
-    if (response.code === 200) {
-      orders.value = response.data
-      total.value = response.total || response.data.length
+    console.log('订单列表响应23232:', response)
+    if (response) {
+      orders.value = response.records
+
+      total.value = response.total || 0
+      
+      // 如果当前页没有数据但总数大于0，可能是删除了最后一页的最后一条数据
+      // 此时自动跳转到前一页
+      if (orders.value.length === 0 && total.value > 0 && currentPage.value > 1) {
+        currentPage.value--
+        fetchOrders()
+        return
+      }
     }
   } catch (error) {
     console.error('获取订单列表失败:', error)

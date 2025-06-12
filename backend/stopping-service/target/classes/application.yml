@@ -34,6 +34,28 @@ spring:
         max-active: 8
         # 连接池最大阻塞等待时间（使用负值表示没有限制）
         max-wait: -1ms
+  # RabbitMQ配置
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    # 消息确认配置
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+    # 消费者配置
+    listener:
+      simple:
+        acknowledge-mode: manual
+        concurrency: 1
+        max-concurrency: 10
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml # XML映射文件路径
@@ -60,3 +82,11 @@ jwt:
   expiration: 86400
   # JWT负载中拿到开头
   tokenPrefix: Bearer
+
+# 线程池配置
+thread-pool:
+  core-pool-size: 10
+  max-pool-size: 20
+  queue-capacity: 100
+  keep-alive-seconds: 60
+  thread-name-prefix: wyc-async-

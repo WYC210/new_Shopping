@@ -37,6 +37,17 @@ public interface OrdersMapper {
     List<Orders> selectUserOrders(@Param("userId") Long userId, @Param("status") String status);
 
     /**
+     * 根据用户ID和订单状态查询订单总数
+     */
+    int countUserOrders(@Param("userId") Long userId, @Param("status") String status);
+
+    /**
+     * 分页查询用户订单列表
+     */
+    List<Orders> selectUserOrdersPaged(@Param("userId") Long userId, @Param("status") String status,
+            @Param("offset") int offset, @Param("limit") int limit);
+
+    /**
      * 更新订单
      */
     int updateById(Orders order);

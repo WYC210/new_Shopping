@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Api(tags = "订单管理接口")
 @RestController
@@ -42,13 +43,18 @@ public class OrderController {
 
     @ApiOperation("获取用户订单列表")
     @GetMapping("/user")
-    public R<List<OrderDetailVO>> getUserOrders(
+    public R<Map<String, Object>> getUserOrders(
             @AuthenticationPrincipal UserDetails userDetails,
-            @ApiParam(value = "订单状态", required = false) @RequestParam(required = false) String status) {
+            @ApiParam(value = "订单状态", required = false) @RequestParam(required = false) String status,
+            @ApiParam(value = "页码", required = false) @RequestParam(required = false, defaultValue = "1") Integer page,
+            @ApiParam(value = "每页条数", required = false) @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
         Long userId = SecurityContext.getUserId();
         // 处理 status=all 的情况
         String queryStatus = (status != null && status.equals("all")) ? null : status;
-        return R.ok(orderService.getUserOrders(userId, queryStatus));
+
+        // 使用分页方法
+        Map<String, Object> result = orderService.getUserOrdersWithPagination(userId, queryStatus, page, pageSize);
+        return R.ok(result);
     }
 
     @ApiOperation("取消订单")

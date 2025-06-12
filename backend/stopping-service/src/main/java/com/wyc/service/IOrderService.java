@@ -5,6 +5,7 @@ import com.wyc.domain.po.Orderitems;
 import com.wyc.domain.vo.OrderDetailVO;
 import com.wyc.domain.vo.OrderCreateVO;
 import java.util.List;
+import java.util.Map;
 
 public interface IOrderService {
     /**
@@ -32,6 +33,17 @@ public interface IOrderService {
      * @return 订单列表
      */
     List<OrderDetailVO> getUserOrders(Long userId, String status);
+
+    /**
+     * 分页获取用户的订单列表
+     *
+     * @param userId   用户ID
+     * @param status   订单状态（可选）
+     * @param page     页码
+     * @param pageSize 每页大小
+     * @return 包含分页信息和订单列表的Map
+     */
+    Map<String, Object> getUserOrdersWithPagination(Long userId, String status, int page, int pageSize);
 
     /**
      * 取消订单
@@ -73,4 +85,12 @@ public interface IOrderService {
      * @return 订单项列表
      */
     List<Orderitems> getOrderItems(Long orderId);
+
+    /**
+     * 获取订单信息
+     *
+     * @param orderId 订单ID
+     * @return 订单信息
+     */
+    Orders getOrder(Long orderId);
 }

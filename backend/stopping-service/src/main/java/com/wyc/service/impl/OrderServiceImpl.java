@@ -12,20 +12,28 @@ import com.wyc.mapper.OrdersMapper;
 import com.wyc.mapper.OrderitemsMapper;
 import com.wyc.mapper.ProductsMapper;
 import com.wyc.mapper.PaymentsMapper;
+import com.wyc.service.IMessageService;
 import com.wyc.service.IOrderService;
 import com.wyc.service.IUserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements IOrderService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     @Autowired
     private OrdersMapper ordersMapper;
@@ -42,9 +50,14 @@ public class OrderServiceImpl implements IOrderService {
     @Autowired
     private IUserService userService;
 
+    @Autowired
+    private IMessageService messageService;
+
     @Override
     @Transactional
     public Long createOrder(Long userId, OrderCreateVO orderCreateVO) {
+        logger.info("开始创建订单: userId={}", userId);
+
         // 1. 验证商品库存
         for (OrderCreateVO.OrderItemCreateVO item : orderCreateVO.getItems()) {
             Products product = productsMapper.selectById(item.getProductId());
@@ -92,6 +105,13 @@ public class OrderServiceImpl implements IOrderService {
             productsMapper.updateStock(item.getProductId(), -item.getQuantity());
         }
 
+        // 7. 发送订单创建消息
+        sendOrderCreatedMessage(order);
+
+        // 8. 发送延迟订单消息，用于超时取消
+        sendDelayedOrderMessage(order.getOrderId());
+
+        logger.info("订单创建成功: orderId={}", order.getOrderId());
         return order.getOrderId();
     }
 
@@ -128,6 +148,7 @@ public class OrderServiceImpl implements IOrderService {
 
     @Override
     public List<OrderDetailVO> getUserOrders(Long userId, String status) {
+        logger.info("获取用户订单列表: userId={}, status={}", userId, status);
         List<Orders> orders = ordersMapper.selectUserOrders(userId, status);
         return orders.stream()
                 .map(order -> getOrderDetail(order.getOrderId()))
@@ -137,12 +158,14 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     @Transactional
     public void cancelOrder(Long orderId, Long userId) {
+        logger.info("开始取消订单: orderId={}, userId={}", orderId, userId);
+
         // 1. 验证订单
         Orders order = ordersMapper.selectById(orderId);
         if (order == null) {
             throw new ServiceException("订单不存在");
         }
-        if (!order.getUserId().equals(userId)) {
+        if (userId != null && !order.getUserId().equals(userId)) {
             throw new ServiceException("无权操作此订单");
         }
         if (!"pending".equals(order.getStatus())) {
@@ -159,11 +182,18 @@ public class OrderServiceImpl implements IOrderService {
         order.setStatus("CANCELLED");
         order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
+
+        // 4. 发送订单取消通知
+        sendOrderCancelNotification(order);
+
+        logger.info("订单取消成功: orderId={}", orderId);
     }
 
     @Override
     @Transactional
     public void payOrder(Long orderId, Long userId, String paymentMethod) {
+        logger.info("开始支付订单: orderId={}, userId={}, paymentMethod={}", orderId, userId, paymentMethod);
+
         // 1. 验证订单
         Orders order = ordersMapper.selectById(orderId);
         if (order == null) {
@@ -192,12 +222,17 @@ public class OrderServiceImpl implements IOrderService {
         order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
 
-        // 注意：直接购买不需要删除购物车项
+        // 4. 发送支付成功消息
+        sendPaymentSuccessMessage(order, payment);
+
+        logger.info("订单支付成功: orderId={}, paymentId={}", orderId, payment.getPaymentId());
     }
 
     @Override
     @Transactional
     public void confirmReceipt(Long orderId, Long userId) {
+        logger.info("开始确认收货: orderId={}, userId={}", orderId, userId);
+
         // 1. 验证订单
         Orders order = ordersMapper.selectById(orderId);
         if (order == null) {
@@ -214,11 +249,18 @@ public class OrderServiceImpl implements IOrderService {
         order.setStatus("COMPLETED");
         order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
+
+        // 3. 发送订单完成通知
+        sendOrderCompletedNotification(order);
+
+        logger.info("确认收货成功: orderId={}", orderId);
     }
 
     @Override
     @Transactional
     public void deleteOrder(Long orderId, Long userId) {
+        logger.info("开始删除订单: orderId={}, userId={}", orderId, userId);
+
         // 1. 验证订单
         Orders order = ordersMapper.selectById(orderId);
         if (order == null) {
@@ -239,10 +281,125 @@ public class OrderServiceImpl implements IOrderService {
 
         // 4. 删除订单
         ordersMapper.deleteById(orderId);
+
+        logger.info("订单删除成功: orderId={}", orderId);
     }
 
     @Override
     public List<Orderitems> getOrderItems(Long orderId) {
         return orderitemsMapper.selectByOrderId(orderId);
+    }
+
+    @Override
+    public Orders getOrder(Long orderId) {
+        return ordersMapper.selectById(orderId);
+    }
+
+    /**
+     * 发送订单创建消息
+     */
+    private void sendOrderCreatedMessage(Orders order) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("orderId", order.getOrderId());
+        data.put("userId", order.getUserId());
+        data.put("amount", order.getTotalAmount());
+        data.put("status", order.getStatus());
+
+        messageService.sendOrderCreatedMessage(order.getOrderId(), data);
+
+        // 发送通知给用户
+        messageService.sendNotificationMessage(
+                order.getUserId(),
+                "订单创建成功",
+                "您的订单 #" + order.getOrderId() + " 已创建成功，请尽快支付。",
+                data);
+    }
+
+    /**
+     * 发送支付成功消息
+     */
+    private void sendPaymentSuccessMessage(Orders order, Payments payment) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("orderId", order.getOrderId());
+        data.put("userId", order.getUserId());
+        data.put("paymentId", payment.getPaymentId());
+        data.put("amount", payment.getAmount());
+        data.put("paymentMethod", payment.getPaymentMethod());
+
+        messageService.sendPaymentSuccessMessage(order.getOrderId(), payment.getPaymentId(), data);
+
+        // 发送通知给用户
+        messageService.sendNotificationMessage(
+                order.getUserId(),
+                "支付成功",
+                "您的订单 #" + order.getOrderId() + " 已支付成功，金额：" + payment.getAmount() + "元。",
+                data);
+    }
+
+    /**
+     * 发送订单取消通知
+     */
+    private void sendOrderCancelNotification(Orders order) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("orderId", order.getOrderId());
+        data.put("userId", order.getUserId());
+
+        messageService.sendNotificationMessage(
+                order.getUserId(),
+                "订单已取消",
+                "您的订单 #" + order.getOrderId() + " 已取消。",
+                data);
+    }
+
+    /**
+     * 发送订单完成通知
+     */
+    private void sendOrderCompletedNotification(Orders order) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("orderId", order.getOrderId());
+        data.put("userId", order.getUserId());
+
+        messageService.sendNotificationMessage(
+                order.getUserId(),
+                "订单已完成",
+                "您的订单 #" + order.getOrderId() + " 已完成，感谢您的购买！",
+                data);
+    }
+
+    /**
+     * 发送延迟订单消息，用于超时取消
+     */
+    private void sendDelayedOrderMessage(Long orderId) {
+        // 设置30分钟超时
+        long delayMillis = 30 * 60 * 1000;
+        messageService.sendDelayedOrderMessage(orderId, delayMillis);
+    }
+
+    @Override
+    public Map<String, Object> getUserOrdersWithPagination(Long userId, String status, int page, int pageSize) {
+        logger.info("分页获取用户订单列表: userId={}, status={}, page={}, pageSize={}", userId, status, page, pageSize);
+
+        // 计算偏移量
+        int offset = (page - 1) * pageSize;
+
+        // 获取总记录数
+        int total = ordersMapper.countUserOrders(userId, status);
+
+        // 获取分页数据
+        List<Orders> orders = ordersMapper.selectUserOrdersPaged(userId, status, offset, pageSize);
+
+        // 转换为VO对象
+        List<OrderDetailVO> orderDetails = orders.stream()
+                .map(order -> getOrderDetail(order.getOrderId()))
+                .collect(Collectors.toList());
+
+        // 构建返回结果
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", total);
+        result.put("pages", (total + pageSize - 1) / pageSize);
+        result.put("current", page);
+        result.put("records", orderDetails);
+
+        return result;
     }
 }

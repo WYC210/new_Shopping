@@ -259,7 +259,21 @@ export const profileApi = {
         data: response.data,
         headers: response.headers
       })
-      return response
+      
+      // 返回标准化的响应数据，支持分页
+      if (response.data && response.data.code === 200) {
+        const pageData = response.data.data || {};
+        return {
+          code: response.data.code,
+          msg: response.data.msg,
+          data: pageData.records || [],
+          total: pageData.total || 0,
+          pages: pageData.pages || 1,
+          current: pageData.current || 1
+        };
+      }
+      
+      return response.data;
     }).catch(error => {
       console.error('获取订单列表失败:', {
         status: error.response?.status,

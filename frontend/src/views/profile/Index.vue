@@ -73,7 +73,8 @@ onMounted(async () => {
 })
 
 const handleMenuSelect = (key) => {
-  router.push(`/profile/${key}`)
+  // 使用路由名称进行导航，而不是拼接路径
+  router.push({ name: key })
 }
 </script>
 
