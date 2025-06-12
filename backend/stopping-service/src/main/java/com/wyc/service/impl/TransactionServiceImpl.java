@@ -29,7 +29,7 @@ public class TransactionServiceImpl implements ITransactionService {
         Orders order = ordersMapper.selectById(transaction.getOrderId());
         if (order == null) {
             throw new ServiceException("订单不存在");
-                }
+        }
         System.out.println("订单状态：" + order.getStatus());
         // 2. 验证订单状态
         if (order.getStatus().equals("pending")) {
@@ -119,6 +119,8 @@ public class TransactionServiceImpl implements ITransactionService {
         order.setStatus("pay"); // 已支付
         order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
+
+        // 注意：直接购买不需要删除购物车项
     }
 
     @Override

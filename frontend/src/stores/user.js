@@ -14,7 +14,8 @@ export const useUserStore = defineStore('user', {
     token: '',
     roles: [],
     balance: 0,
-    loginStatus: false
+    loginStatus: false,
+    isInitialized: false
   }),
   
   getters: {
@@ -192,14 +193,36 @@ export const useUserStore = defineStore('user', {
     },
 
     // 初始化，从本地存储恢复登录状态
-    initFromStorage() {
+    async initFromStorage() {
       const token = localStorage.getItem('token');
       if (token) {
         this.token = token;
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         this.loginStatus = true;
-        this.getUserInfo(); // 获取最新用户信息
+        await this.getUserInfo(); // 获取最新用户信息
       }
+      this.isInitialized = true;
+    },
+    
+    // 恢复会话，从本地存储恢复登录状态并获取用户信息
+    async restoreSession() {
+      if (this.isInitialized) return;
+      
+      const token = localStorage.getItem('token');
+      if (token) {
+        this.token = token;
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        this.loginStatus = true;
+        
+        try {
+          await this.getUserInfo();
+        } catch (error) {
+          console.error('恢复会话失败，可能是token已过期:', error);
+          this.clearUserInfo();
+        }
+      }
+      
+      this.isInitialized = true;
     }
   }
 }) 

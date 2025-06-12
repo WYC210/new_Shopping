@@ -33,6 +33,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
 import { User, Lock, ArrowRight } from '@element-plus/icons-vue'
+import { authService } from '../services/auth'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -67,8 +68,8 @@ const handleLogin = async () => {
     const loginResult = await userStore.login(loginForm)
     
     if (loginResult) {
-      // 登录成功后跳转
-      router.push('/')
+      // 使用authService进行重定向
+      authService.redirectAfterLogin()
     }
   } catch (error) {
     console.error('登录过程出错:', error)

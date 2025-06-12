@@ -4,8 +4,8 @@
       <!-- 左侧导航 -->
       <div class="profile-nav">
         <div class="user-info">
-          <el-avatar :size="80" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=80&h=80" />
-          <h3>用户名</h3>
+          <el-avatar :size="80" :src="userStore.avatar" />
+          <h3>{{ userStore.username }}</h3>
         </div>
         <el-menu
           :default-active="activeMenu"
@@ -51,9 +51,11 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Document, Location, Ticket, User, Lock, Clock } from '@element-plus/icons-vue'
+import { useUserStore } from '../../stores/user'
 
 const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
 const activeMenu = ref('orders')
 
 onMounted(() => {

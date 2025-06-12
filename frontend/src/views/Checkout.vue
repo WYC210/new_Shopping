@@ -1,6 +1,6 @@
 <template>
-  <div class="checkout-container">
-    <div class="checkout-content" v-loading="loading">
+  <div class="checkout-container content-container" v-loading="loading">
+    <div class="checkout-content">
       <!-- 收货地址 -->
       <div class="section address-section">
         <h2 class="section-title">收货地址</h2>

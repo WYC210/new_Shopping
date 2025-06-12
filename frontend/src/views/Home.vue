@@ -1,5 +1,6 @@
 <template>
-  <div class="home-container">
+  <div class="home-container content-container">
+
     <section class="banner-section">
       <el-carousel height="500px" :interval="5000" arrow="always" indicator-position="outside">
         <el-carousel-item v-for="banner in banners" :key="banner.id">
@@ -441,6 +442,8 @@ const getCategoryIcon = (categoryName) => {
   // 默认图标
   return 'Goods';
 };
+
+
 </script>
 
 <style scoped>
@@ -1224,5 +1227,35 @@ const getCategoryIcon = (categoryName) => {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
   margin-bottom: 20px;
+}
+
+/* 添加ScrollDemo链接样式 */
+.demo-link-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+  background: linear-gradient(135deg, rgba(64, 158, 255, 0.1) 0%, rgba(83, 220, 255, 0.1) 100%);
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 10; /* 增加z-index确保按钮可点击 */
+}
+
+.demo-link .el-button,
+.el-button.demo-button {
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #42b883 0%, #35495e 100%);
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  z-index: 11; /* 确保按钮在最上层 */
+}
+
+.demo-link .el-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 </style>

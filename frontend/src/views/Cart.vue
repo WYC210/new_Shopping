@@ -1,5 +1,5 @@
 <template>
-  <div class="cart-container">
+  <div class="cart-container content-container">
     <div class="cart-header">
       <h2>我的购物车</h2>
       <div class="cart-stats">
@@ -264,13 +264,6 @@ const navigateToProduct = (productId) => {
 
 onMounted(async () => {
   try {
-    // 检查用户是否已登录
-    if (!userStore.isAuthenticated) {
-      ElMessage.warning('请先登录')
-      router.push('/login')
-      return
-    }
-    
     // 获取购物车数据
     await cartStore.fetchCartItems()
   } catch (error) {

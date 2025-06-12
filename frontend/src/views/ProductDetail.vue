@@ -1,5 +1,5 @@
 <template>
-  <div class="product-detail-container" v-loading="loading">
+  <div class="product-detail-container content-container" v-loading="loading">
     <el-button class="back-btn" type="primary" @click="goBack" plain :icon="ArrowLeft" size="large">返回</el-button>
     <el-empty v-if="!loading && !product" description="商品不存在"></el-empty>
     

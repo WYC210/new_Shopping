@@ -1,5 +1,5 @@
 <template>
-  <div class="category-container">
+  <div class="category-container content-container">
     <el-breadcrumb separator="/" class="category-breadcrumb">
       <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>{{ currentCategoryName }}</el-breadcrumb-item>
@@ -70,7 +70,7 @@
             <el-card shadow="hover" class="product-card" @click="navigateToProduct(product.productId || product.id)">
               <div class="product-image-wrapper">
                 <el-image 
-                  :src="product.mainImageUrl || product.image" 
+                  :src="product.mainImageUrl || product.image || '/images/placeholder.png'" 
                   fit="cover" 
                   loading="lazy"
                   @error="handleImageError($event, product)"
@@ -89,16 +89,16 @@
                 </div>
               </div>
               <div class="product-info">
-                <h3 class="product-name" :title="product.name">{{ product.name }}</h3>
+                <h3 class="product-name" :title="product.name">{{ product.name || '未命名商品' }}</h3>
                 <div class="product-brand">
                   <span>品牌：{{ product.brand || '未知' }}</span>
                 </div>
-                <p class="product-description" :title="product.description">{{ product.description }}</p>
+                <p class="product-description" :title="product.description">{{ product.description || '暂无描述' }}</p>
                 <div class="product-meta">
                   <div class="product-price">
-                    <span class="current-price">¥{{ product.price.toFixed(2) }}</span>
+                    <span class="current-price">¥{{ formatPrice(product.price) }}</span>
                     <span class="original-price" v-if="product.originalPrice">
-                      ¥{{ product.originalPrice.toFixed(2) }}
+                      ¥{{ formatPrice(product.originalPrice) }}
                     </span>
                   </div>
                   <div class="product-sales">
@@ -134,7 +134,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, nextTick } from 'vue';
+import { ref, onMounted, computed, watch, nextTick, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { ShoppingCart, Plus, Picture } from '@element-plus/icons-vue';
@@ -159,6 +159,9 @@ const pageSize = ref(20);
 const categories = ref([]);
 const allProducts = ref([]);
 const totalFilteredProducts = ref(0);
+
+// 添加组件挂载状态标志
+const isMounted = ref(true);
 
 // --- API Functions ---
 const fetchCategories = async () => {
@@ -208,60 +211,96 @@ const inspectCategoryElements = () => {
 
 const fetchProducts = async () => {
   try {
-    loadingProducts.value = true;
+    // 检查组件是否已卸载
+    if (!isMounted.value) return;
     
-   
+    loadingProducts.value = true;
     
     // 只有当activeCategory有值且不是空字符串时，才请求分类商品
     if (activeCategory.value && activeCategory.value.trim() !== '') {
-     
-      
       try {
         const response = await productStore.fetchProductsByCategory(activeCategory.value, {
           pageNum: currentPage.value,
           pageSize: pageSize.value
         });
         
-       
+        // 检查组件是否已卸载
+        if (!isMounted.value) return;
+        
+        // 调试原始响应
+        console.log('原始响应数据类型:', typeof response);
+        console.log('是否为数组:', Array.isArray(response));
+        if (Array.isArray(response)) {
+          console.log('数组长度:', response.length);
+          if (response.length > 0) {
+            console.log('第一个元素类型:', typeof response[0]);
+            console.log('第一个元素是否为数组:', Array.isArray(response[0]));
+            if (Array.isArray(response[0])) {
+              console.log('内层数组长度:', response[0].length);
+            }
+          }
+        }
         
         // 处理响应数据
         if (response) {
-          // 如果响应是数组或者有data字段
-          const productData = Array.isArray(response) ? response : 
-                             (response.data ? (Array.isArray(response.data) ? response.data : []) : []);
+          // 处理嵌套数组结构 [[products]]
+          let productData;
           
-          allProducts.value = productData;
-          totalFilteredProducts.value = productData.length;
+          if (Array.isArray(response) && response.length > 0 && Array.isArray(response[0])) {
+            // 嵌套数组结构 [[products]]
+            productData = response[0];
+            console.log('检测到嵌套数组结构，已提取内层数据');
+          } else if (Array.isArray(response)) {
+            // 普通数组结构 [products]
+            productData = response;
+          } else if (response.data) {
+            // 对象结构 {data: products}
+            productData = Array.isArray(response.data) ? response.data : [];
+          } else {
+            productData = [];
+          }
+          
+          // 调试输出商品数据
+          console.log('处理后的商品数据结构:', productData.length > 0 ? productData[0] : '无商品');
+          console.log('处理后的商品数量:', productData.length);
+          
+         
+        
+          
+          allProducts.value = productData[0];
+          totalFilteredProducts.value = productData[0].length;
         
         } else {
           console.warn('分类商品响应异常:', response);
-          ElMessage.warning('获取分类商品失败，显示热门商品');
-          // 如果获取分类商品失败，回退到热门商品
-          const data = await productStore.fetchHotProducts();
-          allProducts.value = data;
-          totalFilteredProducts.value = data.length;
+          
         }
       } catch (error) {
         console.error('获取分类商品出错:', error);
-        ElMessage.warning('获取分类商品失败，显示热门商品');
-        // 如果获取分类商品失败，回退到热门商品
-        const data = await productStore.fetchHotProducts();
-        allProducts.value = data;
-        totalFilteredProducts.value = data.length;
+      
       }
     } else {
-   
       const data = await productStore.fetchHotProducts();
-      allProducts.value = data;
-      totalFilteredProducts.value = data.length;
+      // 检查组件是否已卸载
+      if (!isMounted.value) return;
+      
+      // 调试输出商品数据
+      console.log('热门商品数据结构:', data.length > 0 ? data[0] : '无商品');
+      console.log('热门商品数量:', data.length);
+      
+      allProducts.value = data[0];
+      totalFilteredProducts.value = data[0].length;
     }
   } catch (error) {
     console.error('获取商品失败:', error);
-    ElMessage.error('获取商品失败');
-    allProducts.value = [];
-    totalFilteredProducts.value = 0;
+    if (isMounted.value) {
+      ElMessage.error('获取商品失败');
+      allProducts.value = [];
+      totalFilteredProducts.value = 0;
+    }
   } finally {
-    loadingProducts.value = false;
+    if (isMounted.value) {
+      loadingProducts.value = false;
+    }
   }
 };
 
@@ -283,35 +322,60 @@ const currentCategoryName = computed(() => {
 const sortProducts = (products) => {
   if (!products || products.length === 0) return [];
   
-  const sorted = [...products];
-  
-  switch (sortBy.value) {
-    case 'price-asc':
-      sorted.sort((a, b) => a.price - b.price);
-      break;
-    case 'price-desc':
-      sorted.sort((a, b) => b.price - a.price);
-      break;
-    case 'stock-desc':
-      sorted.sort((a, b) => (b.stock || 0) - (a.stock || 0));
-      break;
-    default:
-      // 默认排序，保持原顺序
-      break;
+  try {
+    const sorted = [...products];
+    
+    switch (sortBy.value) {
+      case 'price-asc':
+        sorted.sort((a, b) => {
+          // 安全地获取价格
+          const priceA = parseFloat(a.price) || 0;
+          const priceB = parseFloat(b.price) || 0;
+          return priceA - priceB;
+        });
+        break;
+      case 'price-desc':
+        sorted.sort((a, b) => {
+          // 安全地获取价格
+          const priceA = parseFloat(a.price) || 0;
+          const priceB = parseFloat(b.price) || 0;
+          return priceB - priceA;
+        });
+        break;
+      case 'stock-desc':
+        sorted.sort((a, b) => {
+          // 安全地获取库存
+          const stockA = parseInt(a.stock) || 0;
+          const stockB = parseInt(b.stock) || 0;
+          return stockB - stockA;
+        });
+        break;
+      default:
+        // 默认排序，保持原顺序
+        break;
+    }
+    
+    return sorted;
+  } catch (error) {
+    console.error('排序商品时出错:', error);
+    return [...products]; // 返回原始数组的副本
   }
-  
-  return sorted;
 };
 
 // 过滤商品
 const filterProducts = (products) => {
   if (!products || products.length === 0) return [];
   
-  return products.filter(product => {
-    // 价格过滤
-    const price = product.price || 0;
-    return price >= priceRange.value[0] && price <= priceRange.value[1];
-  });
+  try {
+    return products.filter(product => {
+      // 安全地获取价格
+      const price = parseFloat(product.price) || 0;
+      return price >= priceRange.value[0] && price <= priceRange.value[1];
+    });
+  } catch (error) {
+    console.error('过滤商品时出错:', error);
+    return [...products]; // 返回原始数组的副本
+  }
 };
 
 // 计算属性：分页后的商品
@@ -336,21 +400,32 @@ const handleCategoryClick = async (categoryId) => {
     activeCategory.value = categoryId;
     currentPage.value = 1;
     
-    if (categoryId) {
-      await router.push({ 
-        name: 'category-with-id', 
-        params: { id: categoryId }
-      });
-    } else {
-      await router.push({ 
-        name: 'category'
-      });
+    // 使用 try-catch 块捕获路由错误
+    try {
+      if (categoryId) {
+        await router.push({ 
+          name: 'category-with-id', 
+          params: { id: categoryId }
+        });
+      } else {
+        await router.push({ 
+          name: 'category'
+        });
+      }
+    } catch (routeError) {
+      console.error('路由导航被中止:', routeError);
+      // 路由错误不影响后续操作
     }
     
-    await fetchProducts();
+    // 检查组件是否已卸载
+    if (isMounted.value) {
+      await fetchProducts();
+    }
   } catch (error) {
     console.error('Failed to switch category:', error);
-    ElMessage.error('切换分类失败');
+    if (isMounted.value) {
+      ElMessage.error('切换分类失败');
+    }
   }
 };
 
@@ -384,32 +459,53 @@ const navigateToProduct = (productId) => {
 };
 
 const addItemToCart = async (product) => {
-  if (!product) {
-    ElMessage.error('无效的商品数据');
-    return;
-  }
-  
-  // 检查用户是否已登录
-  if (!userStore.isAuthenticated) {
-    ElMessage.warning('请先登录');
-    router.push('/login');
-    return;
-  }
-  
-  const stock = product.stock || 0;
-  if (stock === 0) {
-    ElMessage.warning('抱歉，该商品已售罄！');
-    return;
-  }
-  
   try {
-    const productId = product.productId;
+    if (!product) {
+      ElMessage.error('无效的商品数据');
+      return;
+    }
+    
+    // 检查商品是否有有效的ID
+    const productId = product.productId || product.id;
+    if (!productId) {
+      console.error('商品缺少ID:', product);
+      ElMessage.error('无法添加商品：商品ID缺失');
+      return;
+    }
+    
+    // 检查用户是否已登录
+    if (!userStore.isAuthenticated) {
+      ElMessage.warning('请先登录');
+      // 保存当前页面路径，登录后可以返回
+      localStorage.setItem('redirect_path', route.fullPath);
+      router.push('/login');
+      return;
+    }
+    
+    // 检查商品库存
+    const stock = parseInt(product.stock) || 0;
+    if (stock <= 0) {
+      ElMessage.warning('抱歉，该商品已售罄！');
+      return;
+    }
+    
+    // 调试输出
+    console.log('添加到购物车:', {
+      productId,
+      quantity: 1,
+      product: {
+        name: product.name,
+        price: product.price
+      }
+    });
+    
     // 如果有多个SKU，应该让用户选择
     const skuId = product.skus && product.skus.length > 0 ? product.skus[0].skuId : null;
+    
     await cartStore.addItem(productId, skuId, 1);
     ElMessage.success('商品已加入购物车');
   } catch (error) {
-    console.error('Failed to add item to cart:', error);
+    console.error('添加商品到购物车过程中发生错误:', error);
     ElMessage.error('添加商品到购物车失败');
   }
 };
@@ -453,21 +549,55 @@ const handleImageError = (event, product) => {
   }
 };
 
+// 格式化价格
+const formatPrice = (price) => {
+  if (price === undefined || price === null) {
+    return '0.00';
+  }
+  
+  try {
+    // 确保价格是数字
+    const numPrice = typeof price === 'number' ? price : parseFloat(price);
+    
+    // 检查是否是有效数字
+    if (isNaN(numPrice)) {
+      console.warn('无效的价格值:', price);
+      return '0.00';
+    }
+    
+    // 格式化为两位小数
+    return numPrice.toFixed(2);
+  } catch (error) {
+    console.error('格式化价格出错:', error, price);
+    return '0.00';
+  }
+};
+
 // --- Lifecycle Hooks & Watchers ---
 onMounted(async () => {
+  isMounted.value = true;
   await fetchCategories();
   if (!route.params.id) {
     activeCategory.value = '';
   } else {
     activeCategory.value = route.params.id;
   }
-  await fetchProducts();
+  if (isMounted.value) {
+    await fetchProducts();
+  }
+});
+
+onBeforeUnmount(() => {
+  // 标记组件已卸载
+  isMounted.value = false;
 });
 
 watch(() => route.params.id, (newId) => {
-  activeCategory.value = newId || '';
-  currentPage.value = 1;
-  fetchProducts();
+  if (isMounted.value) {
+    activeCategory.value = newId || '';
+    currentPage.value = 1;
+    fetchProducts();
+  }
 });
 </script>
 

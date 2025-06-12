@@ -191,6 +191,8 @@ public class OrderServiceImpl implements IOrderService {
         order.setStatus("PAID");
         order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
+
+        // 注意：直接购买不需要删除购物车项
     }
 
     @Override

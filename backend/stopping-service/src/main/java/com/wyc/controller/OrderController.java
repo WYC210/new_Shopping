@@ -2,6 +2,7 @@ package com.wyc.controller;
 
 import com.wyc.domain.vo.OrderCreateVO;
 import com.wyc.domain.vo.OrderDetailVO;
+import com.wyc.domain.vo.DirectPurchaseVO;
 import com.wyc.security.SecurityContext;
 import com.wyc.service.IOrderService;
 import com.wyc.utils.R;
@@ -89,5 +90,28 @@ public class OrderController {
         Long userId = SecurityContext.getUserId();
         orderService.deleteOrder(orderId, userId);
         return R.ok();
+    }
+
+    @ApiOperation("直接购买商品")
+    @PostMapping("/direct-purchase")
+    public R<Long> directPurchase(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @ApiParam(value = "直接购买信息", required = true) @RequestBody DirectPurchaseVO directPurchaseVO) {
+        Long userId = SecurityContext.getUserId();
+        // 转换为订单创建对象
+        OrderCreateVO orderCreateVO = new OrderCreateVO();
+        orderCreateVO.setItems(directPurchaseVO.getItems());
+        orderCreateVO.setAddressId(directPurchaseVO.getAddressId());
+        orderCreateVO.setRemark(directPurchaseVO.getRemark());
+
+        // 创建订单
+        Long orderId = orderService.createOrder(userId, orderCreateVO);
+
+        // 如果提供了支付方式，直接支付
+        if (directPurchaseVO.getPaymentMethod() != null && !directPurchaseVO.getPaymentMethod().isEmpty()) {
+            orderService.payOrder(orderId, userId, directPurchaseVO.getPaymentMethod());
+        }
+
+        return R.ok(orderId);
     }
 }
