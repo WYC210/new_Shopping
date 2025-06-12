@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Component
@@ -27,6 +29,9 @@ public class JwtTokenUtil {
 
     @Value("${jwt.expiration}")
     private Long expiration;
+
+    @Autowired
+    private RedisCache redisCache;
 
     private SecretKey getSigningKey() {
         try {
@@ -42,8 +47,20 @@ public class JwtTokenUtil {
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         SecurityUserDetails securityUserDetails = (SecurityUserDetails) userDetails;
-        claims.put("userId", securityUserDetails.getUserId());
-        return createToken(claims, securityUserDetails.getUserId().toString());
+        Long userId = securityUserDetails.getUserId();
+        claims.put("userId", userId);
+
+        // 生成唯一的token ID
+        String tokenId = UUID.randomUUID().toString();
+        claims.put("tokenId", tokenId);
+
+        String token = createToken(claims, userId.toString());
+
+        // 将token存储到Redis中
+        String redisKey = "token:" + userId;
+        redisCache.setCacheObject(redisKey, token, expiration.intValue(), java.util.concurrent.TimeUnit.SECONDS);
+
+        return token;
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
@@ -60,6 +77,15 @@ public class JwtTokenUtil {
         try {
             Claims claims = getAllClaimsFromToken(token);
             return Long.parseLong(claims.getSubject());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public String getTokenIdFromToken(String token) {
+        try {
+            Claims claims = getAllClaimsFromToken(token);
+            return claims.get("tokenId", String.class);
         } catch (Exception e) {
             return null;
         }
@@ -94,9 +120,22 @@ public class JwtTokenUtil {
                 return false;
             }
             SecurityUserDetails securityUserDetails = (SecurityUserDetails) userDetails;
+
+            // 检查Redis中是否存在该token
+            String redisKey = "token:" + userId;
+            String storedToken = redisCache.getCacheObject(redisKey);
+            if (storedToken == null || !storedToken.equals(token)) {
+                return false;
+            }
+
             return (userId.equals(securityUserDetails.getUserId()) && !isTokenExpired(token));
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public void invalidateToken(Long userId) {
+        String redisKey = "token:" + userId;
+        redisCache.deleteObject(redisKey);
     }
 }

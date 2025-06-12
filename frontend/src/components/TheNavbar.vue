@@ -94,6 +94,15 @@
                   <el-icon><Location /></el-icon>
                   <span>收货地址</span>
                 </el-dropdown-item>
+                <el-dropdown-item command="history">
+                  <el-icon><Clock /></el-icon>
+                  <span>浏览记录</span>
+                </el-dropdown-item>
+                <el-dropdown-item command="signin">
+                  <el-icon><Calendar /></el-icon>
+                  <span>每日签到</span>
+                  <el-tag v-if="!userStore.signInStatus.todaySigned" type="danger" size="small" effect="dark">未签到</el-tag>
+                </el-dropdown-item>
                 <el-dropdown-item divided command="logout">
                   <el-icon><SwitchButton /></el-icon>
                   <span>退出登录</span>
@@ -133,7 +142,9 @@ import {
   Ticket,
   Location,
   SwitchButton,
-  Plus
+  Plus,
+  Calendar,
+  Clock
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -163,11 +174,12 @@ const fetchCategories = async () => {
 }
 
 // 组件挂载时获取分类数据
-onMounted(() => {
+onMounted(async () => {
   fetchCategories()
-  // 只有在用户已登录的情况下才获取购物车数据
+  // 只有在用户已登录的情况下才获取购物车数据和签到状态
   if (userStore.isAuthenticated) {
     cartStore.fetchCartItems()
+    await userStore.checkSignIn()
   }
 })
 
@@ -211,6 +223,12 @@ const handleCommand = (command) => {
       break
     case 'address':
       router.push('/profile/address')
+      break
+    case 'history':
+      router.push('/profile/favorites')
+      break
+    case 'signin':
+      router.push('/profile/signin')
       break
     case 'logout':
       handleLogout()

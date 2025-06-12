@@ -1,5 +1,20 @@
 <template>
   <div class="home-container content-container">
+    <!-- 签到提醒 -->
+    <el-alert
+      v-if="userStore.isAuthenticated && !userStore.signInStatus.todaySigned"
+      title="今日尚未签到，连续签到可获得更多奖励！"
+      type="info"
+      :closable="false"
+      show-icon
+    >
+      <template #default>
+        <div class="sign-in-alert-content">
+          <span>已连续签到 {{ userStore.signInStatus.continuousDays }} 天</span>
+          <el-button type="primary" size="small" @click="handleQuickSignIn">立即签到</el-button>
+        </div>
+      </template>
+    </el-alert>
 
     <section class="banner-section">
       <el-carousel height="500px" :interval="5000" arrow="always" indicator-position="outside">
@@ -335,6 +350,11 @@ onMounted(async () => {
     console.error('❌ 首页数据加载失败:', error)
     ElMessage.error('数据加载失败，请刷新页面重试')
   }
+
+  // 如果用户已登录，检查签到状态
+  if (userStore.isAuthenticated) {
+    await userStore.checkSignIn();
+  }
 });
 
 // --- 优惠券相关函数 ---
@@ -443,6 +463,23 @@ const getCategoryIcon = (categoryName) => {
   return 'Goods';
 };
 
+// 快速签到
+const handleQuickSignIn = async () => {
+  if (userStore.signInStatus.todaySigned) {
+    ElMessage.info('今日已签到');
+    return;
+  }
+  
+  try {
+    const success = await userStore.signIn();
+    if (success) {
+      ElMessage.success(`签到成功！已连续签到${userStore.signInStatus.continuousDays}天`);
+    }
+  } catch (error) {
+    console.error('签到失败:', error);
+    ElMessage.error('签到失败，请前往个人中心-签到页面重试');
+  }
+};
 
 </script>
 
@@ -513,6 +550,7 @@ const getCategoryIcon = (categoryName) => {
 
 /* --- Banner Section Styles --- */
 .banner-section {
+  margin-top: 20px;
   margin-bottom: 40px;
   border-radius: 16px;
   overflow: hidden;
@@ -1257,5 +1295,14 @@ const getCategoryIcon = (categoryName) => {
 .demo-link .el-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* 签到提醒样式 */
+.sign-in-alert-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 10px;
 }
 </style>

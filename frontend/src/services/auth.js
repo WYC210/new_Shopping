@@ -18,9 +18,12 @@ export const authService = {
       // 尝试从本地存储恢复用户会话
       await userStore.restoreSession()
       
-      // 如果用户已登录，获取购物车数据
+      // 如果用户已登录，获取购物车数据和签到数据
       if (userStore.isAuthenticated) {
-        await cartStore.fetchCartItems()
+        await Promise.all([
+          cartStore.fetchCartItems(),
+          userStore.initSignInData()
+        ])
       }
     } catch (error) {
       console.error('初始化认证状态失败:', error)
@@ -60,5 +63,22 @@ export const authService = {
     } else {
       router.push('/')
     }
+  },
+  
+  /**
+   * 登录成功后的处理
+   */
+  async afterLogin() {
+    const userStore = useUserStore()
+    const cartStore = useCartStore()
+    
+    // 初始化购物车和签到数据
+    await Promise.all([
+      cartStore.fetchCartItems(),
+      userStore.initSignInData()
+    ])
+    
+    // 重定向到之前的页面
+    this.redirectAfterLogin()
   }
 } 

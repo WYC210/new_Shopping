@@ -69,40 +69,61 @@ const router = createRouter({
       meta: { 
         requiresAuth: true // 需要登录
       },
+      redirect: { name: 'profile-info' },
       children: [
         {
-          path: '',
-          redirect: '/profile/orders'
+          path: 'info',
+          name: 'profile-info',
+          component: () => import('../views/profile/ProfileInfo.vue'),
+          meta: {
+            title: '个人信息',
+            requiresAuth: true
+          }
         },
         {
           path: 'orders',
           name: 'profile-orders',
-          component: () => import('../views/profile/ProfileOrders.vue')
+          component: () => import('../views/profile/ProfileOrders.vue'),
+          meta: {
+            title: '我的订单',
+            requiresAuth: true
+          }
         },
         {
           path: 'address',
           name: 'profile-address',
-          component: () => import('../views/profile/ProfileAddress.vue')
+          component: () => import('../views/profile/ProfileAddress.vue'),
+          meta: {
+            title: '收货地址',
+            requiresAuth: true
+          }
         },
         {
           path: 'coupons',
           name: 'profile-coupons',
-          component: () => import('../views/profile/ProfileCoupons.vue')
+          component: () => import('../views/profile/ProfileCoupons.vue'),
+          meta: {
+            title: '我的优惠券',
+            requiresAuth: true
+          }
         },
         {
-          path: 'history',
-          name: 'profile-history',
-          component: () => import('../views/profile/ProfileHistory.vue')
+          path: 'favorites',
+          name: 'profile-favorites',
+          component: () => import('../views/profile/ProfileHistory.vue'),
+          meta: {
+            title: '浏览记录',
+            requiresAuth: true
+          }
         },
         {
-          path: 'info',
-          name: 'profile-info',
-          component: () => import('../views/profile/ProfileInfo.vue')
-        },
-        {
-          path: 'password',
-          name: 'profile-password',
-          component: () => import('../views/profile/ProfilePassword.vue')
+          path: 'signin',
+          name: 'profile-signin',
+          component: () => import('../views/profile/SignIn.vue'),
+          meta: {
+            title: '每日签到',
+            requiresAuth: true
+          }
         }
       ]
     },

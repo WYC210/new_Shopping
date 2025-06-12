@@ -2,6 +2,7 @@ package com.wyc.utils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 @Component
 public class RedisCache {
@@ -196,5 +198,70 @@ public class RedisCache {
 
     public void expire(String key, int timeout, java.util.concurrent.TimeUnit unit) {
         redisTemplate.expire(key, timeout, unit);
+    }
+
+    /**
+     * BitMap相关操作
+     */
+
+    /**
+     * 设置指定位置的bit值为1
+     * 
+     * @param key    键
+     * @param offset 偏移量
+     * @return 是否成功
+     */
+    public Boolean setBit(String key, long offset, boolean value) {
+        return redisTemplate.opsForValue().setBit(key, offset, value);
+    }
+
+    /**
+     * 获取指定位置的bit值
+     * 
+     * @param key    键
+     * @param offset 偏移量
+     * @return bit值
+     */
+    public Boolean getBit(String key, long offset) {
+        return redisTemplate.opsForValue().getBit(key, offset);
+    }
+
+    /**
+     * 统计指定key中为1的bit数
+     * 
+     * @param key 键
+     * @return 为1的bit数
+     */
+    public Long bitCount(String key) {
+        return redisTemplate.execute((RedisCallback<Long>) connection -> connection.bitCount(key.getBytes()));
+    }
+
+    /**
+     * 统计指定范围内为1的bit数
+     * 
+     * @param key   键
+     * @param start 开始字节
+     * @param end   结束字节
+     * @return 为1的bit数
+     */
+    public Long bitCount(String key, long start, long end) {
+        return redisTemplate
+                .execute((RedisCallback<Long>) connection -> connection.bitCount(key.getBytes(), start, end));
+    }
+
+    /**
+     * 获取指定key中所有为1的bit位置
+     * 
+     * @param key 键
+     * @return 为1的bit位置列表
+     */
+    public List<Long> getBitPositions(String key, long start, long end) {
+        List<Long> result = new ArrayList<>();
+        for (long i = start; i <= end; i++) {
+            if (Boolean.TRUE.equals(getBit(key, i))) {
+                result.add(i);
+            }
+        }
+        return result;
     }
 }

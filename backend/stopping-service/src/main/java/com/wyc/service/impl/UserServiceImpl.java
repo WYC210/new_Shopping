@@ -153,8 +153,13 @@ public class UserServiceImpl implements IUserService {
         String token = request.getHeader(tokenHeader);
         if (StringUtils.hasText(token) && token.startsWith(tokenPrefix)) {
             token = token.substring(tokenPrefix.length());
-            // 将token加入黑名单
-            redisCache.setCacheObject("token_blacklist:" + token, true);
+
+            // 从token中获取用户ID
+            Long userId = jwtTokenUtil.getUserIdFromToken(token);
+            if (userId != null) {
+                // 使token失效
+                jwtTokenUtil.invalidateToken(userId);
+            }
         }
         SecurityContextHolder.clearContext();
     }

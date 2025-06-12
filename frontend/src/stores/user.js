@@ -3,6 +3,7 @@ import axios from 'axios'
 import apiClient from '../api/client'
 import { ElMessage } from 'element-plus'
 import router from '../router'
+import { userApi } from '../api/user'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -15,7 +16,15 @@ export const useUserStore = defineStore('user', {
     roles: [],
     balance: 0,
     loginStatus: false,
-    isInitialized: false
+    isInitialized: false,
+    // 签到相关状态
+    signInStatus: {
+      todaySigned: false,
+      continuousDays: 0,
+      totalDays: 0,
+      monthDays: 0
+    },
+    signInCalendar: {}
   }),
   
   getters: {
@@ -42,9 +51,13 @@ export const useUserStore = defineStore('user', {
     
     setToken(token) {
       this.token = token;
-      localStorage.setItem('token', token);
-      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       this.loginStatus = true;
+      
+      // 保存token到本地存储
+      localStorage.setItem('token', token);
+      
+      // 设置axios默认请求头
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     },
     
     clearUserInfo() {
@@ -57,82 +70,220 @@ export const useUserStore = defineStore('user', {
       this.roles = [];
       this.balance = 0;
       this.loginStatus = false;
+      
+      // 清除本地存储的token
       localStorage.removeItem('token');
+      
+      // 清除请求头中的Authorization
       delete apiClient.defaults.headers.common['Authorization'];
-    },
-    
-    logout() {
-      this.clearUserInfo();
-      ElMessage.success('已退出登录');
+      
+      // 重置签到相关状态
+      this.signInStatus = {
+        todaySigned: false,
+        continuousDays: 0,
+        totalDays: 0,
+        monthDays: 0
+      };
+      this.signInCalendar = {};
     },
     
     async login(loginData) {
       try {
-        console.log('开始登录请求:', loginData);
-        const response = await apiClient.post('/users/login', loginData);
-        console.log('登录响应数据1232131:', response);
+        const response = await userApi.login(loginData);
         
-        // 查找token (根据实际API响应格式调整)
+        // 从响应中获取token
         let token = '';
-        let userId = null;
-        let username = '';
-    
+        
         // 分析响应结构
-        if (response.msg && response.code === 200) {
-          // 特殊处理：API将token放在msg字段
-         
+        if (response.code === 200) {
+          // 从响应中获取token (根据实际API响应格式调整)
           if (response.msg && typeof response.msg === 'string') {
-            token = response.msg ;
-            console.log('从msg字段获取到token');
-            
-
-            // 尝试从JWT中解析用户信息
-            try {
-              const base64Url = token.split('.')[1];
-              const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-              const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-              }).join(''));
-              
-              const payload = JSON.parse(jsonPayload);
-              console.log('JWT payload:', payload);
-              
-              // 从JWT中提取用户ID和用户名
-              userId = payload.userId || payload.user_id || payload.sub;
-              username = payload.username || payload.sub;
-            } catch (e) {
-              console.error('解析JWT失败:', e);
-            }
-          // 标准格式：token在data.token字段
-          } else if (response.data.data && response.data.data.token) {
+            token = response.msg;
+          } else if (response.data && response.data.token) {
             token = response.data.data.token;
           }
         }
         
-        console.log('最终解析到的token:', token);
-        
         if (!token) {
-          console.error('未获取到有效token，但请求成功');
           ElMessage.warning('登录成功但未获取到有效凭证，请联系管理员');
           return false;
         }
         
         this.setToken(token);
         
-        // 使用从JWT中解析的信息或从响应中获取的信息
-        const userInfo = {
-          userId: userId,
-          username: username || loginData.username // 如果无法从JWT获取，就使用登录表单中的用户名
-        };
-        
-        this.setUser(userInfo);
-        console.log('设置的用户信息:', userInfo);
+        // 获取用户信息
+        await this.getUserInfo();
         
         ElMessage.success('登录成功');
         return true;
       } catch (error) {
-        console.error('登录请求失败:', error);
         ElMessage.error(error.response?.data?.msg || '登录失败，请稍后再试');
+        return false;
+      }
+    },
+    
+    async logout() {
+      try {
+        // 调用登出API，服务端会使token失效
+        await userApi.logout();
+        
+        // 清除本地用户信息
+        this.clearUserInfo();
+        
+        ElMessage.success('已安全退出登录');
+        return true;
+      } catch (error) {
+        console.error('登出失败:', error);
+        
+        // 即使API调用失败，也清除本地状态
+        this.clearUserInfo();
+        
+        ElMessage.warning('登出过程中发生错误，但已清除本地登录状态');
+        return false;
+      }
+    },
+
+    async getUserInfo() {
+      if (!this.token) return false;
+      
+      try {
+        const response = await userApi.getUserDetails();
+        if (response.data && response.data.data) {
+          this.setUser(response.data.data);
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+        return false;
+      }
+    },
+    
+    // 恢复会话，从本地存储恢复登录状态并获取用户信息
+    async restoreSession() {
+      if (this.isInitialized) return;
+      
+      const token = localStorage.getItem('token');
+      if (token) {
+        this.token = token;
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        this.loginStatus = true;
+        
+        try {
+          await this.getUserInfo();
+        } catch (error) {
+          console.error('恢复会话失败，可能是token已过期:', error);
+          this.clearUserInfo();
+        }
+      }
+      
+      this.isInitialized = true;
+    },
+    
+    // ===== 签到相关方法 =====
+    
+    // 执行签到
+    async signIn() {
+      try {
+        const response = await userApi.signIn();
+        console.log('签到响应数据:', response);
+        if (response.data && response.code === 200) {
+          const signData = response.data;
+          
+          // 更新签到状态
+          this.signInStatus = {
+            todaySigned: true,
+            continuousDays: signData.continuousCount || this.signInStatus.continuousDays + 1,
+            totalDays: this.signInStatus.totalDays + 1,
+            monthDays: signData.monthCount || this.signInStatus.monthDays + 1
+          };
+          
+          // 更新日历
+          await this.getMonthSignRecord();
+          
+          ElMessage.success(`签到成功！已连续签到${this.signInStatus.continuousDays}天`);
+          return true;
+        }
+        return false;
+      } catch (error) {
+        // 处理已签到的情况
+        if (error.response?.data?.code === 500 && error.response?.data?.msg === '今天已经签到过了') {
+          // 更新签到状态为已签到
+          this.signInStatus.todaySigned = true;
+          // 更新日历
+          await this.getMonthSignRecord();
+          ElMessage.info('今天已经签到过了');
+          return false;
+        }
+        ElMessage.error(error.response?.data?.msg || '签到失败，请稍后再试');
+        return false;
+      }
+    },
+    
+    // 检查今天是否已签到
+    async checkSignIn() {
+      try {
+        const response = await userApi.checkSignIn();
+        if (response.data && response.code === 200) {
+          this.signInStatus.todaySigned = response.data;
+          return response.data;
+        }
+        return false;
+      } catch (error) {
+        console.error('检查签到状态失败:', error);
+        return false;
+      }
+    },
+    
+    // 获取当月签到记录
+    async getMonthSignRecord() {
+      try {
+        const response = await userApi.getMonthSignRecord();
+        if (response.data && response.code === 200) {
+          this.signInCalendar = response.data || {};
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('获取月度签到记录失败:', error);
+        return false;
+      }
+    },
+    
+    // 获取签到统计信息
+    async getSignStats() {
+      try {
+        const response = await userApi.getSignStats();
+        if (response.data && response.code === 200) {
+          const stats = response.data || {};
+          this.signInStatus = {
+            todaySigned: stats.todaySigned || false,
+            continuousDays: stats.continuousDays || 0,
+            totalDays: stats.totalDays || 0,
+            monthDays: stats.monthDays || 0
+          };
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('获取签到统计信息失败:', error);
+        return false;
+      }
+    },
+    
+    // 初始化签到数据
+    async initSignInData() {
+      if (!this.isAuthenticated) return;
+      
+      try {
+        await Promise.all([
+          this.checkSignIn(),
+          this.getSignStats(),
+          this.getMonthSignRecord()
+        ]);
+        return true;
+      } catch (error) {
+        console.error('初始化签到数据失败:', error);
         return false;
       }
     },
@@ -145,19 +296,6 @@ export const useUserStore = defineStore('user', {
       } catch (error) {
         console.error('注册请求失败:', error);
         ElMessage.error(error.response?.data?.msg || '注册失败，请稍后再试');
-        return false;
-      }
-    },
-
-    async getUserInfo() {
-      if (!this.token) return false;
-      
-      try {
-        const response = await apiClient.get('/users/details');
-        this.setUser(response.data);
-        return true;
-      } catch (error) {
-        console.error('获取用户信息失败:', error);
         return false;
       }
     },
@@ -190,39 +328,6 @@ export const useUserStore = defineStore('user', {
         ElMessage.error(error.response?.data?.msg || '修改密码失败，请稍后再试');
         return false;
       }
-    },
-
-    // 初始化，从本地存储恢复登录状态
-    async initFromStorage() {
-      const token = localStorage.getItem('token');
-      if (token) {
-        this.token = token;
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        this.loginStatus = true;
-        await this.getUserInfo(); // 获取最新用户信息
-      }
-      this.isInitialized = true;
-    },
-    
-    // 恢复会话，从本地存储恢复登录状态并获取用户信息
-    async restoreSession() {
-      if (this.isInitialized) return;
-      
-      const token = localStorage.getItem('token');
-      if (token) {
-        this.token = token;
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        this.loginStatus = true;
-        
-        try {
-          await this.getUserInfo();
-        } catch (error) {
-          console.error('恢复会话失败，可能是token已过期:', error);
-          this.clearUserInfo();
-        }
-      }
-      
-      this.isInitialized = true;
     }
   }
 }) 

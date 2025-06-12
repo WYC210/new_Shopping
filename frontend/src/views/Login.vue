@@ -57,27 +57,24 @@ const rules = {
 }
 
 const handleLogin = async () => {
-  if (!loginFormRef.value) return
+  if (loading.value) return
   
   try {
-    await loginFormRef.value.validate()
     loading.value = true
     
-    console.log('提交登录表单:', loginForm)
-    // 调用store中的login方法
-    const loginResult = await userStore.login(loginForm)
+    // 调用store的登录方法
+    const success = await userStore.login({
+      username: loginForm.username,
+      password: loginForm.password
+    })
     
-    if (loginResult) {
-      // 使用authService进行重定向
-      authService.redirectAfterLogin()
+    if (success) {
+      // 使用认证服务处理登录后的操作
+      await authService.afterLogin()
     }
   } catch (error) {
-    console.error('登录过程出错:', error)
-    if (error.message) {
-      ElMessage.error(error.message)
-    } else {
-      ElMessage.error('登录失败，请稍后再试')
-    }
+    console.error('登录失败:', error)
+    ElMessage.error('登录失败，请稍后再试')
   } finally {
     loading.value = false
   }

@@ -10,31 +10,32 @@
         <el-menu
           :default-active="activeMenu"
           class="profile-menu"
-          @select="handleSelect"
+          @select="handleMenuSelect"
         >
-          <el-menu-item index="orders">
+          <el-menu-item index="profile-info">
+            <el-icon><User /></el-icon>
+            <span>个人信息</span>
+          </el-menu-item>
+          <el-menu-item index="profile-orders">
             <el-icon><Document /></el-icon>
             <span>我的订单</span>
           </el-menu-item>
-          <el-menu-item index="history">
-            <el-icon><Clock /></el-icon>
-            <span>浏览记录</span>
-          </el-menu-item>
-          <el-menu-item index="address">
+          <el-menu-item index="profile-address">
             <el-icon><Location /></el-icon>
             <span>收货地址</span>
           </el-menu-item>
-          <el-menu-item index="coupons">
+          <el-menu-item index="profile-coupons">
             <el-icon><Ticket /></el-icon>
             <span>我的优惠券</span>
           </el-menu-item>
-          <el-menu-item index="info">
-            <el-icon><User /></el-icon>
-            <span>账号信息</span>
+          <el-menu-item index="profile-favorites">
+            <el-icon><Clock /></el-icon>
+            <span>浏览记录</span>
           </el-menu-item>
-          <el-menu-item index="password">
-            <el-icon><Lock /></el-icon>
-            <span>修改密码</span>
+          <el-menu-item index="profile-signin">
+            <el-icon><Calendar /></el-icon>
+            <span>每日签到</span>
+            <el-tag v-if="!userStore.signInStatus.todaySigned" type="danger" size="small" effect="dark">未签到</el-tag>
           </el-menu-item>
         </el-menu>
       </div>
@@ -50,23 +51,28 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Document, Location, Ticket, User, Lock, Clock } from '@element-plus/icons-vue'
+import { Document, Location, Ticket, User, Lock, Clock, Star, Calendar } from '@element-plus/icons-vue'
 import { useUserStore } from '../../stores/user'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
-const activeMenu = ref('orders')
+const activeMenu = ref('profile-orders')
 
-onMounted(() => {
+onMounted(async () => {
   // 根据当前路由设置激活的菜单项
   const path = route.path.split('/').pop()
   if (path) {
     activeMenu.value = path
   }
+
+  // 检查今日签到状态
+  if (userStore.isAuthenticated) {
+    await userStore.checkSignIn()
+  }
 })
 
-const handleSelect = (key) => {
+const handleMenuSelect = (key) => {
   router.push(`/profile/${key}`)
 }
 </script>
