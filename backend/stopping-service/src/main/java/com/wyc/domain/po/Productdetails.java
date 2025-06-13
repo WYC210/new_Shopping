@@ -3,8 +3,7 @@ package com.wyc.domain.po;
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+
 
 /**
  * 商品详细表对象 productdetails
@@ -15,7 +14,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 @Data
 public class Productdetails
 {
-    private static final long serialVersionUID = 1L;
+  
 
     /** 商品ID */
     private Long productId;

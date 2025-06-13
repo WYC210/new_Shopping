@@ -285,7 +285,7 @@ onMounted(() => {
 
 .section-title {
   font-size: 24px;
-  color: #333;
+  color: #fff;
   font-weight: 500;
   margin: 0;
 }
@@ -301,19 +301,24 @@ onMounted(() => {
 }
 
 .address-item {
-  background: #fff;
-  border: 1px solid #dcdfe6;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   padding: 20px;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
 .address-item:hover {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .address-item.is-default {
-  border-color: #67c23a;
+  border-color: rgba(103, 194, 58, 0.5);
+  background: linear-gradient(145deg, rgba(103, 194, 58, 0.1), rgba(103, 194, 58, 0.05));
 }
 
 .address-content {
@@ -334,15 +339,16 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 500;
   margin-right: 10px;
+  color: #fff;
 }
 
 .address-header .phone {
-  color: #666;
+  color: rgba(255, 255, 255, 0.7);
   margin-right: 10px;
 }
 
 .address-detail {
-  color: #666;
+  color: rgba(255, 255, 255, 0.7);
   line-height: 1.5;
 }
 
@@ -352,7 +358,68 @@ onMounted(() => {
   gap: 10px;
 }
 
+:deep(.el-dialog) {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+:deep(.el-dialog__header) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:deep(.el-dialog__title) {
+  color: #fff;
+}
+
 :deep(.el-dialog__body) {
   padding-top: 20px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+:deep(.el-form-item__label) {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+:deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+:deep(.el-input__inner) {
+  color: #fff;
+}
+
+:deep(.el-textarea__inner) {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+:deep(.el-button) {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+:deep(.el-button--primary) {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+:deep(.el-button--primary:hover) {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+:deep(.el-tag--success) {
+  background: rgba(103, 194, 58, 0.2);
+  border-color: rgba(103, 194, 58, 0.3);
+  color: #fff;
 }
 </style> 

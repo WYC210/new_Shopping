@@ -14,15 +14,12 @@ import com.wyc.mapper.ProductsMapper;
 import com.wyc.mapper.PaymentsMapper;
 import com.wyc.service.IMessageService;
 import com.wyc.service.IOrderService;
-import com.wyc.service.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
@@ -47,8 +44,6 @@ public class OrderServiceImpl implements IOrderService {
     @Autowired
     private PaymentsMapper paymentsMapper;
 
-    @Autowired
-    private IUserService userService;
 
     @Autowired
     private IMessageService messageService;

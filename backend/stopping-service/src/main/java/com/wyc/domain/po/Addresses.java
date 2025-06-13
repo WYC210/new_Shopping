@@ -14,7 +14,7 @@ import java.util.Date;
 @Data
 @ApiModel("用户地址信息")
 public class Addresses {
-    private static final long serialVersionUID = 1L;
+
 
     @ApiModelProperty("地址ID")
     private Long addressId;

@@ -202,11 +202,11 @@ const handleSearch = () => {
   }
 }
 
-const handleCategoryCommand = (categoryId) => {
+const handleCategoryCommand = async (categoryId) => {
   if (categoryId) {
-    router.push({ name: 'category-with-id', params: { id: categoryId } })
+    await router.push({ name: 'category-with-id', params: { id: categoryId } })
   } else {
-    router.push({ name: 'category' })
+    await router.push({ name: 'category' })
   }
 }
 

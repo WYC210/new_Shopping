@@ -1,7 +1,6 @@
 package com.wyc.utils;
 
 import com.wyc.mapper.ProductMapper;
-import com.wyc.mapper.ProductRecommendationsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,8 +11,7 @@ import java.util.List;
 public class BloomFilterInitializer {
     @Autowired(required = false)
     private ProductMapper productMapper;
-    @Autowired(required = false)
-    private ProductRecommendationsMapper productRecommendationsMapper;
+
 
     public static BloomFilter productBloomFilter = new BloomFilter();
     public static BloomFilter categoryBloomFilter = new BloomFilter();

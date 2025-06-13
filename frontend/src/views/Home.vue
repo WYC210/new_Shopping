@@ -267,32 +267,17 @@ const availableCoupons = ref([]);
 const couponsLoading = ref(false);
 
 // --- Navigation Functions ---
-const navigateToCategory = (categoryId) => {
-  router.push({ name: 'category-with-id', params: { id: categoryId } });
+const navigateToCategory = async (categoryId) => {
+  if (categoryId) {
+    await router.push({ name: 'category-with-id', params: { id: categoryId } });
+  } else {
+    await router.push({ name: 'category' });
+  }
 };
 
-const navigateToProduct = (productId) => {
-  if (!productId) {
-    ElMessage.error('商品ID无效');
-    return;
-  }
-  
-  // 确保 productId 是字符串类型
-  const id = String(productId);
-  
-  try {
-    router.push({
-      name: 'product',
-      params: { id }
-    }).catch(err => {
-      if (err.name !== 'NavigationDuplicated') {
-        console.error('Navigation error:', err);
-        ElMessage.error('页面跳转失败，请稍后重试');
-      }
-    });
-  } catch (error) {
-    console.error('Navigation error:', error);
-    ElMessage.error('页面跳转失败，请稍后重试');
+const navigateToProduct = async (productId) => {
+  if (productId) {
+    await router.push({ name: 'product', params: { id: productId } });
   }
 };
 

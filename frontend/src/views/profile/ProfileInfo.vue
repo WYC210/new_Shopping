@@ -143,12 +143,13 @@ onMounted(() => {
 <style scoped>
 .profile-info {
   padding: 20px;
+  color: #fff;
 }
 
 .section-title {
   margin-bottom: 30px;
   font-size: 24px;
-  color: #333;
+  color: #fff;
   font-weight: 500;
 }
 
@@ -157,11 +158,52 @@ onMounted(() => {
 }
 
 :deep(.el-form-item__label) {
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
 }
 
+:deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+:deep(.el-input__inner) {
+  color: #fff;
+}
+
+:deep(.el-input.is-disabled .el-input__wrapper) {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
 :deep(.el-input.is-disabled .el-input__inner) {
-  background-color: #f5f7fa;
-  color: #606266;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+:deep(.el-radio__label) {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+:deep(.el-radio__input.is-checked .el-radio__inner) {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+:deep(.el-button) {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+:deep(.el-button--primary) {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+:deep(.el-button--primary:hover) {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 </style> 

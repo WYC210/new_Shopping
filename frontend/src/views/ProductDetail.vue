@@ -648,6 +648,16 @@ onMounted(() => {
   window.addEventListener('mousemove', handleGlobalMouseMove)
 })
 
+// 监听路由参数变化，重新获取商品详情
+watch(() => route.params.id, (newId) => {
+  if (newId) {
+    productStore.fetchProductDetail(newId).then(() => {
+      console.log('🔄 路由参数变化，重新获取商品详情:', newId)
+      console.log('🔄 更新后的商品详情:', product.value)
+    })
+  }
+})
+
 // Lifecycle hook: before component unmount
 onBeforeUnmount(() => {
   productStore.clearCurrentProduct() // Clear product data from store

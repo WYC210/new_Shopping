@@ -8,19 +8,17 @@ import com.wyc.domain.vo.UserCouponVO;
 import com.wyc.domain.vo.UserDetailsVO;
 import com.wyc.domain.vo.UserProfileUpdateVO;
 import com.wyc.domain.vo.UserRegisterVO;
-import com.wyc.exception.ServiceException;
 import com.wyc.security.SecurityContext;
 import com.wyc.service.IUserService;
-import com.wyc.utils.JwtTokenUtil;
 import com.wyc.utils.R;
-import com.wyc.utils.RedisCache;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -33,14 +31,6 @@ public class UserController {
     @Autowired
     private IUserService userService;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
-
-    @Autowired
-    private RedisCache redisCache;
 
     @Value("${jwt.tokenHeader}")
     private String tokenHeader;
@@ -48,28 +38,48 @@ public class UserController {
     @Value("${jwt.tokenPrefix}")
     private String tokenPrefix;
 
-    @ApiOperation("用户注册")
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackRegister")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackRegister")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackRegister")
     @PostMapping("/register")
     public R<?> register(@RequestBody UserRegisterVO registerVO) {
         userService.register(registerVO);
         return R.ok("注册成功");
     }
 
-    @ApiOperation("用户登录")
+    public R<?> fallbackRegister(UserRegisterVO registerVO, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackLogin")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackLogin")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackLogin")
     @PostMapping("/login")
     public R<?> login(@RequestBody LoginDTO loginDTO) {
         String token = userService.login(loginDTO);
         return R.ok(token);
     }
 
-    @ApiOperation("用户登出")
+    public R<?> fallbackLogin(LoginDTO loginDTO, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackLogout")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackLogout")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackLogout")
     @PostMapping("/logout")
     public R<?> logout(HttpServletRequest request) {
         userService.logout(request);
         return R.ok("登出成功");
     }
 
-    @ApiOperation("获取用户详情")
+    public R<?> fallbackLogout(HttpServletRequest request, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackNoParam")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackNoParam")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackNoParam")
     @GetMapping("/details")
     public R getUserDetails() {
         Long userId = SecurityContext.getUserId();
@@ -77,7 +87,13 @@ public class UserController {
         return userService.getUserDetails(userId);
     }
 
-    @ApiOperation("更新用户余额")
+    public R fallbackNoParam(Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackUpdateBalance")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackUpdateBalance")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackUpdateBalance")
     @PostMapping("/balance")
     public R<?> updateBalance(@RequestBody BalanceUpdateVO updateVO) {
         Long userId = SecurityContext.getUserId();
@@ -85,14 +101,22 @@ public class UserController {
         return R.ok("余额更新成功");
     }
 
-    @ApiOperation("查询用户余额")
+    public R<?> fallbackUpdateBalance(BalanceUpdateVO updateVO, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackNoParam")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackNoParam")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackNoParam")
     @GetMapping("/balance")
     public R<UserDetailsVO> getBalance() {
         Long userId = SecurityContext.getUserId();
         return userService.getUserDetails(userId);
     }
 
-    @ApiOperation("修改密码")
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackUpdatePassword")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackUpdatePassword")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackUpdatePassword")
     @PostMapping("/password")
     public R<?> updatePassword(@RequestBody PasswordUpdateVO passwordUpdateVO) {
         Long userId = SecurityContext.getUserId();
@@ -100,7 +124,13 @@ public class UserController {
         return R.ok("密码修改成功");
     }
 
-    @ApiOperation("修改个人信息")
+    public R<?> fallbackUpdatePassword(PasswordUpdateVO passwordUpdateVO, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackUpdateProfile")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackUpdateProfile")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackUpdateProfile")
     @PutMapping("/profile")
     public R<?> updateProfile(@RequestBody UserProfileUpdateVO profileUpdateVO) {
         Long userId = SecurityContext.getUserId();
@@ -108,25 +138,41 @@ public class UserController {
         return R.ok("个人信息更新成功");
     }
 
-    @ApiOperation("获取用户优惠券列表")
+    public R<?> fallbackUpdateProfile(UserProfileUpdateVO profileUpdateVO, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackGetUserCoupons")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackGetUserCoupons")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackGetUserCoupons")
     @GetMapping("/coupons")
-    public R<List<UserCouponVO>> getUserCoupons(
-            @ApiParam(value = "优惠券状态", required = false) @RequestParam(required = false) String status) {
+    public R<List<UserCouponVO>> getUserCoupons(@RequestParam(required = false) String status) {
         Long userId = SecurityContext.getUserId();
         List<UserCouponVO> coupons = userService.getUserCoupons(userId, status);
         return R.ok(coupons);
     }
 
-    @ApiOperation("领取优惠券")
+    public R<List<UserCouponVO>> fallbackGetUserCoupons(String status, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackClaimCoupon")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackClaimCoupon")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackClaimCoupon")
     @PostMapping("/coupons/{couponId}")
-    public R<?> claimCoupon(
-            @ApiParam(value = "优惠券ID", required = true) @PathVariable Long couponId) {
+    public R<?> claimCoupon(@PathVariable Long couponId) {
         Long userId = SecurityContext.getUserId();
         userService.claimCoupon(userId, couponId);
         return R.ok("优惠券领取成功");
     }
 
-    @ApiOperation("获取浏览记录")
+    public R<?> fallbackClaimCoupon(Long couponId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackNoParam")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackNoParam")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackNoParam")
     @GetMapping("/browsing-history")
     public R<List<BrowsingRecordVO>> getBrowsingHistory() {
         Long userId = SecurityContext.getUserId();
@@ -134,7 +180,9 @@ public class UserController {
         return R.ok(history);
     }
 
-    @ApiOperation("记录浏览历史")
+    @CircuitBreaker(name = "userService", fallbackMethod = "fallbackRecordBrowsing")
+    @RateLimiter(name = "userService", fallbackMethod = "fallbackRecordBrowsing")
+    @Bulkhead(name = "userService", fallbackMethod = "fallbackRecordBrowsing")
     @PostMapping("/browsing-history")
     public R<?> recordBrowsing(
             @ApiParam(value = "浏览器指纹", required = true) @RequestParam String fingerprint,
@@ -142,5 +190,9 @@ public class UserController {
             @ApiParam(value = "商品名称", required = true) @RequestParam String productName) {
         userService.recordBrowsing(fingerprint, productId, productName);
         return R.ok();
+    }
+
+    public R<?> fallbackRecordBrowsing(String fingerprint, Long productId, String productName, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
     }
 }

@@ -173,6 +173,24 @@ onMounted(async () => {
 
 .sign-in-card {
   margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+:deep(.sign-in-card .el-card__header) {
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+}
+
+:deep(.sign-in-card .el-card__body) {
+  padding: 20px;
+  color: #fff;
 }
 
 .card-header {
@@ -184,6 +202,7 @@ onMounted(async () => {
 .card-header h2 {
   margin: 0;
   font-size: 18px;
+  color: #fff;
 }
 
 .sign-in-stats {
@@ -199,12 +218,12 @@ onMounted(async () => {
 .stat-value {
   font-size: 24px;
   font-weight: bold;
-  color: var(--el-color-primary);
+  color: #fff;
 }
 
 .stat-label {
   font-size: 14px;
-  color: var(--el-text-color-secondary);
+  color: rgba(255, 255, 255, 0.7);
   margin-top: 5px;
 }
 
@@ -216,18 +235,20 @@ onMounted(async () => {
   margin-bottom: 15px;
   font-size: 16px;
   text-align: center;
+  color: #fff;
 }
 
 .calendar-container {
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .calendar-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background-color: var(--el-color-primary-light-9);
-  border-bottom: 1px solid var(--el-border-color-lighter);
+  background-color: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .calendar-day-name {
@@ -235,6 +256,7 @@ onMounted(async () => {
   text-align: center;
   font-weight: bold;
   font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .calendar-body {
@@ -247,9 +269,10 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-right: 1px solid var(--el-border-color-lighter);
-  border-bottom: 1px solid var(--el-border-color-lighter);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .calendar-day:nth-child(7n) {
@@ -257,11 +280,11 @@ onMounted(async () => {
 }
 
 .calendar-day.empty {
-  background-color: var(--el-fill-color-lighter);
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
 .calendar-day.signed {
-  background-color: var(--el-color-success-light-9);
+  background-color: rgba(103, 194, 58, 0.1);
 }
 
 .calendar-day.signed::after {
@@ -269,21 +292,45 @@ onMounted(async () => {
   position: absolute;
   top: 5px;
   right: 5px;
-  color: var(--el-color-success);
+  color: rgba(103, 194, 58, 0.8);
   font-size: 12px;
 }
 
 .calendar-day.today {
-  color: var(--el-color-primary);
+  color: #fff;
   font-weight: bold;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
 .calendar-day.disabled {
-  color: var(--el-text-color-placeholder);
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .signed-button {
   opacity: 0.8;
   cursor: not-allowed;
+}
+
+:deep(.el-button) {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+:deep(.el-button--primary) {
+  background: rgba(64, 158, 255, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.3);
+  color: #fff;
+}
+
+:deep(.el-button--primary:hover) {
+  background: rgba(64, 158, 255, 0.3);
+  border-color: rgba(64, 158, 255, 0.4);
+}
+
+:deep(.el-button--success) {
+  background: rgba(103, 194, 58, 0.2);
+  border: 1px solid rgba(103, 194, 58, 0.3);
+  color: #fff;
 }
 </style> 

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Data
 @ApiModel("购物车项信息")
 public class CartItems {
-    private static final long serialVersionUID = 1L;
+  
 
     @ApiModelProperty("购物车项ID")
     private Long itemId;

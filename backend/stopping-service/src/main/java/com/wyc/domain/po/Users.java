@@ -13,7 +13,7 @@ import lombok.Data;
  */
 @Data
 public class Users {
-    private static final long serialVersionUID = 1L;
+  
 
     /** 用户ID */
     private Long userId;

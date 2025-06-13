@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @Api(tags = "商品评价接口")
@@ -113,5 +112,61 @@ public class ReviewController {
     public R<Integer> getProductReviewCount(
             @ApiParam(value = "商品ID", required = true) @PathVariable Long productId) {
         return R.ok(reviewService.getProductReviewCount(productId));
+    }
+
+    // 创建评价 fallback
+    public R<Long> createReviewFallback(UserDetails userDetails, Long orderId, Long orderItemId, Reviews review,
+            Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 获取评价详情 fallback
+    public R<Reviews> getReviewByIdFallback(Long reviewId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 获取商品的评价列表 fallback
+    public R<List<Reviews>> getProductReviewsFallback(Long productId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 获取用户的评价列表 fallback
+    public R<List<Reviews>> getUserReviewsFallback(UserDetails userDetails, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 获取订单的评价列表 fallback
+    public R<List<Reviews>> getOrderReviewsFallback(Long orderId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 回复评价 fallback
+    public R<Void> replyReviewFallback(Long reviewId, String reply, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 点赞评价 fallback
+    public R<Void> likeReviewFallback(UserDetails userDetails, Long reviewId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 取消点赞评价 fallback
+    public R<Void> unlikeReviewFallback(UserDetails userDetails, Long reviewId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 删除评价 fallback
+    public R<Void> deleteReviewFallback(UserDetails userDetails, Long reviewId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 获取商品的平均评分 fallback
+    public R<Double> getProductAverageRatingFallback(Long productId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 获取商品的评价数量 fallback
+    public R<Integer> getProductReviewCountFallback(Long productId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
     }
 }

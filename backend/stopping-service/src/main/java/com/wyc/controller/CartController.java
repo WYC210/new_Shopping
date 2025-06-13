@@ -11,8 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+
 import org.springframework.web.bind.annotation.*;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
+
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,7 @@ public class CartController {
 
     @ApiOperation("添加商品到购物车")
     @PostMapping("/items")
+    @CircuitBreaker(name = "addToCart", fallbackMethod = "addToCartFallback")
     public R<Long> addToCart(
             @AuthenticationPrincipal SecurityUserDetails userDetails,
             @ApiParam(value = "商品ID", required = true) @RequestParam(required = false) Long productId,
@@ -69,6 +73,7 @@ public class CartController {
 
     @ApiOperation("更新购物车商品数量")
     @PutMapping("/items/{cartItemId}/quantity")
+    @CircuitBreaker(name = "updateQuantity", fallbackMethod = "updateQuantityFallback")
     public R<Void> updateQuantity(
             @AuthenticationPrincipal SecurityUserDetails userDetails,
             @ApiParam(value = "购物车项ID", required = true) @PathVariable Long cartItemId,
@@ -80,6 +85,7 @@ public class CartController {
 
     @ApiOperation("更新购物车商品选中状态")
     @PutMapping("/items/{cartItemId}/selected")
+    @CircuitBreaker(name = "updateSelected", fallbackMethod = "updateSelectedFallback")
     public R<Void> updateSelected(
             @AuthenticationPrincipal SecurityUserDetails userDetails,
             @ApiParam(value = "购物车项ID", required = true) @PathVariable Long cartItemId,
@@ -91,6 +97,7 @@ public class CartController {
 
     @ApiOperation("更新所有购物车商品选中状态")
     @PutMapping("/items/selected")
+    @CircuitBreaker(name = "updateAllSelected", fallbackMethod = "updateAllSelectedFallback")
     public R<Void> updateAllSelected(
             @AuthenticationPrincipal SecurityUserDetails userDetails,
             @ApiParam(value = "是否选中（0-未选中，1-已选中）", required = true) @RequestParam Integer isSelected) {
@@ -101,6 +108,7 @@ public class CartController {
 
     @ApiOperation("删除购物车商品")
     @DeleteMapping("/items/{cartItemId}")
+    @CircuitBreaker(name = "deleteCartItem", fallbackMethod = "deleteCartItemFallback")
     public R<Void> deleteCartItem(
             @AuthenticationPrincipal SecurityUserDetails userDetails,
             @ApiParam(value = "购物车项ID", required = true) @PathVariable String cartItemId) {
@@ -125,6 +133,7 @@ public class CartController {
 
     @ApiOperation("清空购物车")
     @DeleteMapping("/items")
+    @CircuitBreaker(name = "clearCart", fallbackMethod = "clearCartFallback")
     public R<Void> clearCart(
             @AuthenticationPrincipal SecurityUserDetails userDetails) {
         Long userId = userDetails.getUserId();
@@ -134,6 +143,7 @@ public class CartController {
 
     @ApiOperation("删除选中的购物车商品")
     @DeleteMapping("/items/selected")
+    @CircuitBreaker(name = "deleteSelected", fallbackMethod = "deleteSelectedFallback")
     public R<Void> deleteSelected(
             @AuthenticationPrincipal SecurityUserDetails userDetails) {
         Long userId = userDetails.getUserId();
@@ -143,6 +153,7 @@ public class CartController {
 
     @ApiOperation("获取购物车列表")
     @GetMapping("/items")
+    @CircuitBreaker(name = "getCartItems", fallbackMethod = "getCartItemsFallback")
     public R<List<CartItems>> getCartItems(
             @AuthenticationPrincipal SecurityUserDetails userDetails) {
         Long userId = userDetails.getUserId();
@@ -153,11 +164,60 @@ public class CartController {
 
     @ApiOperation("获取选中的购物车商品列表")
     @GetMapping("/items/selected")
+    @CircuitBreaker(name = "getSelectedItems", fallbackMethod = "getSelectedItemsFallback")
     public R<List<CartItems>> getSelectedItems(
             @AuthenticationPrincipal SecurityUserDetails userDetails) {
         Long userId = userDetails.getUserId();
         List<CartItems> selectedItems = cartService.getSelectedItems(userId);
 
         return R.ok(selectedItems);
+    }
+
+    // 添加商品到购物车 fallback
+    public R<Long> addToCartFallback(SecurityUserDetails userDetails, Long productId, Long skuId, Integer quantity,
+            Map<String, Object> requestBody, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 更新购物车商品数量 fallback
+    public R<Void> updateQuantityFallback(SecurityUserDetails userDetails, Long cartItemId, Integer quantity,
+            Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 更新购物车商品选中状态 fallback
+    public R<Void> updateSelectedFallback(SecurityUserDetails userDetails, Long cartItemId, Integer isSelected,
+            Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 更新所有购物车商品选中状态 fallback
+    public R<Void> updateAllSelectedFallback(SecurityUserDetails userDetails, Integer isSelected, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 删除购物车商品 fallback
+    public R<Void> deleteCartItemFallback(SecurityUserDetails userDetails, String cartItemId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 清空购物车 fallback
+    public R<Void> clearCartFallback(SecurityUserDetails userDetails, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 删除选中的购物车商品 fallback
+    public R<Void> deleteSelectedFallback(SecurityUserDetails userDetails, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 获取购物车列表 fallback
+    public R<List<CartItems>> getCartItemsFallback(SecurityUserDetails userDetails, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 获取选中的购物车商品列表 fallback
+    public R<List<CartItems>> getSelectedItemsFallback(SecurityUserDetails userDetails, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
     }
 }

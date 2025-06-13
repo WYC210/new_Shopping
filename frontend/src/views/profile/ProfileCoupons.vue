@@ -205,7 +205,7 @@ onMounted(() => {
 
 .section-title {
   font-size: 24px;
-  color: #333;
+  color: #fff;
   font-weight: 500;
   margin-bottom: 30px;
 }
@@ -214,8 +214,27 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
+:deep(.el-tabs__nav-wrap::after) {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+:deep(.el-tabs__item) {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+:deep(.el-tabs__item.is-active) {
+  font-weight: 500;
+  color: #fff;
+}
+
+:deep(.el-tabs__active-bar) {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
 .coupon-count {
-  color: #666;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 14px;
   margin-top: 8px;
 }
@@ -231,16 +250,20 @@ onMounted(() => {
 }
 
 .coupon-item {
-  background: #fff;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .coupon-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .coupon-item.is-used,
@@ -251,13 +274,14 @@ onMounted(() => {
 .coupon-content {
   display: flex;
   padding: 20px;
-  background: linear-gradient(135deg, #409EFF 0%, #36D1DC 100%);
+  background: linear-gradient(135deg, rgba(64, 158, 255, 0.2) 0%, rgba(54, 209, 220, 0.2) 100%);
   color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .coupon-item.is-used .coupon-content,
 .coupon-item.is-expired .coupon-content {
-  background: linear-gradient(135deg, #909399 0%, #606266 100%);
+  background: linear-gradient(135deg, rgba(144, 147, 153, 0.2) 0%, rgba(96, 98, 102, 0.2) 100%);
 }
 
 .coupon-left {
@@ -288,6 +312,7 @@ onMounted(() => {
 .coupon-condition {
   font-size: 12px;
   margin-top: 4px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .coupon-right {
@@ -306,30 +331,57 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 500;
   margin-bottom: 8px;
+  color: #fff;
 }
 
 .coupon-time,
 .coupon-scope {
   font-size: 12px;
-  opacity: 0.8;
+  color: rgba(255, 255, 255, 0.7);
   margin-top: 4px;
 }
 
 .coupon-footer {
   padding: 12px 20px;
-  background: #f5f7fa;
+  background: rgba(255, 255, 255, 0.05);
   text-align: right;
 }
 
-:deep(.el-tabs__nav-wrap::after) {
-  height: 1px;
+:deep(.el-button) {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
 }
 
-:deep(.el-tabs__item) {
-  font-size: 16px;
+:deep(.el-button--primary) {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
 }
 
-:deep(.el-tabs__item.is-active) {
-  font-weight: 500;
+:deep(.el-button--primary:hover) {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+:deep(.el-tag) {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+:deep(.el-tag--success) {
+  background: rgba(103, 194, 58, 0.2);
+  border-color: rgba(103, 194, 58, 0.3);
+}
+
+:deep(.el-tag--info) {
+  background: rgba(144, 147, 153, 0.2);
+  border-color: rgba(144, 147, 153, 0.3);
+}
+
+:deep(.el-tag--danger) {
+  background: rgba(245, 108, 108, 0.2);
+  border-color: rgba(245, 108, 108, 0.3);
 }
 </style> 

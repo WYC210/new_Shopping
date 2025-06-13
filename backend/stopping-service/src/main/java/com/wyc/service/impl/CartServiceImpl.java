@@ -2,14 +2,10 @@ package com.wyc.service.impl;
 
 import com.wyc.domain.po.CartItems;
 import com.wyc.domain.po.Products;
-import com.wyc.domain.po.ProductSkus;
-import com.wyc.domain.vo.CartItemVO;
 import com.wyc.exception.ServiceException;
 import com.wyc.mapper.CartItemsMapper;
 import com.wyc.mapper.ProductsMapper;
-import com.wyc.mapper.ProductSkusMapper;
 import com.wyc.service.ICartService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +23,7 @@ public class CartServiceImpl implements ICartService {
     @Autowired
     private ProductsMapper productsMapper;
 
-    @Autowired
-    private ProductSkusMapper productSkusMapper;
+
 
     @Override
     @Transactional

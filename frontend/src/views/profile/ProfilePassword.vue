@@ -137,7 +137,7 @@ const handleSubmit = async () => {
 .section-title {
   margin-bottom: 30px;
   font-size: 24px;
-  color: #333;
+  color: #fff;
   font-weight: 500;
 }
 
@@ -147,17 +147,45 @@ const handleSubmit = async () => {
 
 :deep(.el-form-item__label) {
   font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 :deep(.el-input__wrapper) {
-  box-shadow: 0 0 0 1px #dcdfe6 inset;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
+  transition: all 0.3s ease;
 }
 
 :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #409eff inset;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px);
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px #409eff inset;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+:deep(.el-input__inner) {
+  color: #fff !important;
+}
+
+:deep(.el-button) {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+:deep(.el-button--primary) {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+:deep(.el-button--primary:hover) {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
 }
 </style> 

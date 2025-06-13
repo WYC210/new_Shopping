@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+
 
 /**
  * 订单支付表对象 payments
@@ -17,7 +16,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 @Data
 public class Payments
 {
-    private static final long serialVersionUID = 1L;
+
 
     /** 支付记录ID */
     private Long paymentId;

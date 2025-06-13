@@ -3,16 +3,13 @@ package com.wyc.controller;
 import com.wyc.domain.po.Coupons;
 import com.wyc.domain.po.UserCoupons;
 import com.wyc.security.SecurityContext;
-import com.wyc.security.SecurityUserDetails;
 import com.wyc.service.ICouponService;
 import com.wyc.utils.R;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @Api(tags = "优惠券管理接口")
@@ -75,5 +72,40 @@ public class CouponController {
             @ApiParam(value = "订单金额", required = true) @RequestParam Double amount) {
         Long userId = SecurityContext.getUserId();
         return R.ok(couponService.isCouponAvailable(userId, couponId, amount));
+    }
+
+    // 创建优惠券 fallback
+    public R<Long> createCouponFallback(Coupons coupon, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 获取优惠券详情 fallback
+    public R<Coupons> getCouponByIdFallback(Long couponId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 获取可领取的优惠券列表 fallback
+    public R<List<Coupons>> getAvailableCouponsFallback(Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 领取优惠券 fallback
+    public R<Long> receiveCouponFallback(Long couponId, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 获取用户的优惠券列表 fallback
+    public R<List<UserCoupons>> getUserCouponsFallback(String status, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 计算订单优惠金额 fallback
+    public R<Double> calculateDiscountFallback(Long couponId, Double amount, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    // 检查优惠券是否可用 fallback
+    public R<Boolean> isCouponAvailableFallback(Long couponId, Double amount, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
     }
 }

@@ -14,7 +14,7 @@ import lombok.Data;
 @Data
 public class Useraddresses
 {
-    private static final long serialVersionUID = 1L;
+  
 
     /** 地址ID */
     private Long addressId;

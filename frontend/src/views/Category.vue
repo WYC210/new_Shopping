@@ -449,13 +449,13 @@ const handlePageChange = (page) => {
   // 不需要重新请求数据，paginatedProducts计算属性会自动处理分页
 };
 
-const navigateToProduct = (productId) => {
+const navigateToProduct = async (productId) => {
   if (!productId) {
     console.error('无效的商品ID:', productId);
     ElMessage.error('无法查看商品详情');
     return;
   }
-  router.push({ name: 'product', params: { id: productId } });
+  await router.push({ name: 'product', params: { id: productId } });
 };
 
 const addItemToCart = async (product) => {

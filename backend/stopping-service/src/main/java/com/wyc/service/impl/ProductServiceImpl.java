@@ -6,15 +6,11 @@ import com.wyc.mapper.ProductMapper;
 import com.wyc.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.wyc.utils.RedisCache;
-import com.wyc.utils.BloomFilter;
-import org.springframework.beans.factory.annotation.Value;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,14 +35,8 @@ public class ProductServiceImpl implements IProductService {
     private static final String CATEGORY_PRODUCTS_KEY_PREFIX = "category_products_";
     private static final int CACHE_BASE_TIMEOUT = 60 * 10; // 10分钟
     private static final int CACHE_RANDOM_BOUND = 60 * 5; // 随机5分钟
-    private static final String PRODUCT_BLOOM_FILTER_KEY = "bloom_product";
-    private static final String CATEGORY_BLOOM_FILTER_KEY = "bloom_category";
-    private static final ProductDTO EMPTY_PRODUCT_DTO = new ProductDTO();
     private static final ProductDetailDTO EMPTY_PRODUCT_DETAIL_DTO = new ProductDetailDTO();
     private static final List<ProductDTO> EMPTY_PRODUCT_LIST = Collections.emptyList();
-
-    private static final BloomFilter productBloomFilter = new BloomFilter();
-    private static final BloomFilter categoryBloomFilter = new BloomFilter();
     private static final Random random = new Random();
     private static final ConcurrentHashMap<String, Object> localLocks = new ConcurrentHashMap<>();
 

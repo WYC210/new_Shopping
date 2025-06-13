@@ -14,7 +14,7 @@ import lombok.Data;
 @Data
 @TableName("categories")
 public class Categories {
-    private static final long serialVersionUID = 1L;
+
 
     /** 分类ID */
     @TableId(type = IdType.AUTO)

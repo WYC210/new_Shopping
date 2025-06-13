@@ -171,7 +171,7 @@ onMounted(() => {
 
 .section-title {
   font-size: 24px;
-  color: #333;
+  color: #fff;
   font-weight: 500;
   margin-bottom: 30px;
 }
@@ -188,16 +188,20 @@ onMounted(() => {
 }
 
 .history-item {
-  background: #fff;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .history-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .history-content {
@@ -210,6 +214,11 @@ onMounted(() => {
   height: 240px;
   object-fit: cover;
   cursor: pointer;
+  transition: transform 0.5s ease;
+}
+
+.history-item:hover .product-image {
+  transform: scale(1.05);
 }
 
 .image-error {
@@ -218,33 +227,35 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f5f7fa;
-  color: #909399;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 24px;
 }
 
 .product-info {
   padding: 15px;
   flex: 1;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .product-name {
   font-size: 14px;
-  color: #333;
+  color: #fff;
   margin-bottom: 10px;
   cursor: pointer;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
+  transition: color 0.3s ease;
 }
 
 .product-name:hover {
-  color: #409eff;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .view-time {
-  color: #999;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 12px;
 }
 
@@ -252,11 +263,49 @@ onMounted(() => {
   padding: 15px;
   display: flex;
   gap: 10px;
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .pagination {
   display: flex;
   justify-content: center;
+}
+
+:deep(.el-pagination) {
+  --el-pagination-bg-color: rgba(255, 255, 255, 0.1);
+  --el-pagination-hover-color: #fff;
+  --el-pagination-button-color: rgba(255, 255, 255, 0.8);
+  --el-pagination-button-bg-color: rgba(255, 255, 255, 0.1);
+  --el-pagination-button-disabled-color: rgba(255, 255, 255, 0.4);
+  --el-pagination-button-disabled-bg-color: rgba(255, 255, 255, 0.05);
+}
+
+:deep(.el-button) {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+:deep(.el-button--primary) {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+:deep(.el-button--primary:hover) {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+:deep(.el-button--danger) {
+  background: rgba(245, 108, 108, 0.2);
+  border: 1px solid rgba(245, 108, 108, 0.3);
+  color: #fff;
+}
+
+:deep(.el-button--danger:hover) {
+  background: rgba(245, 108, 108, 0.3);
+  border-color: rgba(245, 108, 108, 0.4);
 }
 </style> 

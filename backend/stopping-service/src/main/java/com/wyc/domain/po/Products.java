@@ -18,7 +18,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 @Data
 @ApiModel("商品信息")
 public class Products {
-    private static final long serialVersionUID = 1L;
+ 
 
     @ApiModelProperty("商品ID")
     private Long productId;

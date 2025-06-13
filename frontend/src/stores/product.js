@@ -106,6 +106,8 @@ export const useProductStore = defineStore('product', {
     async fetchProductDetail(id) {
       this.loading.detail = true
       this.error = null
+      // 清除当前商品信息，防止显示旧数据
+      this.currentProduct = null
       try {
         const response = await productApi.getProductDetail(id)
         if (response.code === 200) {

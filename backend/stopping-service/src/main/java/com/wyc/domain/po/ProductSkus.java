@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Map;
+
 
 @Data
 @ApiModel("商品SKU信息")

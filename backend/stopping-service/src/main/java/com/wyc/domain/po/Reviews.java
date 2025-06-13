@@ -14,7 +14,7 @@ import java.util.Date;
 @Data
 @ApiModel("商品评价信息")
 public class Reviews {
-    private static final long serialVersionUID = 1L;
+
 
     @ApiModelProperty("评价ID")
     private Long reviewId;

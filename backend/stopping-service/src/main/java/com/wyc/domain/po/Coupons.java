@@ -16,7 +16,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @Data
 @ApiModel("优惠券信息")
 public class Coupons {
-    private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("优惠券ID")
     private Long couponId;

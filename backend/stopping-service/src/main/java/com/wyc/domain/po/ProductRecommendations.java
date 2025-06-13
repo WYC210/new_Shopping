@@ -14,7 +14,7 @@ import java.util.Date;
 @Data
 @ApiModel("商品推荐信息")
 public class ProductRecommendations {
-    private static final long serialVersionUID = 1L;
+ 
 
     @ApiModelProperty("推荐ID")
     private Long recommendationId;

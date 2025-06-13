@@ -14,7 +14,7 @@ import java.util.Date;
 @Data
 @ApiModel("用户优惠券信息")
 public class UserCoupons {
-    private static final long serialVersionUID = 1L;
+    
 
     @ApiModelProperty("ID")
     private Long id;

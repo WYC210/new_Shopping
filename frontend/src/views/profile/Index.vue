@@ -88,38 +88,46 @@ const handleMenuSelect = (key) => {
 .profile-content {
   display: flex;
   gap: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   min-height: calc(100vh - 140px);
 }
 
 .profile-nav {
   width: 240px;
   padding: 20px;
-  border-right: 1px solid #ebeef5;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .user-info {
   text-align: center;
   padding: 20px 0;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 20px;
 }
 
 .user-info h3 {
   margin: 10px 0 0;
   font-size: 16px;
-  color: #303133;
+  color: #fff;
 }
 
 .profile-menu {
   border-right: none;
+  background: transparent;
 }
 
 .profile-main {
   flex: 1;
   padding: 20px;
+}
+
+:deep(.el-menu) {
+  background-color: transparent;
 }
 
 :deep(.el-menu-item) {
@@ -128,14 +136,16 @@ const handleMenuSelect = (key) => {
   gap: 10px;
   height: 50px;
   line-height: 50px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 :deep(.el-menu-item.is-active) {
-  background: #ecf5ff;
-  color: #409EFF;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 :deep(.el-menu-item:hover) {
-  background: #f5f7fa;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
 }
 </style> 

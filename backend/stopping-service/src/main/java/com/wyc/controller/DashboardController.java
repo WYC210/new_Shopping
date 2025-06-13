@@ -10,7 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import javax.annotation.security.PermitAll;
 import java.util.List;
 
@@ -26,6 +26,7 @@ public class DashboardController {
     @ApiOperation("获取数字大屏总览数据")
     @GetMapping("/overview")
     @PermitAll // 不需要登录验证
+    @CircuitBreaker(name = "dashboardService", fallbackMethod = "getDashboardOverviewFallback")
     public R<DashboardOverviewVO> getDashboardOverview() {
         return R.ok(dashboardService.getDashboardOverview());
     }
@@ -33,6 +34,7 @@ public class DashboardController {
     @ApiOperation("获取城市用户分布数据")
     @GetMapping("/city-distribution")
     @PermitAll // 不需要登录验证
+    @CircuitBreaker(name = "dashboardService", fallbackMethod = "getCityUserDistributionFallback")
     public R<List<CityUserStatVO>> getCityUserDistribution() {
         return R.ok(dashboardService.getCityUserDistribution());
     }
@@ -40,9 +42,22 @@ public class DashboardController {
     @ApiOperation("获取数字大屏趋势数据（按天聚合）")
     @GetMapping("/trend")
     @PermitAll // 不需要登录验证
+    @CircuitBreaker(name = "dashboardService", fallbackMethod = "getDashboardTrendFallback")
     public R<List<DashboardTrendVO>> getDashboardTrend(
             @ApiParam(value = "开始日期", example = "2025-05-01", required = false) @RequestParam(required = false) String startDate,
             @ApiParam(value = "结束日期", example = "2025-05-31", required = false) @RequestParam(required = false) String endDate) {
         return R.ok(dashboardService.getDashboardTrend(startDate, endDate));
+    }
+
+    public R<DashboardOverviewVO> getDashboardOverviewFallback(Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    public R<List<CityUserStatVO>> getCityUserDistributionFallback(Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
+    }
+
+    public R<List<DashboardTrendVO>> getDashboardTrendFallback(String startDate, String endDate, Throwable t) {
+        return R.error(503, "服务暂时不可用，请稍后重试");
     }
 }

@@ -16,7 +16,7 @@ import lombok.Data;
 @Data
 public class Orders
 {
-    private static final long serialVersionUID = 1L;
+ 
 
     /** 订单ID */
     private Long orderId;
