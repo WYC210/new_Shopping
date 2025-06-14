@@ -251,6 +251,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
 import { useProductStore } from '../stores/product'
 import { useUserStore } from '../stores/user'
+import { userApi } from '../api/user'
+import { productApi } from '../api/product'
 import { ElMessage } from 'element-plus'
 import { ShoppingCart, ShoppingBag, Star, StarFilled, Check, Van, Service, ArrowLeft } from '@element-plus/icons-vue'
 
@@ -641,6 +643,22 @@ onMounted(() => {
       // 商品详情请求完成后输出一次
       console.log('🟢 商品详情product:', product.value)
       console.log('🟢 商品详情skus:', product.value?.skus)
+      
+      // 记录浏览历史
+      if (product.value) {
+        try {
+          userApi.recordBrowsing(
+            product.value.productId || productId, 
+            product.value.name || '未命名商品'
+          ).then(() => {
+            console.log('✅ 浏览记录已保存')
+          }).catch(error => {
+            console.error('❌ 保存浏览记录失败:', error)
+          })
+        } catch (error) {
+          console.error('❌ 记录浏览历史失败:', error)
+        }
+      }
     })
   }
 

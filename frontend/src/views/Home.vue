@@ -1,5 +1,5 @@
 <template>
-  <div class="home-container content-container">
+  <div class="home-container content-container" :class="{ 'fade-in-animation': fadeIn }">
     <!-- 签到提醒 -->
     <el-alert
       v-if="userStore.isAuthenticated && !userStore.signInStatus.todaySigned"
@@ -204,7 +204,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCartStore } from '../stores/cart';
 import { useProductStore } from '../stores/product';
@@ -270,6 +270,12 @@ const newArrivals = computed(() => {
 const availableCoupons = ref([]);
 const couponsLoading = ref(false);
 
+// 新增动画控制
+const fadeIn = ref(false);
+
+// 监听首页数据加载完成，触发动画
+const homeDataLoaded = ref(false);
+
 // --- Navigation Functions ---
 const navigateToCategory = async (categoryId) => {
   if (categoryId) {
@@ -316,11 +322,15 @@ const addItemToCart = (product) => {
 
 // --- Lifecycle Hooks ---
 onMounted(async () => {
-
   try {
-    console.log('📦 开始获取商品分类')
-    await productStore.fetchCategories()
-    console.log('📦 商品分类加载完成')
+    // 检查分类数据是否已加载
+    if (productStore.categories.length === 0) {
+      console.log('📦 开始获取商品分类')
+      await productStore.fetchCategories()
+      console.log('📦 商品分类加载完成')
+    } else {
+      console.log('📦 使用已缓存的商品分类数据')
+    }
     
     console.log('🔥 开始获取热门商品')
     await productStore.fetchHotProducts()
@@ -335,6 +345,7 @@ onMounted(async () => {
     console.log('🎟️ 优惠券加载完成')
     
     console.log('✅ 首页数据加载完成')
+    homeDataLoaded.value = true;
   } catch (error) {
     console.error('❌ 首页数据加载失败:', error)
     ElMessage.error('数据加载失败，请刷新页面重试')
@@ -343,6 +354,25 @@ onMounted(async () => {
   // 如果用户已登录，检查签到状态
   if (userStore.isAuthenticated) {
     await userStore.checkSignIn();
+  }
+
+  // 首次进入时也触发动画
+  fadeIn.value = true;
+  setTimeout(() => {
+    fadeIn.value = false;
+  }, 800);
+});
+
+// 监听数据加载完成，触发动画
+watch(homeDataLoaded, (val) => {
+  if (val) {
+    fadeIn.value = false;
+    nextTick(() => {
+      fadeIn.value = true;
+      setTimeout(() => {
+        fadeIn.value = false;
+      }, 800);
+    });
   }
 });
 
@@ -1426,5 +1456,19 @@ const getCouponTypeClass = (couponType, couponId) => {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
   margin-top: 5px;
+}
+
+.fade-in-animation {
+  animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

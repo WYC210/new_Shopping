@@ -128,6 +128,7 @@ com\wyc\domain\po\MessageProcessRecord.class
 com\wyc\service\ISearchService.class
 com\wyc\service\impl\AddressServiceImpl.class
 com\wyc\interceptor\AuthInterceptor.class
+com\wyc\config\WebMvcConfig.class
 com\wyc\service\IMessageProcessService.class
 com\wyc\mapper\ProductRecommendationsMapper.class
 com\wyc\controller\AddressController.class

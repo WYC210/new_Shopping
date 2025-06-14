@@ -22,6 +22,10 @@ public class BrowsingRecordVO {
     @ApiModelProperty("浏览时间")
     private LocalDateTime viewedAt;
 
+    // 添加无参构造函数，用于Jackson反序列化
+    public BrowsingRecordVO() {
+    }
+
     public BrowsingRecordVO(Long productId, String productName, Date viewedAt) {
         this.productId = productId;
         this.productName = productName;

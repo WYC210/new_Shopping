@@ -2,6 +2,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../stores/user'
 import router from '../router'
+import { getFingerprint } from '../utils/fingerprint'
 
 // 创建axios实例
 const apiClient = axios.create({
@@ -21,6 +22,14 @@ apiClient.interceptors.request.use(
     if (token) {
       // 确保 token 格式正确
       config.headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
+    }
+    
+    // 添加浏览器指纹到请求头
+    try {
+      const fingerprint = getFingerprint()
+      config.headers['X-Fingerprint'] = fingerprint
+    } catch (error) {
+      console.error('添加指纹到请求头失败:', error)
     }
     
     // 修复URL路径，防止出现/wyc/wyc/这样的重复路径

@@ -383,11 +383,11 @@ export const profileApi = {
   // 删除浏览记录
   deleteBrowsingHistory(recordId) {
     console.log('删除浏览记录请求:', {
-      url: `/users/history/${recordId}`,
+      url: `/users/browsing-history/${recordId}`,
       method: 'delete',
       headers: apiClient.defaults.headers
     })
-    return apiClient.delete(`/users/history/${recordId}`).then(response => {
+    return apiClient.delete(`/users/browsing-history/${recordId}`).then(response => {
       console.log('删除浏览记录响应:', {
         status: response.status,
         data: response.data,

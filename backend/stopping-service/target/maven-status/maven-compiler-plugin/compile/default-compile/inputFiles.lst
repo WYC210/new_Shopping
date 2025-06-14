@@ -40,6 +40,7 @@ D:\code\work\ShopSphere\backend\stopping-service\src\main\java\com\wyc\domain\dt
 D:\code\work\ShopSphere\backend\stopping-service\src\main\java\com\wyc\mapper\UsersMapper.java
 D:\code\work\ShopSphere\backend\stopping-service\src\main\java\com\wyc\service\impl\OrderServiceImpl.java
 D:\code\work\ShopSphere\backend\stopping-service\src\main\java\com\wyc\domain\dto\ProductSKUDTO.java
+D:\code\work\ShopSphere\backend\stopping-service\src\main\java\com\wyc\config\WebMvcConfig.java
 D:\code\work\ShopSphere\backend\stopping-service\src\main\java\com\wyc\controller\UserController.java
 D:\code\work\ShopSphere\backend\stopping-service\src\main\java\com\wyc\utils\BloomFilter.java
 D:\code\work\ShopSphere\backend\stopping-service\src\main\java\com\wyc\service\IMessageService.java

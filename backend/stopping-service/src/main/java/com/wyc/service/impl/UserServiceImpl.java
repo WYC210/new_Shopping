@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -136,9 +137,10 @@ public class UserServiceImpl implements IUserService {
             logger.info("生成token成功: userId={}", userId);
 
             // 登录成功后同步游客浏览记录
-            if (loginDTO.getFingerprint() != null) {
-                logger.info("同步游客浏览记录: userId={}, fingerprint={}", userId, loginDTO.getFingerprint());
-                syncBrowsingRecordsOnLogin(userId, loginDTO.getFingerprint());
+            String fingerprint = loginDTO.getFingerprint();
+            if (fingerprint != null && !fingerprint.isEmpty()) {
+                logger.info("同步游客浏览记录: userId={}, fingerprint={}", userId, fingerprint);
+                syncBrowsingRecordsOnLogin(userId, fingerprint);
             }
 
             return token;
@@ -316,20 +318,83 @@ public class UserServiceImpl implements IUserService {
      * 登录后同步游客浏览记录到用户浏览记录表，并清理缓存
      */
     public void syncBrowsingRecordsOnLogin(Long userId, String fingerprint) {
-        String key = "visitor:browsing:" + fingerprint;
-        List<BrowsingRecordVO> records = redisCache.getCacheList(key);
-        if (records != null && !records.isEmpty()) {
-            for (BrowsingRecordVO record : records) {
-                // 将LocalDateTime转为java.util.Date
-                java.util.Date viewedAt = record.getViewedAt() == null ? null
-                        : java.sql.Timestamp.valueOf(record.getViewedAt());
-                browsingRecordMapper.insertUserBrowsingRecord(userId, record.getProductId(), record.getProductName(),
-                        viewedAt);
-            }
-            redisCache.deleteObject(key);
+        logger.info("开始同步浏览记录: userId={}, fingerprint={}", userId, fingerprint);
+
+        if (fingerprint == null || fingerprint.isEmpty()) {
+            logger.warn("浏览器指纹为空，无法同步浏览记录");
+            return;
         }
+
+        String key = "visitor:browsing:" + fingerprint;
+        logger.info("查询Redis缓存: key={}", key);
+
+        List<Object> records = redisCache.getCacheList(key);
+        logger.info("从Redis获取到的记录数: {}", records != null ? records.size() : 0);
+
+        if (records != null && !records.isEmpty()) {
+            logger.info("开始处理{}条浏览记录", records.size());
+            for (Object obj : records) {
+                try {
+                    if (obj instanceof Map) {
+                        Map<String, Object> recordMap = (Map<String, Object>) obj;
+                        Long productId = Long.valueOf(recordMap.get("productId").toString());
+                        String productName = (String) recordMap.get("productName");
+                        logger.info("同步浏览记录: productId={}, productName={}", productId, productName);
+                        browsingRecordMapper.insertUserBrowsingRecord(userId, productId, productName, new Date());
+                    } else if (obj instanceof BrowsingRecordVO) {
+                        BrowsingRecordVO record = (BrowsingRecordVO) obj;
+                        // 将LocalDateTime转为java.util.Date
+                        java.util.Date viewedAt = record.getViewedAt() == null ? null
+                                : java.sql.Timestamp.valueOf(record.getViewedAt());
+                        logger.info("同步浏览记录: productId={}, productName={}, viewedAt={}",
+                                record.getProductId(), record.getProductName(), viewedAt);
+                        browsingRecordMapper.insertUserBrowsingRecord(userId, record.getProductId(),
+                                record.getProductName(), viewedAt);
+                    }
+                } catch (Exception e) {
+                    logger.error("同步单条浏览记录失败: {}", e.getMessage(), e);
+                }
+            }
+            logger.info("删除Redis缓存: key={}", key);
+            redisCache.deleteObject(key);
+        } else {
+            logger.info("没有找到浏览记录，可能使用了不同的键格式");
+
+            // 尝试另一种可能的键格式
+            key = "visitor_browsing:" + fingerprint;
+            logger.info("尝试另一种键格式: key={}", key);
+
+            List<Object> objectRecords = redisCache.getCacheList(key);
+            logger.info("使用另一种键格式获取到的记录数: {}", objectRecords != null ? objectRecords.size() : 0);
+
+            if (objectRecords != null && !objectRecords.isEmpty()) {
+                logger.info("开始处理另一种格式的{}条浏览记录", objectRecords.size());
+                for (Object obj : objectRecords) {
+                    try {
+                        if (obj instanceof Map) {
+                            Map<String, Object> recordMap = (Map<String, Object>) obj;
+                            Long productId = Long.valueOf(recordMap.get("productId").toString());
+                            String productName = (String) recordMap.get("productName");
+                            logger.info("同步浏览记录(Map格式): productId={}, productName={}", productId, productName);
+                            browsingRecordMapper.insertUserBrowsingRecord(userId, productId, productName, new Date());
+                        }
+                    } catch (Exception e) {
+                        logger.error("同步单条Map格式浏览记录失败: {}", e.getMessage(), e);
+                    }
+                }
+                logger.info("删除Redis缓存: key={}", key);
+                redisCache.deleteObject(key);
+            }
+        }
+
         // 关联Visitor表
-        visitorMapper.bindUserIdToFingerprint(fingerprint, userId);
+        logger.info("关联访客表: fingerprint={}, userId={}", fingerprint, userId);
+        try {
+            visitorMapper.bindUserIdToFingerprint(fingerprint, userId);
+            logger.info("关联访客表成功");
+        } catch (Exception e) {
+            logger.error("关联访客表失败: {}", e.getMessage(), e);
+        }
     }
 
     /**

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<!-- 引入通用头部 -->
+<head th:replace="common/head :: head"></head>
+<body>
+    <div class="container">
+        <h1>商品详情</h1>
+        
+        <div id="product-detail" class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img id="product-image" class="img-fluid" src="" alt="商品图片">
+                    </div>
+                    <div class="col-md-6">
+                        <h2 id="product-name" class="card-title"></h2>
+                        <p id="product-description" class="card-text"></p>
+                        <div class="price-box">
+                            <span>价格: </span>
+                            <span id="product-price" class="price"></span>
+                        </div>
+                        <div class="stock-box">
+                            <span>库存: </span>
+                            <span id="product-stock"></span>
+                        </div>
+                        <div class="category-box">
+                            <span>分类: </span>
+                            <span id="product-category"></span>
+                        </div>
+                        <div class="mt-3">
+                            <button id="add-to-cart" class="btn btn-primary">加入购物车</button>
+                            <button id="buy-now" class="btn btn-danger ml-2">立即购买</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h3>商品详细信息</h3>
+            <div id="product-details" class="card">
+                <div class="card-body">
+                    <div id="product-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取URL中的商品ID
+        function getProductId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id') || window.location.pathname.split('/').pop();
+        }
+        
+        // 加载商品详情
+        function loadProductDetail() {
+            const productId = getProductId();
+            if (!productId) {
+                alert('商品ID不存在');
+                return;
+            }
+            
+            // 发起请求获取商品详情
+            axios.get(`/products/${productId}`)
+                .then(response => {
+                    const product = response.data.data;
+                    if (product) {
+                        // 更新页面元素
+                        document.getElementById('product-name').textContent = product.name;
+                        document.getElementById('product-description').textContent = product.description;
+                        document.getElementById('product-price').textContent = '¥' + product.price.toFixed(2);
+                        document.getElementById('product-stock').textContent = product.stock;
+                        document.getElementById('product-category').textContent = product.categoryName;
+                        document.getElementById('product-content').innerHTML = product.content;
+                        
+                        // 设置图片
+                        if (product.image) {
+                            document.getElementById('product-image').src = product.image;
+                        }
+                        
+                        // 设置页面标题
+                        document.title = product.name + ' - ShopSphere';
+                    } else {
+                        alert('商品不存在或已下架');
+                    }
+                })
+                .catch(error => {
+                    console.error('获取商品详情失败:', error);
+                    alert('获取商品详情失败，请稍后重试');
+                });
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProductDetail();
+            
+            // 绑定按钮事件
+            document.getElementById('add-to-cart').addEventListener('click', function() {
+                const productId = getProductId();
+                // 添加到购物车的逻辑
+                alert('已添加到购物车');
+            });
+            
+            document.getElementById('buy-now').addEventListener('click', function() {
+                const productId = getProductId();
+                // 立即购买的逻辑
+                window.location.href = '/checkout?productId=' + productId;
+            });
+        });
+    </script>
+</body>
+</html> 

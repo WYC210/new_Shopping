@@ -11,14 +11,13 @@
     
     <select id="getBrowsingHistory" resultType="com.wyc.domain.vo.BrowsingRecordVO">
         SELECT 
-            vbr.record_id,
-            vbr.product_id,
-            vbr.product_name,
-            vbr.viewed_at
-        FROM VisitorBrowsingRecords vbr
-        INNER JOIN Visitors v ON vbr.visitor_id = v.visitor_id
-        WHERE v.user_id = #{userId}
-        ORDER BY vbr.viewed_at DESC
+            record_id,
+            product_id,
+            product_name,
+            viewed_at
+        FROM UserBrowsingRecords
+        WHERE user_id = #{userId}
+        ORDER BY viewed_at DESC
     </select>
     
     <insert id="recordBrowsing">

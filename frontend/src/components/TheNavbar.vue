@@ -131,7 +131,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { useCartStore } from '../stores/cart'
-import { categoryApi } from '../api/category'
+import { useProductStore } from '../stores/product'
 import { 
   ShoppingCart, 
   Search, 
@@ -150,32 +150,31 @@ import {
 const router = useRouter()
 const userStore = useUserStore()
 const cartStore = useCartStore()
+const productStore = useProductStore()
 
 // 商品分类数据
-const categories = ref([])
+const categories = computed(() => productStore.categories || [])
 const searchQuery = ref('')
 
 // 获取商品分类数据
 const fetchCategories = async () => {
-  try {
-    const res = await categoryApi.getCategories()
-    // 检查响应数据结构
-    if (res && res.data) {
-      // 如果响应中有data字段，使用data字段
-      categories.value = Array.isArray(res.data) ? res.data : (res.data.data || [])
-    } else {
-      // 如果响应直接是数组，直接使用
-      categories.value = Array.isArray(res) ? res : []
+  // 只有在分类数据为空时才请求
+  if (categories.value.length === 0) {
+    try {
+      await productStore.fetchCategories()
+    } catch (error) {
+      console.error('获取商品分类失败:', error)
     }
-  } catch (error) {
-    console.error('获取商品分类失败:', error)
-    categories.value = []
   }
 }
 
 // 组件挂载时获取分类数据
 onMounted(async () => {
-  fetchCategories()
+  // 只有在分类数据为空时才请求
+  if (categories.value.length === 0) {
+    await fetchCategories()
+  }
+  
   // 只有在用户已登录的情况下才获取购物车数据和签到状态
   if (userStore.isAuthenticated) {
     cartStore.fetchCartItems()

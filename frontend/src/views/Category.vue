@@ -64,7 +64,11 @@
           </div>
         </el-card>
 
-        <div class="product-grid" v-loading="loadingProducts">
+        <div 
+          class="product-grid"
+          v-loading="loadingProducts"
+          :class="{ 'fade-in-animation': fadeIn }"
+        >
           <el-empty v-if="paginatedProducts.length === 0 && !loadingProducts" description="暂无商品符合条件"></el-empty>
           <div class="product-item" v-for="product in paginatedProducts" :key="product.productId || product.id">
             <el-card shadow="hover" class="product-card" @click="navigateToProduct(product.productId || product.id)">
@@ -163,29 +167,35 @@ const totalFilteredProducts = ref(0);
 // 添加组件挂载状态标志
 const isMounted = ref(true);
 
+// 新增动画控制
+const fadeIn = ref(false);
+
 // --- API Functions ---
 const fetchCategories = async () => {
   try {
-    const data = await productStore.fetchCategories();
-   
-    
-    // 检查每个分类的ID是否存在
-    if (data && data.length > 0) {
-      data.forEach((cat, index) => {
-    
+    // 只在分类数据为空时才请求分类数据
+    if (categories.value.length === 0) {
+      console.log('分类数据为空，开始获取分类数据');
+      const data = await productStore.fetchCategories();
+      
+      // 检查每个分类的ID是否存在
+      if (data && data.length > 0) {
+        data.forEach((cat, index) => {
+          // 调试日志移除
+        });
+      } else {
+        console.warn('没有获取到分类数据或数据为空');
+      }
+      
+      categories.value = data;
+      
+      // 延迟检查DOM中的分类元素
+      nextTick(() => {
+        inspectCategoryElements();
       });
     } else {
-      console.warn('没有获取到分类数据或数据为空');
+      console.log('使用已缓存的分类数据，无需重新请求');
     }
-    
-    categories.value = data;
-    
- 
-    
-    // 延迟检查DOM中的分类元素
-    nextTick(() => {
-      inspectCategoryElements();
-    });
   } catch (error) {
     console.error('Failed to fetch categories:', error);
     ElMessage.error('获取商品分类失败');
@@ -215,6 +225,7 @@ const fetchProducts = async () => {
     if (!isMounted.value) return;
     
     loadingProducts.value = true;
+    console.log('开始获取商品数据，当前分类ID:', activeCategory.value);
     
     // 只有当activeCategory有值且不是空字符串时，才请求分类商品
     if (activeCategory.value && activeCategory.value.trim() !== '') {
@@ -228,18 +239,7 @@ const fetchProducts = async () => {
         if (!isMounted.value) return;
         
         // 调试原始响应
-        console.log('原始响应数据类型:', typeof response);
-        console.log('是否为数组:', Array.isArray(response));
-        if (Array.isArray(response)) {
-          console.log('数组长度:', response.length);
-          if (response.length > 0) {
-            console.log('第一个元素类型:', typeof response[0]);
-            console.log('第一个元素是否为数组:', Array.isArray(response[0]));
-            if (Array.isArray(response[0])) {
-              console.log('内层数组长度:', response[0].length);
-            }
-          }
-        }
+        console.log('获取到分类商品数据');
         
         // 处理响应数据
         if (response) {
@@ -261,7 +261,6 @@ const fetchProducts = async () => {
           }
           
           // 调试输出商品数据
-          console.log('处理后的商品数据结构:', productData.length > 0 ? productData : '无商品');
           console.log('处理后的商品数量:', productData.length);
           
           // 确保allProducts.value是一个数组
@@ -287,12 +286,12 @@ const fetchProducts = async () => {
       
       }
     } else {
+      console.log('获取热门商品数据');
       const data = await productStore.fetchHotProducts();
       // 检查组件是否已卸载
       if (!isMounted.value) return;
       
       // 调试输出商品数据
-      console.log('热门商品数据结构:', data.length > 0 ? data[0] : '无商品');
       console.log('热门商品数量:', data.length);
       
       // 确保allProducts.value是一个数组
@@ -383,7 +382,12 @@ const sortProducts = (products) => {
 // 过滤商品
 const filterProducts = (products) => {
   // 确保products是一个数组
-  if (!Array.isArray(products) || products.length === 0) return [];
+  if (!Array.isArray(products)) {
+    console.error('过滤商品时传入的不是数组:', products);
+    return [];
+  }
+  
+  if (products.length === 0) return [];
   
   try {
     return products.filter(product => {
@@ -393,7 +397,7 @@ const filterProducts = (products) => {
     });
   } catch (error) {
     console.error('过滤商品时出错:', error);
-    return Array.isArray(products) ? [...products] : []; // 返回原始数组的副本或空数组
+    return [...products]; // 返回原始数组的副本
   }
 };
 
@@ -422,6 +426,12 @@ const paginatedProducts = computed(() => {
 // --- Methods ---
 const handleCategoryClick = async (categoryId) => {
   try {
+    // 如果点击的是当前已激活的分类，不做任何操作
+    if (activeCategory.value === categoryId) {
+      console.log('已经是当前分类，无需切换');
+      return;
+    }
+    
     activeCategory.value = categoryId;
     currentPage.value = 1;
     
@@ -444,6 +454,7 @@ const handleCategoryClick = async (categoryId) => {
     
     // 检查组件是否已卸载
     if (isMounted.value) {
+      // 只请求商品数据，不重新请求分类
       await fetchProducts();
     }
   } catch (error) {
@@ -601,15 +612,27 @@ const formatPrice = (price) => {
 // --- Lifecycle Hooks & Watchers ---
 onMounted(async () => {
   isMounted.value = true;
+  
+  // 获取分类数据
   await fetchCategories();
+  
+  // 设置当前活动分类
   if (!route.params.id) {
     activeCategory.value = '';
   } else {
     activeCategory.value = route.params.id;
   }
+  
+  // 获取商品数据
   if (isMounted.value) {
     await fetchProducts();
   }
+
+  // 首次进入时也触发动画
+  fadeIn.value = true;
+  setTimeout(() => {
+    fadeIn.value = false;
+  }, 800);
 });
 
 onBeforeUnmount(() => {
@@ -617,11 +640,26 @@ onBeforeUnmount(() => {
   isMounted.value = false;
 });
 
+// 监听路由参数变化，只请求商品数据，不重新请求分类
 watch(() => route.params.id, (newId) => {
   if (isMounted.value) {
     activeCategory.value = newId || '';
     currentPage.value = 1;
-    fetchProducts();
+    fetchProducts(); // 只重新请求商品数据
+  }
+});
+
+// 监听商品数据加载完成，触发动画
+watch(loadingProducts, (newVal, oldVal) => {
+  if (oldVal && !newVal) {
+    // 数据加载完成，触发动画
+    fadeIn.value = false;
+    nextTick(() => {
+      fadeIn.value = true;
+      setTimeout(() => {
+        fadeIn.value = false;
+      }, 800); // 动画时长与CSS一致
+    });
   }
 });
 </script>
@@ -1417,5 +1455,20 @@ watch(() => route.params.id, (newId) => {
 
 .image-error-fallback span {
   font-size: 14px;
+}
+
+.fade-in-animation {
+  animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

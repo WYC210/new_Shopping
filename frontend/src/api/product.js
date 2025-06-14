@@ -1,4 +1,5 @@
 import apiClient from './client'
+import { getFingerprint } from '../utils/fingerprint'
 
 export const productApi = {
   // 获取所有分类
@@ -30,7 +31,16 @@ export const productApi = {
   // 获取商品详情
   getProductDetail(id) {
     console.log('📝 获取商品详情请求:', { id })
-    return apiClient.get(`/products/${id}`).then(response => {
+    // 获取浏览器指纹
+    const fingerprint = getFingerprint()
+    
+    return apiClient.get(`/products/${id}`, {
+      headers: {
+        'X-Fingerprint': fingerprint,
+        'X-View-Source': 'product_detail',
+        'X-Timestamp': new Date().toISOString()
+      }
+    }).then(response => {
       console.log('📝 获取商品详情响应:', response)
       return response
     }).catch(error => {

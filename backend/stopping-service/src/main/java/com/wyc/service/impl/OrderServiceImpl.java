@@ -12,6 +12,7 @@ import com.wyc.mapper.OrdersMapper;
 import com.wyc.mapper.OrderitemsMapper;
 import com.wyc.mapper.ProductsMapper;
 import com.wyc.mapper.PaymentsMapper;
+import com.wyc.mapper.CartItemsMapper;
 import com.wyc.service.IMessageService;
 import com.wyc.service.IOrderService;
 import org.slf4j.Logger;
@@ -44,6 +45,8 @@ public class OrderServiceImpl implements IOrderService {
     @Autowired
     private PaymentsMapper paymentsMapper;
 
+    @Autowired
+    private CartItemsMapper cartItemsMapper;
 
     @Autowired
     private IMessageService messageService;
@@ -219,6 +222,22 @@ public class OrderServiceImpl implements IOrderService {
 
         // 4. 发送支付成功消息
         sendPaymentSuccessMessage(order, payment);
+
+        // 5. 从购物车中删除已购买的商品
+        try {
+            // 获取订单中的商品
+            List<Orderitems> orderItems = orderitemsMapper.selectByOrderId(orderId);
+
+            // 从购物车中删除已购买的商品
+            if (orderItems != null && !orderItems.isEmpty()) {
+                logger.info("从购物车中删除已购买商品: userId={}, orderId={}", userId, orderId);
+                // 调用购物车服务删除选中的商品
+                cartItemsMapper.deleteSelectedByUserId(userId);
+            }
+        } catch (Exception e) {
+            logger.error("从购物车删除已购买商品失败: userId={}, orderId={}, error={}", userId, orderId, e.getMessage());
+            // 这里不抛出异常，因为订单支付已经成功，购物车清理失败不应影响主流程
+        }
 
         logger.info("订单支付成功: orderId={}, paymentId={}", orderId, payment.getPaymentId());
     }

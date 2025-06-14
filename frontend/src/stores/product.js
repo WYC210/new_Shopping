@@ -29,15 +29,22 @@ export const useProductStore = defineStore('product', {
     // 获取商品分类
     async fetchCategories() {
       try {
-        this.loading.categories = true
-        const data = await productApi.getCategories()
-        this.categories = data
-        return data
+        // 如果已经有分类数据，直接返回缓存的数据
+        if (this.categories && this.categories.length > 0) {
+          console.log('使用缓存的分类数据');
+          return this.categories;
+        }
+        
+        console.log('开始从API获取分类数据');
+        this.loading.categories = true;
+        const data = await productApi.getCategories();
+        this.categories = data;
+        return data;
       } catch (error) {
-        ElMessage.error('获取商品分类失败')
-        throw error
+        ElMessage.error('获取商品分类失败');
+        throw error;
       } finally {
-        this.loading.categories = false
+        this.loading.categories = false;
       }
     },
 

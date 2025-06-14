@@ -41,15 +41,15 @@
       </div>
 
       <!-- 右侧内容 -->
-      <div class="profile-main">
-        <router-view></router-view>
+      <div class="profile-main" :class="{ 'fade-in-animation': fadeIn }">
+        <router-view @hook:beforeRouteUpdate="handleProfileTabChange" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Document, Location, Ticket, User, Lock, Clock, Star, Calendar } from '@element-plus/icons-vue'
 import { useUserStore } from '../../stores/user'
@@ -58,6 +58,18 @@ const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const activeMenu = ref('profile-orders')
+const fadeIn = ref(false)
+
+// 监听路由变化，切换tab时触发动画
+watch(() => route.fullPath, () => {
+  fadeIn.value = false
+  setTimeout(() => {
+    fadeIn.value = true
+    setTimeout(() => {
+      fadeIn.value = false
+    }, 800)
+  }, 0)
+})
 
 onMounted(async () => {
   // 根据当前路由设置激活的菜单项
@@ -70,11 +82,26 @@ onMounted(async () => {
   if (userStore.isAuthenticated) {
     await userStore.checkSignIn()
   }
+
+  fadeIn.value = true
+  setTimeout(() => {
+    fadeIn.value = false
+  }, 800)
 })
 
 const handleMenuSelect = (key) => {
   // 使用路由名称进行导航，而不是拼接路径
   router.push({ name: key })
+}
+
+function handleProfileTabChange() {
+  fadeIn.value = false
+  setTimeout(() => {
+    fadeIn.value = true
+    setTimeout(() => {
+      fadeIn.value = false
+    }, 800)
+  }, 0)
 }
 </script>
 
@@ -147,5 +174,19 @@ const handleMenuSelect = (key) => {
 :deep(.el-menu-item:hover) {
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
+}
+
+.fade-in-animation {
+  animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style> 

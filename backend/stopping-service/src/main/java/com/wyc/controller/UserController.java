@@ -31,7 +31,6 @@ public class UserController {
     @Autowired
     private IUserService userService;
 
-
     @Value("${jwt.tokenHeader}")
     private String tokenHeader;
 
@@ -55,12 +54,17 @@ public class UserController {
     @RateLimiter(name = "userService", fallbackMethod = "fallbackLogin")
     @Bulkhead(name = "userService", fallbackMethod = "fallbackLogin")
     @PostMapping("/login")
-    public R<?> login(@RequestBody LoginDTO loginDTO) {
+    public R<?> login(@RequestBody LoginDTO loginDTO, HttpServletRequest request) {
+        // 从请求头获取浏览器指纹
+        String fingerprint = request.getHeader("X-Fingerprint");
+        if (fingerprint != null && !fingerprint.isEmpty()) {
+            loginDTO.setFingerprint(fingerprint);
+        }
         String token = userService.login(loginDTO);
         return R.ok(token);
     }
 
-    public R<?> fallbackLogin(LoginDTO loginDTO, Throwable t) {
+    public R<?> fallbackLogin(LoginDTO loginDTO, HttpServletRequest request, Throwable t) {
         return R.error(503, "服务暂时不可用，请稍后重试");
     }
 
@@ -184,15 +188,19 @@ public class UserController {
     @RateLimiter(name = "userService", fallbackMethod = "fallbackRecordBrowsing")
     @Bulkhead(name = "userService", fallbackMethod = "fallbackRecordBrowsing")
     @PostMapping("/browsing-history")
-    public R<?> recordBrowsing(
-            @ApiParam(value = "浏览器指纹", required = true) @RequestParam String fingerprint,
-            @ApiParam(value = "商品ID", required = true) @RequestParam Long productId,
-            @ApiParam(value = "商品名称", required = true) @RequestParam String productName) {
-        userService.recordBrowsing(fingerprint, productId, productName);
+    public R<?> recordBrowsing(@RequestBody BrowsingRecordVO record, HttpServletRequest request) {
+        String fingerprint = request.getHeader("X-Fingerprint");
+        if (fingerprint == null || fingerprint.isEmpty()) {
+            return R.error("X-Fingerprint请求头不能为空");
+        }
+        if (record.getProductId() == null || record.getProductName() == null) {
+            return R.error("商品ID和商品名称不能为空");
+        }
+        userService.recordBrowsing(fingerprint, record.getProductId(), record.getProductName());
         return R.ok();
     }
 
-    public R<?> fallbackRecordBrowsing(String fingerprint, Long productId, String productName, Throwable t) {
+    public R<?> fallbackRecordBrowsing(BrowsingRecordVO record, HttpServletRequest request, Throwable t) {
         return R.error(503, "服务暂时不可用，请稍后重试");
     }
 }

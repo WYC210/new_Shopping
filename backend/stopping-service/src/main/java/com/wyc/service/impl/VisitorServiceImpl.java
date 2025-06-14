@@ -42,22 +42,30 @@ public class VisitorServiceImpl implements IVisitorService {
         }
 
         try {
-            String key = VISITOR_BROWSING_KEY_PREFIX + fingerprint;
+            // 使用与UserServiceImpl相同的键格式
+            String key = "visitor:browsing:" + fingerprint;
+            log.info("记录访客浏览商品: fingerprint={}, productId={}, productName={}, key={}",
+                    fingerprint, productId, productName, key);
 
             // 构建浏览记录
-            Map<String, Object> browsingRecord = new HashMap<>();
-            browsingRecord.put("productId", productId);
-            browsingRecord.put("productName", productName);
-            browsingRecord.put("viewedAt", System.currentTimeMillis());
+            com.wyc.domain.vo.BrowsingRecordVO browsingRecord = new com.wyc.domain.vo.BrowsingRecordVO(
+                    productId, productName, new Date());
 
             // 检查是否已经有此商品的浏览记录
             List<Object> existingRecords = redisCache.getCacheList(key);
             if (existingRecords != null && !existingRecords.isEmpty()) {
+                log.debug("已存在浏览记录，记录数: {}", existingRecords.size());
+
                 // 移除相同商品的旧记录
                 Iterator<Object> iterator = existingRecords.iterator();
                 while (iterator.hasNext()) {
                     Object record = iterator.next();
-                    if (record instanceof Map) {
+                    if (record instanceof com.wyc.domain.vo.BrowsingRecordVO) {
+                        com.wyc.domain.vo.BrowsingRecordVO recordVO = (com.wyc.domain.vo.BrowsingRecordVO) record;
+                        if (productId.equals(recordVO.getProductId())) {
+                            iterator.remove();
+                        }
+                    } else if (record instanceof Map) {
                         Map<String, Object> recordMap = (Map<String, Object>) record;
                         if (productId.equals(recordMap.get("productId"))) {
                             iterator.remove();
@@ -74,8 +82,10 @@ public class VisitorServiceImpl implements IVisitorService {
                 }
 
                 // 更新Redis
+                redisCache.deleteObject(key); // 先删除旧记录
                 redisCache.setCacheList(key, existingRecords);
             } else {
+                log.debug("没有现有浏览记录，创建新列表");
                 // 创建新的浏览记录列表
                 List<Object> newRecords = new ArrayList<>();
                 newRecords.add(browsingRecord);
@@ -88,7 +98,7 @@ public class VisitorServiceImpl implements IVisitorService {
             // 尝试保存访客信息到数据库（如果不存在）
             visitorMapper.insertVisitorIfNotExists(fingerprint);
 
-            log.debug("记录访客浏览商品: fingerprint={}, productId={}, productName={}", fingerprint, productId, productName);
+            log.info("成功记录访客浏览商品: fingerprint={}, productId={}", fingerprint, productId);
             return true;
         } catch (Exception e) {
             log.error("记录访客浏览商品失败: fingerprint={}, productId={}, error={}", fingerprint, productId, e.getMessage(), e);

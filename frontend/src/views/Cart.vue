@@ -1,5 +1,5 @@
 <template>
-  <div class="cart-container content-container">
+  <div class="cart-container content-container" :class="{ 'fade-in-animation': fadeIn }">
     <div class="cart-header">
       <h2>我的购物车</h2>
       <div class="cart-stats">
@@ -262,10 +262,17 @@ const navigateToProduct = (productId) => {
   router.push({ name: 'product', params: { id: productId } });
 }
 
+// 新增动画控制
+const fadeIn = ref(false);
+
 onMounted(async () => {
   try {
     // 获取购物车数据
     await cartStore.fetchCartItems()
+    fadeIn.value = true;
+    setTimeout(() => {
+      fadeIn.value = false;
+    }, 800);
   } catch (error) {
     console.error('Failed to fetch cart items:', error)
   }
@@ -674,6 +681,20 @@ onMounted(async () => {
   
   .summary-item.total {
     font-size: 16px;
+  }
+}
+
+.fade-in-animation {
+  animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style> 

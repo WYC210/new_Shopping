@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} ?: 'ShopSphere'">ShopSphere</title>
+    <!-- 引入CSS样式 -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <!-- 引入JavaScript库 -->
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/axios.min.js}"></script>
+    
+    <!-- 引入浏览器指纹脚本 -->
+    <script th:src="@{/js/fingerprint.js}"></script>
+    
+    <!-- 配置全局axios默认值和拦截器 -->
+    <script>
+        // 配置axios默认值
+        axios.defaults.baseURL = '/wyc';
+        axios.defaults.timeout = 10000;
+        
+        // 请求拦截器（如果fingerprint.js未能添加指纹，这里作为备份）
+        axios.interceptors.request.use(function(config) {
+            // 从localStorage获取指纹
+            const fingerprint = localStorage.getItem('browser_fingerprint');
+            if (fingerprint) {
+                config.headers['X-Fingerprint'] = fingerprint;
+            }
+            
+            // 如果有token，也添加到请求头
+            const token = localStorage.getItem('token');
+            if (token) {
+                config.headers['Authorization'] = 'Bearer ' + token;
+            }
+            
+            return config;
+        }, function(error) {
+            return Promise.reject(error);
+        });
+        
+        // 响应拦截器
+        axios.interceptors.response.use(function(response) {
+            return response;
+        }, function(error) {
+            if (error.response) {
+                // 根据错误状态码处理
+                switch (error.response.status) {
+                    case 401: // 未授权
+                        console.error('未授权，请登录');
+                        // 可以在这里跳转到登录页面
+                        break;
+                    case 403: // 禁止访问
+                        console.error('禁止访问');
+                        break;
+                    case 404: // 资源不存在
+                        console.error('请求的资源不存在');
+                        break;
+                    case 500: // 服务器错误
+                        console.error('服务器错误');
+                        break;
+                    default:
+                        console.error('请求失败：', error.response.status);
+                }
+            } else if (error.request) {
+                console.error('请求未收到响应');
+            } else {
+                console.error('请求配置错误:', error.message);
+            }
+            return Promise.reject(error);
+        });
+    </script>
+</head>
+</html> 

@@ -544,11 +544,11 @@ const submitOrder = async () => {
       if (payResponse.code === 200) {
         ElMessage.success('订单提交成功')
         
-        // 清空购物车中已购买的商品
-        for (const item of orderItems.value) {
-          if (item.itemId) {
-            await cartStore.removeItem(item.itemId, true)
-          }
+        // ✅ 只清空本地购物车状态，不再发多余的删除请求
+        if (cartStore.clearCart) {
+          cartStore.clearCart()
+        } else if (cartStore.fetchCartItems) {
+          await cartStore.fetchCartItems()
         }
         
         // 跳转到订单列表页面

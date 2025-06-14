@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -51,6 +52,15 @@ public class GlobalExceptionHandler {
     public R<?> handleAccessDeniedException(AccessDeniedException e) {
         log.error("权限异常: {}", e.getMessage());
         return R.error("没有权限访问");
+    }
+
+    /**
+     * 处理缺少请求参数异常
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public R<?> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
+        log.error("缺少请求参数: {}", e.getMessage());
+        return R.error("缺少必要参数: " + e.getParameterName());
     }
 
     /**

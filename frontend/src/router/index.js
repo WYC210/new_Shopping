@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
+import FullscreenLayout from '../layouts/FullscreenLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,14 +9,18 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => import('../views/Home.vue')
+      component: () => import('../views/Home.vue'),
+      meta: {
+        keepAlive: true // 缓存该页面
+      }
     },
     {
       path: '/login',
       name: 'login',
       component: () => import('../views/Login.vue'),
       meta: { 
-        guest: true // 游客页面，已登录用户会被重定向到首页
+        guest: true, // 游客页面，已登录用户会被重定向到首页
+        layout: FullscreenLayout // 使用全屏布局
       }
     },
     {
@@ -23,18 +28,25 @@ const router = createRouter({
       name: 'register',
       component: () => import('../views/Register.vue'),
       meta: { 
-        guest: true // 游客页面，已登录用户会被重定向到首页
+        guest: true, // 游客页面，已登录用户会被重定向到首页
+        layout: FullscreenLayout // 使用全屏布局
       }
     },
     {
       path: '/category',
       name: 'category',
-      component: () => import('../views/Category.vue')
+      component: () => import('../views/Category.vue'),
+      meta: {
+        keepAlive: true // 缓存该页面
+      }
     },
     {
       path: '/category/:id',
       name: 'category-with-id',
-      component: () => import('../views/Category.vue')
+      component: () => import('../views/Category.vue'),
+      meta: {
+        keepAlive: true // 缓存该页面
+      }
     },
     {
       path: '/checkout',

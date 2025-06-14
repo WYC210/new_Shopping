@@ -1,4 +1,6 @@
 import apiClient from './client'
+import { BrowsingRecordVO } from '../models/BrowsingRecord'
+import { getFingerprint } from '../utils/fingerprint'
 
 export const userApi = {
   // 用户登录
@@ -49,10 +51,20 @@ export const userApi = {
   },
 
   // 记录浏览历史
-  recordBrowsing(data) {
-    return apiClient.post('/users/browsing-history', null, {
-      params: data
+  recordBrowsing(productId, productName) {
+    const fingerprint = getFingerprint()
+    const record = new BrowsingRecordVO(null, productId, productName, '', new Date().toISOString())
+    
+    return apiClient.post('/users/browsing-history', record.toJson(), {
+      headers: {
+        'X-Fingerprint': fingerprint
+      }
     })
+  },
+  
+  // 删除浏览记录
+  deleteBrowsingHistory(recordId) {
+    return apiClient.delete(`/users/browsing-history/${recordId}`)
   },
 
   // 查询用户余额
