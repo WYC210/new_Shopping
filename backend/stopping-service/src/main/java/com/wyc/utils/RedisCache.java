@@ -1,22 +1,27 @@
 package com.wyc.utils;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.BoundSetOperations;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.HashMap;
-import java.util.ArrayList;
 
+/**
+ * Redis缓存工具类
+ *
+ * @author wyc
+ */
+@SuppressWarnings(value = { "unchecked", "rawtypes" })
 @Component
 public class RedisCache {
+
     @Autowired
-    public RedisTemplate<String, Object> redisTemplate;
+    public RedisTemplate redisTemplate;
 
     /**
      * 缓存基本的对象，Integer、String、实体类等
@@ -41,19 +46,44 @@ public class RedisCache {
     }
 
     /**
-     * 获得缓存的基本对象。
+     * 设置有效时间
+     *
+     * @param key     Redis键
+     * @param timeout 超时时间
+     * @return true=设置成功；false=设置失败
+     */
+    public boolean expire(final String key, final long timeout) {
+        return expire(key, timeout, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 设置有效时间
+     *
+     * @param key     Redis键
+     * @param timeout 超时时间
+     * @param unit    时间单位
+     * @return true=设置成功；false=设置失败
+     */
+    public boolean expire(final String key, final long timeout, final TimeUnit unit) {
+        return redisTemplate.expire(key, timeout, unit);
+    }
+
+    /**
+     * 获取缓存的基本对象。
      *
      * @param key 缓存键值
      * @return 缓存键值对应的数据
      */
     public <T> T getCacheObject(final String key) {
-        return (T) redisTemplate.opsForValue().get(key);
+        ValueOperations<String, T> operation = redisTemplate.opsForValue();
+        return operation.get(key);
     }
 
     /**
      * 删除单个对象
      *
-     * @param key
+     * @param key 缓存的键值
+     * @return 是否成功
      */
     public boolean deleteObject(final String key) {
         return redisTemplate.delete(key);
@@ -63,8 +93,9 @@ public class RedisCache {
      * 删除集合对象
      *
      * @param collection 多个对象
+     * @return 删除的数量
      */
-    public long deleteObject(final Collection<String> collection) {
+    public long deleteObject(final Collection collection) {
         return redisTemplate.delete(collection);
     }
 
@@ -73,7 +104,7 @@ public class RedisCache {
      *
      * @param key      缓存的键值
      * @param dataList 待缓存的List数据
-     * @return 缓存的对象数量
+     * @return 缓存的对象
      */
     public <T> long setCacheList(final String key, final List<T> dataList) {
         Long count = redisTemplate.opsForList().rightPushAll(key, dataList);
@@ -81,13 +112,13 @@ public class RedisCache {
     }
 
     /**
-     * 获得缓存的list对象
+     * 获取缓存的list对象
      *
      * @param key 缓存的键值
      * @return 缓存键值对应的数据
      */
     public <T> List<T> getCacheList(final String key) {
-        return (List<T>) redisTemplate.opsForList().range(key, 0, -1);
+        return redisTemplate.opsForList().range(key, 0, -1);
     }
 
     /**
@@ -95,28 +126,32 @@ public class RedisCache {
      *
      * @param key     缓存键值
      * @param dataSet 缓存的数据
-     * @return 缓存数据的对象数量
+     * @return 缓存数据的对象
      */
-    public <T> long setCacheSet(final String key, final Set<T> dataSet) {
-        Long count = redisTemplate.opsForSet().add(key, dataSet.toArray());
-        return count == null ? 0 : count;
+    public <T> BoundSetOperations<String, T> setCacheSet(final String key, final Set<T> dataSet) {
+        BoundSetOperations<String, T> setOperation = redisTemplate.boundSetOps(key);
+        Iterator<T> it = dataSet.iterator();
+        while (it.hasNext()) {
+            setOperation.add(it.next());
+        }
+        return setOperation;
     }
 
     /**
-     * 获得缓存的set
+     * 获取缓存的set
      *
-     * @param key
-     * @return set对象
+     * @param key 缓存键值
+     * @return 缓存的集合
      */
     public <T> Set<T> getCacheSet(final String key) {
-        return (Set<T>) redisTemplate.opsForSet().members(key);
+        return redisTemplate.opsForSet().members(key);
     }
 
     /**
      * 缓存Map
      *
-     * @param key
-     * @param dataMap
+     * @param key     缓存的键值
+     * @param dataMap 缓存的数据
      */
     public <T> void setCacheMap(final String key, final Map<String, T> dataMap) {
         if (dataMap != null) {
@@ -125,17 +160,13 @@ public class RedisCache {
     }
 
     /**
-     * 获得缓存的Map
+     * 获取缓存的Map
      *
-     * @param key
-     * @return map对象
+     * @param key 缓存的键值
+     * @return 缓存的Map
      */
-    @SuppressWarnings("unchecked")
     public <T> Map<String, T> getCacheMap(final String key) {
-        Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
-        Map<String, T> result = new HashMap<>();
-        entries.forEach((k, v) -> result.put(k.toString(), (T) v));
-        return result;
+        return redisTemplate.opsForHash().entries(key);
     }
 
     /**
@@ -157,7 +188,8 @@ public class RedisCache {
      * @return Hash中的对象
      */
     public <T> T getCacheMapValue(final String key, final String hKey) {
-        return (T) redisTemplate.opsForHash().get(key, hKey);
+        HashOperations<String, String, T> opsForHash = redisTemplate.opsForHash();
+        return opsForHash.get(key, hKey);
     }
 
     /**
@@ -168,23 +200,12 @@ public class RedisCache {
      * @return Hash对象集合
      */
     public <T> List<T> getMultiCacheMapValue(final String key, final Collection<Object> hKeys) {
-        return (List<T>) redisTemplate.opsForHash().multiGet(key, hKeys);
-    }
-
-    /**
-     * 删除Hash中的某条数据
-     *
-     * @param key  Redis键
-     * @param hKey Hash键
-     * @return 是否成功
-     */
-    public void delCacheMapValue(final String key, final String hKey) {
-        redisTemplate.opsForHash().delete(key, hKey);
+        return redisTemplate.opsForHash().multiGet(key, hKeys);
     }
 
     /**
      * 获取缓存的基本对象列表
-     * 
+     *
      * @param pattern 字符串前缀
      * @return 对象列表
      */
@@ -192,12 +213,14 @@ public class RedisCache {
         return redisTemplate.keys(pattern);
     }
 
-    public void addToList(String key, Object value) {
+    /**
+     * 添加元素到列表
+     *
+     * @param key   键
+     * @param value 值
+     */
+    public <T> void addToList(String key, T value) {
         redisTemplate.opsForList().rightPush(key, value);
-    }
-
-    public void expire(String key, int timeout, java.util.concurrent.TimeUnit unit) {
-        redisTemplate.expire(key, timeout, unit);
     }
 
     /**
@@ -205,13 +228,14 @@ public class RedisCache {
      */
 
     /**
-     * 设置指定位置的bit值为1
+     * 设置指定位置的bit值
      * 
      * @param key    键
      * @param offset 偏移量
+     * @param value  值
      * @return 是否成功
      */
-    public Boolean setBit(String key, long offset, boolean value) {
+    public Boolean setBit(String key, int offset, boolean value) {
         return redisTemplate.opsForValue().setBit(key, offset, value);
     }
 
@@ -222,7 +246,7 @@ public class RedisCache {
      * @param offset 偏移量
      * @return bit值
      */
-    public Boolean getBit(String key, long offset) {
+    public Boolean getBit(String key, int offset) {
         return redisTemplate.opsForValue().getBit(key, offset);
     }
 
@@ -233,7 +257,7 @@ public class RedisCache {
      * @return 为1的bit数
      */
     public Long bitCount(String key) {
-        return redisTemplate.execute((RedisCallback<Long>) connection -> connection.bitCount(key.getBytes()));
+        return (Long) redisTemplate.execute((RedisCallback<Long>) connection -> connection.bitCount(key.getBytes()));
     }
 
     /**
@@ -245,20 +269,22 @@ public class RedisCache {
      * @return 为1的bit数
      */
     public Long bitCount(String key, long start, long end) {
-        return redisTemplate
+        return (Long) redisTemplate
                 .execute((RedisCallback<Long>) connection -> connection.bitCount(key.getBytes(), start, end));
     }
 
     /**
      * 获取指定key中所有为1的bit位置
      * 
-     * @param key 键
+     * @param key   键
+     * @param start 开始位置
+     * @param end   结束位置
      * @return 为1的bit位置列表
      */
     public List<Long> getBitPositions(String key, long start, long end) {
         List<Long> result = new ArrayList<>();
         for (long i = start; i <= end; i++) {
-            if (Boolean.TRUE.equals(getBit(key, i))) {
+            if (Boolean.TRUE.equals(getBit(key, (int) i))) {
                 result.add(i);
             }
         }

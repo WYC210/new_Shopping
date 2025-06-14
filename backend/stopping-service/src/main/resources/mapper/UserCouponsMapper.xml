@@ -7,6 +7,7 @@
             user_coupon_id as id,
             user_id,
             coupon_id,
+            coupon_name as couponName,
             status,
             used_at as useTime,
             created_at as createdAt
@@ -28,7 +29,7 @@
         ) VALUES (
             #{userId},
             #{couponId},
-            'Default Coupon Name',
+            #{couponName},
             #{status},
             NOW()
         )
@@ -39,6 +40,7 @@
             user_coupon_id as id,
             user_id,
             coupon_id,
+            coupon_name as couponName,
             status,
             used_at as useTime,
             created_at as createdAt

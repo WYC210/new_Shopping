@@ -261,18 +261,26 @@ const fetchProducts = async () => {
           }
           
           // 调试输出商品数据
-          console.log('处理后的商品数据结构:', productData.length > 0 ? productData[0] : '无商品');
+          console.log('处理后的商品数据结构:', productData.length > 0 ? productData : '无商品');
           console.log('处理后的商品数量:', productData.length);
           
-         
-        
+          // 确保allProducts.value是一个数组
+          if (Array.isArray(productData)) {
+            allProducts.value = productData;
+          } else if (Array.isArray(productData[0])) {
+            allProducts.value = productData[0];
+          } else {
+            console.error('无法解析商品数据为数组，设置为空数组');
+            allProducts.value = [];
+          }
           
-          allProducts.value = productData[0];
-          totalFilteredProducts.value = productData[0].length;
+          // 设置过滤后的商品总数
+          totalFilteredProducts.value = allProducts.value.length;
         
         } else {
           console.warn('分类商品响应异常:', response);
-          
+          allProducts.value = [];
+          totalFilteredProducts.value = 0;
         }
       } catch (error) {
         console.error('获取分类商品出错:', error);
@@ -287,8 +295,17 @@ const fetchProducts = async () => {
       console.log('热门商品数据结构:', data.length > 0 ? data[0] : '无商品');
       console.log('热门商品数量:', data.length);
       
-      allProducts.value = data[0];
-      totalFilteredProducts.value = data[0].length;
+      // 确保allProducts.value是一个数组
+      if (Array.isArray(data)) {
+        allProducts.value = data;
+      } else if (Array.isArray(data[0])) {
+        allProducts.value = data[0];
+      } else {
+        console.error('无法解析热门商品数据为数组，设置为空数组');
+        allProducts.value = [];
+      }
+      
+      totalFilteredProducts.value = allProducts.value.length;
     }
   } catch (error) {
     console.error('获取商品失败:', error);
@@ -320,7 +337,8 @@ const currentCategoryName = computed(() => {
 
 // 排序商品
 const sortProducts = (products) => {
-  if (!products || products.length === 0) return [];
+  // 确保products是一个数组
+  if (!Array.isArray(products) || products.length === 0) return [];
   
   try {
     const sorted = [...products];
@@ -364,7 +382,8 @@ const sortProducts = (products) => {
 
 // 过滤商品
 const filterProducts = (products) => {
-  if (!products || products.length === 0) return [];
+  // 确保products是一个数组
+  if (!Array.isArray(products) || products.length === 0) return [];
   
   try {
     return products.filter(product => {
@@ -374,12 +393,18 @@ const filterProducts = (products) => {
     });
   } catch (error) {
     console.error('过滤商品时出错:', error);
-    return [...products]; // 返回原始数组的副本
+    return Array.isArray(products) ? [...products] : []; // 返回原始数组的副本或空数组
   }
 };
 
 // 计算属性：分页后的商品
 const paginatedProducts = computed(() => {
+  // 确保allProducts.value是一个数组
+  if (!Array.isArray(allProducts.value)) {
+    console.error('allProducts.value不是数组:', allProducts.value);
+    return [];
+  }
+  
   // 先过滤，再排序
   const filtered = filterProducts(allProducts.value);
   const sorted = sortProducts(filtered);

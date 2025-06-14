@@ -62,7 +62,7 @@
       <el-scrollbar class="coupon-scrollbar" v-else>
         <div class="coupons-container">
           <div class="coupon-card" v-for="coupon in availableCoupons" :key="coupon.couponId">
-            <div class="coupon-content" :class="'coupon-type-' + (coupon.couponType)">
+            <div class="coupon-content" :class="getCouponTypeClass(coupon.couponType, coupon.couponId)">
               <div class="coupon-left">
                 <div class="coupon-value">
                   <template v-if="coupon.couponType === 'fixed'">
@@ -77,7 +77,8 @@
                     <span class="coupon-amount">免运费</span>
                   </template>
                   <template v-else>
-                    <span class="coupon-amount">其他</span>
+                    <span class="coupon-currency">¥</span>
+                    <span class="coupon-amount">{{ coupon.value }}</span>
                   </template>
                 </div>
                 <div class="coupon-threshold" v-if="coupon.threshold > 0">
@@ -88,8 +89,11 @@
                     满{{ coupon.threshold }}元可用
                   </template>
                 </div>
-                <div class="coupon-scope" v-if="coupon.applicableScope && coupon.applicableScope !== 'all'">
-                  <span>适用范围：{{ coupon.applicableScope === 'category' ? '指定品类' : coupon.applicableScope }}</span>
+                <div class="coupon-scope">
+                  <span>适用范围：{{ coupon.applicableScope === 'category' ? '指定品类' : '全场通用' }}</span>
+                </div>
+                <div class="coupon-count">
+                  <span>剩余：{{ coupon.totalCount - coupon.usedCount }}/{{ coupon.totalCount }}</span>
                 </div>
               </div>
               <div class="coupon-divider"></div>
@@ -344,13 +348,14 @@ onMounted(async () => {
 
 // --- 优惠券相关函数 ---
 const fetchAvailableCoupons = async () => {
-
   couponsLoading.value = true;
   try {
     const response = await apiClient.get('/coupons/available');
+    console.log('优惠券API响应:', response);
 
     // 确保正确处理API响应
-    if (response.data && response.code === 200) {
+    if (response && response.data && response.code === 200) {
+      console.log('优惠券数据:', response.data);
       availableCoupons.value = response.data.map(coupon => ({
         couponId: coupon.couponId,
         name: coupon.name,
@@ -359,17 +364,26 @@ const fetchAvailableCoupons = async () => {
         description: coupon.description,
         startTime: coupon.startTime,
         endTime: coupon.endTime,
+        totalCount: coupon.totalCount,
+        usedCount: coupon.usedCount,
+        perLimit: coupon.perLimit,
+        couponType: coupon.couponType,
+        discountPercentage: coupon.discountPercentage,
+        applicableScope: coupon.applicableScope,
         // 其他需要的字段
         received: false,
         receiving: false
       }));
+      console.log('处理后的优惠券数据:', availableCoupons.value);
     } else {
-      console.error('获取优惠券失败:', response.data?.msg);
+      console.error('获取优惠券失败:', response);
+      availableCoupons.value = [];
     }
   } catch (error) {
     console.error('获取优惠券异常:', error);
     console.error('错误响应:', error.response); // 打印错误响应
     ElMessage.error('获取优惠券失败，请稍后再试');
+    availableCoupons.value = [];
   } finally {
     couponsLoading.value = false;
   }
@@ -412,8 +426,17 @@ const receiveCoupon = async (coupon) => {
 
 const formatCouponDate = (dateString) => {
   if (!dateString) return '';
-  const date = new Date(dateString);
-  return `${date.getMonth() + 1}.${date.getDate()}`;
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.error('无效的日期格式:', dateString);
+      return dateString;
+    }
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  } catch (error) {
+    console.error('日期格式化错误:', error);
+    return dateString;
+  }
 };
 
 // --- Image Error Handling ---
@@ -464,6 +487,16 @@ const handleQuickSignIn = async () => {
     console.error('签到失败:', error);
     ElMessage.error('签到失败，请前往个人中心-签到页面重试');
   }
+};
+
+// 添加获取优惠券样式类的函数
+const getCouponTypeClass = (couponType, couponId) => {
+  // 根据优惠券类型返回不同的样式类
+  if (couponType === 'fixed') return 'coupon-type-0';
+  if (couponType === 'percentage') return 'coupon-type-1';
+  if (couponType === 'shipping') return 'coupon-type-2';
+  // 如果没有特定类型，则根据ID取模
+  return `coupon-type-${couponId % 5}`;
 };
 
 </script>
@@ -926,6 +959,22 @@ const handleQuickSignIn = async () => {
   .el-col-lg-6 {
     width: 33.33333%;
   }
+  .coupon-card {
+    width: 280px;
+  }
+  
+  .coupon-content {
+    height: 150px;
+  }
+  
+  .coupon-left {
+    width: 110px;
+    padding: 10px;
+  }
+  
+  .coupon-amount {
+    font-size: 28px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -976,6 +1025,26 @@ const handleQuickSignIn = async () => {
   
   .category-info p {
     font-size: 13px;
+  }
+  .coupon-card {
+    width: 260px;
+  }
+  
+  .coupon-content {
+    height: 140px;
+  }
+  
+  .coupon-left {
+    width: 100px;
+    padding: 8px;
+  }
+  
+  .coupon-amount {
+    font-size: 26px;
+  }
+  
+  .coupon-right {
+    padding: 10px;
   }
 }
 
@@ -1040,6 +1109,50 @@ const handleQuickSignIn = async () => {
   .current-price {
     font-size: 20px;
   }
+  .coupon-card {
+    width: 240px;
+  }
+  
+  .coupon-content {
+    height: 130px;
+  }
+  
+  .coupon-left {
+    width: 90px;
+    padding: 8px;
+  }
+  
+  .coupon-amount {
+    font-size: 24px;
+  }
+  
+  .coupon-currency,
+  .coupon-unit {
+    font-size: 14px;
+  }
+  
+  .coupon-threshold,
+  .coupon-scope,
+  .coupon-count,
+  .coupon-time {
+    font-size: 10px;
+  }
+  
+  .coupon-name {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  
+  .coupon-desc {
+    font-size: 10px;
+    margin-bottom: 4px;
+    -webkit-line-clamp: 1;
+  }
+  
+  .coupon-btn {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
 }
 
 .category-icon .el-icon {
@@ -1093,7 +1206,7 @@ const handleQuickSignIn = async () => {
 
 .coupon-content {
   display: flex;
-  height: 130px;
+  height: 160px;
   border-radius: 10px;
   overflow: hidden;
   position: relative;
@@ -1129,7 +1242,7 @@ const handleQuickSignIn = async () => {
 }
 
 .coupon-left {
-  width: 120px;
+  width: 130px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1180,50 +1293,67 @@ const handleQuickSignIn = async () => {
 }
 
 .coupon-currency {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   margin-right: 2px;
 }
 
 .coupon-amount {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 900;
   line-height: 1;
 }
 
 .coupon-unit {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   margin-left: 2px;
 }
 
 .coupon-threshold {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.8);
   margin-top: 5px;
 }
 
-.coupon-name {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 0 0 8px;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+.coupon-scope,
+.coupon-count {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+  text-align: center;
 }
 
-.coupon-desc {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
-  margin: 0 0 8px;
+.coupon-name {
+  font-size: 15px;
+  font-weight: bold;
+  margin: 0 0 6px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.coupon-desc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  line-height: 1.3;
+  max-height: 2.6em;
 }
 
 .coupon-time {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 10px;
+  margin: 0 0 8px;
 }
 
 .coupon-btn {
@@ -1289,5 +1419,12 @@ const handleQuickSignIn = async () => {
   align-items: center;
   width: 100%;
   padding: 0 10px;
+}
+
+/* 添加优惠券数量样式 */
+.coupon-count {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 5px;
 }
 </style>

@@ -42,20 +42,34 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public List<ProductDTO> getHotProducts() {
-        String cacheKey = HOT_PRODUCTS_KEY;
-        List<ProductDTO> cached = redisCache.getCacheList(cacheKey);
-        if (cached != null && !cached.isEmpty()) {
-            return cached;
-        }
-        List<ProductDTO> products = productMapper.getHotProducts();
-        if (products == null || products.isEmpty()) {
-            redisCache.setCacheList(cacheKey, EMPTY_PRODUCT_LIST);
+        try {
+            logger.info("开始获取热门商品");
+            String cacheKey = HOT_PRODUCTS_KEY;
+            List<ProductDTO> cached = redisCache.getCacheList(cacheKey);
+            if (cached != null && !cached.isEmpty()) {
+                logger.info("从缓存获取到热门商品, 数量: {}", cached.size());
+                return cached;
+            }
+
+            logger.info("缓存中没有热门商品数据，从数据库查询");
+            List<ProductDTO> products = productMapper.getHotProducts();
+            logger.info("从数据库查询热门商品, 结果: {}", products != null ? products.size() : 0);
+
+            if (products == null || products.isEmpty()) {
+                logger.warn("数据库中没有热门商品数据");
+                redisCache.setCacheList(cacheKey, EMPTY_PRODUCT_LIST);
+                redisCache.expire(cacheKey, CACHE_BASE_TIMEOUT + random.nextInt(CACHE_RANDOM_BOUND), TimeUnit.SECONDS);
+                return EMPTY_PRODUCT_LIST;
+            }
+
+            logger.info("将热门商品数据存入缓存");
+            redisCache.setCacheList(cacheKey, products);
             redisCache.expire(cacheKey, CACHE_BASE_TIMEOUT + random.nextInt(CACHE_RANDOM_BOUND), TimeUnit.SECONDS);
-            return EMPTY_PRODUCT_LIST;
+            return products;
+        } catch (Exception e) {
+            logger.error("获取热门商品失败", e);
+            throw e;
         }
-        redisCache.setCacheList(cacheKey, products);
-        redisCache.expire(cacheKey, CACHE_BASE_TIMEOUT + random.nextInt(CACHE_RANDOM_BOUND), TimeUnit.SECONDS);
-        return products;
     }
 
     @Override
@@ -221,5 +235,82 @@ public class ProductServiceImpl implements IProductService {
             throw new IllegalArgumentException("搜索关键词不能为空");
         }
         return productMapper.searchProducts(keyword.trim());
+    }
+
+    /**
+     * 刷新商品缓存
+     *
+     * @param productId 商品ID
+     */
+    public void refreshProductCache(Long productId) {
+        if (productId == null) {
+            return;
+        }
+
+        logger.info("刷新商品缓存: productId={}", productId);
+
+        // 刷新商品详情缓存
+        String detailCacheKey = PRODUCT_DETAIL_KEY_PREFIX + productId;
+        redisCache.deleteObject(detailCacheKey);
+
+        // 重新加载商品详情到缓存
+        ProductDetailDTO detail = productMapper.getProductDetail(productId);
+        if (detail != null) {
+            // 分步查询图片、标签、SKU
+            List<String> images = productMapper.getProductImages(productId);
+            detail.setImageUrls(images != null ? images : Collections.emptyList());
+
+            List<String> tags = productMapper.getProductTags(productId);
+            detail.setTags(tags != null ? tags : Collections.emptyList());
+
+            List<com.wyc.domain.dto.ProductSKUDTO> skus = productMapper.getProductSKUs(productId);
+            detail.setSkus(skus != null ? skus : Collections.emptyList());
+
+            // 重新缓存
+            redisCache.setCacheObject(detailCacheKey, detail,
+                    CACHE_BASE_TIMEOUT + random.nextInt(CACHE_RANDOM_BOUND), TimeUnit.SECONDS);
+
+            // 刷新热门商品和新品缓存
+            redisCache.deleteObject(HOT_PRODUCTS_KEY);
+            redisCache.deleteObject(NEW_PRODUCTS_KEY);
+
+            // 刷新分类商品缓存
+            if (detail.getCategoryId() != null) {
+                String categoryCacheKey = CATEGORY_PRODUCTS_KEY_PREFIX + detail.getCategoryId();
+                redisCache.deleteObject(categoryCacheKey);
+            }
+        }
+
+        logger.info("商品缓存刷新完成: productId={}", productId);
+    }
+
+    /**
+     * 删除商品缓存
+     *
+     * @param productId 商品ID
+     */
+    public void removeProductCache(Long productId) {
+        if (productId == null) {
+            return;
+        }
+
+        logger.info("删除商品缓存: productId={}", productId);
+
+        // 获取商品详情以获取分类ID
+        ProductDetailDTO detail = redisCache.getCacheObject(PRODUCT_DETAIL_KEY_PREFIX + productId);
+
+        // 删除商品详情缓存
+        redisCache.deleteObject(PRODUCT_DETAIL_KEY_PREFIX + productId);
+
+        // 刷新热门商品和新品缓存
+        redisCache.deleteObject(HOT_PRODUCTS_KEY);
+        redisCache.deleteObject(NEW_PRODUCTS_KEY);
+
+        // 如果能获取到分类ID，刷新分类商品缓存
+        if (detail != null && detail.getCategoryId() != null) {
+            redisCache.deleteObject(CATEGORY_PRODUCTS_KEY_PREFIX + detail.getCategoryId());
+        }
+
+        logger.info("商品缓存删除完成: productId={}", productId);
     }
 }

@@ -1,12 +1,12 @@
 server:
   port: 9099
-  
+
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/new_store?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-    username: root # 数据库用户名
-    password: 123456 # 数据库密码
-    driver-class-name: com.mysql.cj.jdbc.Driver # 驱动类
+    url: jdbc:mysql://localhost:3306/new_store?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update # 自动更新表结构（可选：none/update/create-drop）
@@ -15,26 +15,17 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
   redis:
-    # 地址
     host: localhost
-    # 端口，默认为6379
     port: 6379
-    # 数据库索引
-    database: 9
-    # 密码
-    password: wz123456
-    # 连接超时时间
-    timeout: 10s
+    database: 0
+    timeout: 10000
     lettuce:
       pool:
-        # 连接池中的最小空闲连接
-        min-idle: 0
-        # 连接池中的最大空闲连接
-        max-idle: 8
-        # 连接池的最大数据库连接数
         max-active: 8
-        # 连接池最大阻塞等待时间（使用负值表示没有限制）
-        max-wait: -1ms
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+    password: wz123456
   # RabbitMQ配置
   rabbitmq:
     host: localhost
@@ -57,22 +48,69 @@ spring:
           enabled: true
           max-attempts: 3
           initial-interval: 1000
-           
-    
 
 mybatis:
-  mapper-locations: classpath:mapper/*.xml # XML映射文件路径
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.wyc.domain
   configuration:
-    map-underscore-to-camel-case: true # 开启驼峰命名转换
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 断路器配置
+resilience4j:
+  circuitbreaker:
+    instances:
+      searchService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      getHotProducts:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      getNewProducts:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  ratelimiter:
+    instances:
+      getHotProductsRateLimiter:
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeoutDuration: 3s
+      getNewProductsRateLimiter:
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeoutDuration: 3s
+  bulkhead:
+    instances:
+      getHotProductsBulkhead:
+        maxConcurrentCalls: 20
+        maxWaitDuration: 500ms
+      getNewProductsBulkhead:
+        maxConcurrentCalls: 20
+        maxWaitDuration: 500ms
+
+# 日志配置
 logging:
   level:
-    root: info # 全局日志级别
-    org.springframework.web: debug # Spring Web日志（调试时开启）
-    com.your.package: debug # 自定义包日志
-    io:
-      github:
-        resilience4j:
-          circuitbreaker=DEBUG:
+    com.wyc: debug
+    org.springframework: warn
 
 # Swagger配置
 swagger:

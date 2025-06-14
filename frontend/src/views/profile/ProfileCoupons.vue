@@ -36,7 +36,7 @@
               <div class="coupon-amount">
                 <template v-if="coupon.couponType === 'fixed'">
                   <span class="currency">¥</span>
-                  <span class="number">{{ coupon.discountAmount }}</span>
+                  <span class="number">{{ coupon.discountAmount || coupon.value }}</span>
                 </template>
                 <template v-else-if="coupon.couponType === 'percentage'">
                   <span class="number">{{ (coupon.discountPercentage / 10).toFixed(1) }}</span>
@@ -60,16 +60,20 @@
                   无门槛
                 </template>
               </div>
-              <div class="coupon-scope" v-if="coupon.applicableScope && coupon.applicableScope !== 'all'">
-                适用范围：{{ coupon.applicableScope === 'category' ? '指定品类' : coupon.applicableScope }}
+              <div class="coupon-scope">
+                适用范围：{{ coupon.applicableScope === 'category' ? '指定品类' : '全场通用' }}
+              </div>
+              <div class="coupon-count" v-if="coupon.totalCount">
+                剩余：{{ coupon.totalCount - (coupon.usedCount || 0) }}/{{ coupon.totalCount }}
               </div>
             </div>
             
             <div class="coupon-right">
               <div class="coupon-info">
                 <div class="coupon-name">{{ coupon.couponName || coupon.name }}</div>
+                <div class="coupon-description">{{ coupon.description || '暂无描述' }}</div>
                 <div class="coupon-time">
-                  {{ coupon.startTime || coupon.createdAt }}<template v-if="coupon.endTime"> - {{ coupon.endTime }}</template>
+                  有效期：{{ formatDate(coupon.startTime || coupon.createdAt) }}<template v-if="coupon.endTime"> - {{ formatDate(coupon.endTime) }}</template>
                 </div>
               </div>
               
@@ -191,6 +195,13 @@ const handleUse = (coupon) => {
       couponId: coupon.id
     }
   })
+}
+
+// 格式化日期函数
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 onMounted(() => {
@@ -334,8 +345,21 @@ onMounted(() => {
   color: #fff;
 }
 
+.coupon-description {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
 .coupon-time,
 .coupon-scope {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+}
+
+.coupon-count {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
   margin-top: 4px;

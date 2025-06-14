@@ -2,19 +2,51 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wyc.mapper.VisitorMapper">
     
+    <!-- 如果访客不存在，则插入新访客记录 -->
+    <insert id="insertVisitorIfNotExists" parameterType="string">
+        INSERT INTO visitors (fingerprint, first_visited_at, last_visited_at)
+        SELECT #{fingerprint}, NOW(), NOW()
+        FROM DUAL
+        WHERE NOT EXISTS (
+            SELECT 1 FROM visitors WHERE fingerprint = #{fingerprint}
+        )
+    </insert>
+    
+    <!-- 更新访客关联的用户ID -->
+    <update id="updateVisitorUserId">
+        UPDATE visitors
+        SET user_id = #{userId},
+            last_visited_at = NOW()
+        WHERE fingerprint = #{fingerprint}
+    </update>
+    
+    <!-- 插入用户浏览记录 -->
+    <insert id="insertUserBrowsingRecord">
+        INSERT INTO userBrowserecords (user_id, product_id, product_name, viewed_at)
+        VALUES (#{userId}, #{productId}, #{productName}, NOW())
+    </insert>
+    
+    <!-- 获取访客ID -->
     <select id="getVisitorIdByFingerprint" resultType="java.lang.Long">
         SELECT visitor_id
-        FROM Visitors
+        FROM visitors
+        WHERE fingerprint = #{fingerprint}
+        LIMIT 1
+    </select>
+    
+    <!-- 检查访客是否存在 -->
+    <select id="checkVisitorExists" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM visitors
         WHERE fingerprint = #{fingerprint}
     </select>
     
-    <insert id="createVisitor" parameterType="java.lang.String" useGeneratedKeys="true" keyProperty="visitorId">
-        INSERT INTO Visitors (fingerprint)
-        VALUES (#{fingerprint})
-    </insert>
-    
+    <!-- 将用户ID绑定到访客指纹 -->
     <update id="bindUserIdToFingerprint">
-        UPDATE Visitors SET user_id = #{userId} WHERE fingerprint = #{fingerprint}
+        UPDATE visitors
+        SET user_id = #{userId},
+            last_visited_at = NOW()
+        WHERE fingerprint = #{fingerprint}
     </update>
     
 </mapper> 

@@ -4,8 +4,10 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.bulkhead.BulkheadConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import java.time.Duration;
 
@@ -20,6 +22,7 @@ public class Resilience4jConfig {
      * 熔断器配置
      */
     @Bean
+    @Primary
     public CircuitBreakerConfig circuitBreakerConfig() {
         return CircuitBreakerConfig.custom()
                 // 失败率阈值百分比，超过此值开启熔断
@@ -91,7 +94,7 @@ public class Resilience4jConfig {
      */
     @Bean
     public io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry circuitBreakerRegistry(
-            CircuitBreakerConfig config) {
+            @Qualifier("circuitBreakerConfig") CircuitBreakerConfig config) {
         return io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry.of(config);
     }
 
@@ -109,5 +112,32 @@ public class Resilience4jConfig {
     @Bean
     public io.github.resilience4j.bulkhead.BulkheadRegistry bulkheadRegistry(BulkheadConfig config) {
         return io.github.resilience4j.bulkhead.BulkheadRegistry.of(config);
+    }
+
+    /**
+     * 搜索服务断路器配置
+     */
+    @Bean
+    public CircuitBreakerConfig searchServiceCircuitBreakerConfig() {
+        return CircuitBreakerConfig.custom()
+                .failureRateThreshold(50) // 失败率阈值，超过此阈值断路器将打开
+                .waitDurationInOpenState(Duration.ofSeconds(10)) // 断路器打开状态持续时间
+                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED) // 滑动窗口类型
+                .slidingWindowSize(10) // 滑动窗口大小
+                .minimumNumberOfCalls(5) // 断路器计算失败率或慢调用率之前所需的最小调用数
+                .permittedNumberOfCallsInHalfOpenState(3) // 半开状态允许的调用次数
+                .automaticTransitionFromOpenToHalfOpenEnabled(true) // 是否自动从打开状态转换到半开状态
+                .build();
+    }
+
+    /**
+     * 搜索服务超时限制器配置
+     */
+    @Bean
+    public TimeLimiterConfig searchServiceTimeLimiterConfig() {
+        return TimeLimiterConfig.custom()
+                .timeoutDuration(Duration.ofSeconds(3)) // 超时时间
+                .cancelRunningFuture(true) // 是否在超时时取消正在运行的Future
+                .build();
     }
 }

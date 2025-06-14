@@ -49,9 +49,18 @@
     </resultMap>
 
     <select id="getHotProducts" resultType="com.wyc.domain.dto.ProductDTO">
-        SELECT p.product_id, p.name, p.brand, p.price, p.stock, p.is_on_sale,
-               p.created_at, p.updated_at, c.name as category_name,
-               (SELECT image_url FROM productimages WHERE product_id = p.product_id AND is_main = 1 LIMIT 1) as main_image_url
+        SELECT 
+            p.product_id as productId,
+            p.name,
+            p.category_id as categoryId,
+            p.brand,
+            p.price,
+            p.stock,
+            p.is_on_sale as isOnSale,
+            p.created_at as createdAt,
+            p.updated_at as updatedAt,
+            c.name as categoryName,
+            (SELECT image_url FROM productimages WHERE product_id = p.product_id AND is_main = 1 LIMIT 1) as mainImageUrl
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.category_id
         INNER JOIN producttagrelations ptr ON p.product_id = ptr.product_id
@@ -62,9 +71,18 @@
     </select>
 
     <select id="getNewProducts" resultType="com.wyc.domain.dto.ProductDTO">
-        SELECT p.product_id, p.name, p.brand, p.price, p.stock, p.is_on_sale,
-               p.created_at, p.updated_at, c.name as category_name,
-               (SELECT image_url FROM productimages WHERE product_id = p.product_id AND is_main = 1 LIMIT 1) as main_image_url
+        SELECT 
+            p.product_id as productId,
+            p.name,
+            p.category_id as categoryId,
+            p.brand,
+            p.price,
+            p.stock,
+            p.is_on_sale as isOnSale,
+            p.created_at as createdAt,
+            p.updated_at as updatedAt,
+            c.name as categoryName,
+            (SELECT image_url FROM productimages WHERE product_id = p.product_id AND is_main = 1 LIMIT 1) as mainImageUrl
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.category_id
         INNER JOIN producttagrelations ptr ON p.product_id = ptr.product_id
@@ -133,5 +151,62 @@
     </select>
     <select id="getProductSKUs" resultType="com.wyc.domain.dto.ProductSKUDTO">
         SELECT * FROM ProductSKUs WHERE product_id = #{productId}
+    </select>
+
+    <!-- 根据价格范围搜索商品 -->
+    <select id="searchProductsByPriceRange" resultType="com.wyc.domain.dto.ProductDTO">
+        SELECT 
+            p.product_id as productId,
+            p.name,
+            p.price,
+            p.brand,
+            p.is_on_sale as isOnSale,
+            p.category_id as categoryId,
+            c.name as categoryName,
+            (SELECT image_url FROM productimages WHERE product_id = p.product_id AND is_main = 1 LIMIT 1) as imageUrl
+        FROM 
+            products p
+        LEFT JOIN 
+            categories c ON p.category_id = c.category_id
+        WHERE 
+            p.is_on_sale = 1
+            AND p.price &gt;= #{minPrice}
+            AND p.price &lt;= #{maxPrice}
+        ORDER BY 
+            p.price ASC
+    </select>
+
+    <!-- 高级搜索 -->
+    <select id="advancedSearchProducts" resultType="com.wyc.domain.dto.ProductDTO">
+        SELECT 
+            p.product_id as productId,
+            p.name,
+            p.price,
+            p.brand,
+            p.is_on_sale as isOnSale,
+            p.category_id as categoryId,
+            c.name as categoryName,
+            (SELECT image_url FROM productimages WHERE product_id = p.product_id AND is_main = 1 LIMIT 1) as imageUrl
+        FROM 
+            products p
+        LEFT JOIN 
+            categories c ON p.category_id = c.category_id
+        <where>
+            p.is_on_sale = 1
+            <if test="keyword != null and keyword != ''">
+                AND (p.name LIKE CONCAT('%', #{keyword}, '%') OR p.brand LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="categoryId != null">
+                AND p.category_id = #{categoryId}
+            </if>
+            <if test="minPrice != null and maxPrice != null">
+                AND p.price BETWEEN #{minPrice} AND #{maxPrice}
+            </if>
+            <if test="brand != null and brand != ''">
+                AND p.brand = #{brand}
+            </if>
+        </where>
+        ORDER BY 
+            p.updated_at DESC
     </select>
 </mapper>

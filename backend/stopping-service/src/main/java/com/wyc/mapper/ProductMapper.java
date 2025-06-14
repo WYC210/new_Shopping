@@ -19,6 +19,14 @@ public interface ProductMapper {
 
     List<ProductDTO> searchProducts(@Param("keyword") String keyword);
 
+    // 根据价格范围搜索商品
+    List<ProductDTO> searchProductsByPriceRange(@Param("minPrice") Double minPrice, @Param("maxPrice") Double maxPrice);
+
+    // 高级搜索
+    List<ProductDTO> advancedSearchProducts(@Param("keyword") String keyword, @Param("categoryId") Long categoryId,
+            @Param("minPrice") Double minPrice, @Param("maxPrice") Double maxPrice,
+            @Param("brand") String brand);
+
     // 获取所有商品ID
     List<Long> getAllProductIds();
 
