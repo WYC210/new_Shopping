@@ -2,17 +2,21 @@ package com.wyc.service.impl;
 
 import com.wyc.domain.po.Coupons;
 import com.wyc.domain.po.UserCoupons;
+import com.wyc.domain.vo.UserCouponDetailVO;
 import com.wyc.exception.ServiceException;
 import com.wyc.mapper.CouponsMapper;
 import com.wyc.mapper.UserCouponsMapper;
 import com.wyc.service.ICouponService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 public class CouponServiceImpl implements ICouponService {
@@ -153,6 +157,38 @@ public class CouponServiceImpl implements ICouponService {
         List<UserCoupons> userCoupons = userCouponsMapper.selectByUserIdAndStatus(userId, "unused");
         return userCoupons.stream()
                 .anyMatch(uc -> uc.getCouponId().equals(couponId));
+    }
+
+    @Override
+    public List<UserCouponDetailVO> getUserCouponDetails(Long userId, String status) {
+        // 转换状态参数为小写，以匹配数据库中的枚举值
+        if (status != null) {
+            status = status.toLowerCase();
+        }
+
+        // 获取用户优惠券列表
+        List<UserCoupons> userCoupons = userCouponsMapper.selectByUserIdAndStatus(userId, status);
+
+        // 将用户优惠券转换为详情VO
+        List<UserCouponDetailVO> result = new ArrayList<>(userCoupons.size());
+
+        for (UserCoupons userCoupon : userCoupons) {
+            UserCouponDetailVO detailVO = new UserCouponDetailVO();
+            // 复制基本属性
+            BeanUtils.copyProperties(userCoupon, detailVO);
+
+            // 获取优惠券详情，添加value等信息
+            Coupons coupon = couponsMapper.selectById(userCoupon.getCouponId());
+            if (coupon != null) {
+                detailVO.setType(coupon.getType());
+                detailVO.setValue(coupon.getValue());
+                detailVO.setThreshold(coupon.getThreshold());
+            }
+
+            result.add(detailVO);
+        }
+
+        return result;
     }
 
     /**

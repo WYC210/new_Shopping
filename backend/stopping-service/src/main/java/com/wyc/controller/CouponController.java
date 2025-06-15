@@ -2,6 +2,7 @@ package com.wyc.controller;
 
 import com.wyc.domain.po.Coupons;
 import com.wyc.domain.po.UserCoupons;
+import com.wyc.domain.vo.UserCouponDetailVO;
 import com.wyc.security.SecurityContext;
 import com.wyc.service.ICouponService;
 import com.wyc.utils.R;
@@ -50,10 +51,10 @@ public class CouponController {
 
     @ApiOperation("获取用户的优惠券列表")
     @GetMapping("/user")
-    public R<List<UserCoupons>> getUserCoupons(
+    public R<List<UserCouponDetailVO>> getUserCoupons(
             @ApiParam(value = "优惠券状态", required = false) @RequestParam(required = false) String status) {
         Long userId = SecurityContext.getUserId();
-        return R.ok(couponService.getUserCoupons(userId, status));
+        return R.ok(couponService.getUserCouponDetails(userId, status));
     }
 
     @ApiOperation("计算订单优惠金额")
@@ -95,7 +96,7 @@ public class CouponController {
     }
 
     // 获取用户的优惠券列表 fallback
-    public R<List<UserCoupons>> getUserCouponsFallback(String status, Throwable t) {
+    public R<List<UserCouponDetailVO>> getUserCouponsFallback(String status, Throwable t) {
         return R.error(503, "服务暂时不可用，请稍后重试");
     }
 

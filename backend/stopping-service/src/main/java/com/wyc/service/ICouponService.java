@@ -2,6 +2,7 @@ package com.wyc.service;
 
 import com.wyc.domain.po.Coupons;
 import com.wyc.domain.po.UserCoupons;
+import com.wyc.domain.vo.UserCouponDetailVO;
 import java.util.List;
 
 public interface ICouponService {
@@ -45,6 +46,15 @@ public interface ICouponService {
      * @return 用户优惠券列表
      */
     List<UserCoupons> getUserCoupons(Long userId, String status);
+
+    /**
+     * 获取用户的优惠券详情列表（包含优惠券值）
+     *
+     * @param userId 用户ID
+     * @param status 优惠券状态（可选）
+     * @return 用户优惠券详情列表
+     */
+    List<UserCouponDetailVO> getUserCouponDetails(Long userId, String status);
 
     /**
      * 使用优惠券

@@ -65,7 +65,7 @@
           <span class="label">选择优惠券</span>
           <div class="selected-coupon" v-if="selectedCoupon">
             <el-tag type="danger" effect="dark">
-              {{ selectedCoupon.couponName }}（-¥{{ discountAmount.toFixed(2) }}）
+              {{ selectedCoupon.couponName }}（-¥{{ selectedCoupon.value.toFixed(2) }}）
             </el-tag>
           </div>
           <div class="no-coupon" v-else>
@@ -166,39 +166,48 @@
       v-model="showCouponDialog"
       title="选择优惠券"
       width="600px"
+      destroy-on-close
+      class="coupon-dialog"
     >
       <div class="coupon-list">
         <div v-if="availableCoupons.length === 0" class="empty-coupons">
           <el-empty description="暂无可用优惠券"></el-empty>
         </div>
-        <div
-          v-else
-          v-for="coupon in availableCoupons"
-          :key="coupon.userCouponId"
-          class="coupon-item"
-          :class="{ active: selectedCoupon?.userCouponId === coupon.userCouponId }"
-          @click="selectCoupon(coupon)"
-        >
-          <div class="coupon-amount">
-            <span class="currency">¥</span>
-            <span class="number">{{ coupon.discountAmount || (coupon.discountPercentage * 10).toFixed(1) + '折' }}</span>
-          </div>
-          <div class="coupon-info">
-            <div class="coupon-name">{{ coupon.couponName }}</div>
-            <div class="coupon-condition" v-if="coupon.threshold">满{{ coupon.threshold }}元可用</div>
-            <div class="coupon-time">有效期至：{{ formatDate(coupon.endTime) }}</div>
-          </div>
-          <el-button
-            :type="selectedCoupon?.userCouponId === coupon.userCouponId ? 'danger' : 'default'"
-            size="small"
+        <transition-group name="coupon-list" tag="div" class="coupon-items">
+          <div
+            v-for="coupon in availableCoupons"
+            :key="coupon.userCouponId"
+            class="coupon-item"
+            :class="{ 
+              active: tempSelectedCoupon?.userCouponId === coupon.userCouponId,
+              'selected-coupon': selectedCoupon?.userCouponId === coupon.userCouponId
+            }"
+            @click="selectCoupon(coupon)"
           >
-            {{ selectedCoupon?.userCouponId === coupon.userCouponId ? '已选择' : '选择' }}
-          </el-button>
-        </div>
+            <div class="coupon-amount">
+              <span class="currency">¥</span>
+              <span class="number">{{ coupon.value }}</span>
+            </div>
+            <div class="coupon-info">
+              <div class="coupon-name">{{ coupon.couponName }}</div>
+              <div class="coupon-condition" v-if="coupon.threshold">满{{ coupon.threshold }}元可用</div>
+              <div class="coupon-time">有效期至：{{ formatDate(coupon.endTime) }}</div>
+            </div>
+            <div class="coupon-action">
+              <el-button
+                :type="tempSelectedCoupon?.userCouponId === coupon.userCouponId ? 'danger' : 'default'"
+                size="small"
+                class="select-btn"
+              >
+                {{ tempSelectedCoupon?.userCouponId === coupon.userCouponId ? '已选择' : '选择' }}
+              </el-button>
+            </div>
+          </div>
+        </transition-group>
       </div>
       <template #footer>
-        <el-button @click="showCouponDialog = false">取消</el-button>
-        <el-button type="primary" @click="confirmCoupon">确定</el-button>
+        <el-button @click="cancelCouponSelection">取消</el-button>
+        <el-button type="primary" @click="confirmCoupon" :disabled="!tempSelectedCoupon">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -371,42 +380,55 @@ const fetchAddresses = async () => {
 // 获取用户优惠券列表
 const fetchCoupons = async () => {
   try {
-    const response = await couponApi.getUserCoupons('unused')
-    if (response.code === 200) {
+    console.log('开始获取用户优惠券列表');
+    const response = await couponApi.getUserCoupons('unused');
+    console.log('优惠券API响应:', response);
+
+    if (response && response.code === 200) {
+      // 确保正确处理API响应
+      availableCoupons.value = (response.data || []).map(coupon => {
+        console.log('处理优惠券:', coupon);
+        return {
+          userCouponId: coupon.id,
+          couponId: coupon.couponId,
+          couponName: coupon.couponName,
+          value: coupon.value,
+          threshold: coupon.threshold,
+          type: coupon.type || 'fixed', // 默认为固定金额
+          discountAmount: coupon.value, // 直接使用value作为折扣金额
+          endTime: coupon.endTime || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 如果没有结束时间，默认30天
+        };
+      });
+
+      console.log('处理后的优惠券数据:', availableCoupons.value);
+
       // 过滤出可用的优惠券（根据订单金额）
-      const amount = totalAmount.value
-      availableCoupons.value = (response.data || []).filter(coupon => {
-        return !coupon.threshold || amount >= coupon.threshold
-      })
+      const amount = totalAmount.value;
+      availableCoupons.value = availableCoupons.value.filter(coupon => {
+        return !coupon.threshold || amount >= coupon.threshold;
+      });
+
+      console.log('过滤后的可用优惠券:', availableCoupons.value);
     } else {
-      throw new Error(response.msg || '获取优惠券列表失败')
+      throw new Error(response?.msg || '获取优惠券列表失败');
     }
   } catch (error) {
-    console.error('获取优惠券列表失败:', error)
-    ElMessage.error('获取优惠券列表失败')
+    console.error('获取优惠券列表失败:', error);
+    ElMessage.error('获取优惠券列表失败');
   }
-}
+};
 
 // 计算优惠券折扣金额
-const calculateDiscount = async (coupon) => {
+const calculateDiscount = (coupon) => {
   if (!coupon) {
-    discountAmount.value = 0
-    return
+    discountAmount.value = 0;
+    return;
   }
   
-  try {
-    const response = await couponApi.calculateDiscount(coupon.couponId, totalAmount.value)
-    if (response.code === 200) {
-      discountAmount.value = response.data || 0
-    } else {
-      throw new Error(response.msg || '计算优惠金额失败')
-    }
-  } catch (error) {
-    console.error('计算优惠金额失败:', error)
-    ElMessage.error('计算优惠金额失败')
-    discountAmount.value = 0
-  }
-}
+  // 直接使用优惠券的value值作为折扣金额
+  discountAmount.value = coupon.value || 0;
+  console.log(`应用优惠券折扣: ${discountAmount.value}元`);
+};
 
 // 地址相关方法
 const selectAddress = (address) => {
@@ -494,16 +516,22 @@ const saveAddress = async () => {
 
 // 优惠券相关方法
 const selectCoupon = (coupon) => {
-  tempSelectedCoupon.value = coupon
-}
+  tempSelectedCoupon.value = coupon;
+};
 
-const confirmCoupon = async () => {
-  selectedCoupon.value = tempSelectedCoupon.value
-  showCouponDialog.value = false
+const confirmCoupon = () => {
+  selectedCoupon.value = tempSelectedCoupon.value;
+  showCouponDialog.value = false;
   
   // 计算优惠金额
-  await calculateDiscount(selectedCoupon.value)
-}
+  calculateDiscount(selectedCoupon.value);
+};
+
+const cancelCouponSelection = () => {
+  // 重置临时选择的优惠券
+  tempSelectedCoupon.value = selectedCoupon.value;
+  showCouponDialog.value = false;
+};
 
 // 提交订单
 const submitOrder = async () => {
@@ -847,12 +875,74 @@ const submitOrder = async () => {
 }
 
 /* 优惠券对话框样式 */
+:deep(.el-dialog) {
+  background: rgba(30, 30, 40, 0.9) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+:deep(.el-dialog__header) {
+  padding: 20px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+:deep(.el-dialog__title) {
+  color: #fff !important;
+  font-weight: 600 !important;
+  font-size: 18px !important;
+}
+
+:deep(.el-dialog__headerbtn .el-dialog__close) {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:deep(.el-dialog__headerbtn:hover .el-dialog__close) {
+  color: #fff !important;
+}
+
+:deep(.el-dialog__body) {
+  padding: 20px !important;
+  color: #fff !important;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 15px 20px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
 .coupon-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
   max-height: 400px;
   overflow-y: auto;
+}
+
+.coupon-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.coupon-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.coupon-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.coupon-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.coupon-items {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .coupon-item {
@@ -865,15 +955,46 @@ const submitOrder = async () => {
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .coupon-item:hover {
   background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .coupon-item.active {
-  border-color: #409EFF;
-  background: rgba(64, 158, 255, 0.1);
+  border-color: #f56c6c;
+  background: rgba(245, 108, 108, 0.1);
+}
+
+.coupon-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 40px 40px 0;
+  border-color: transparent #f56c6c transparent transparent;
+}
+
+.coupon-item.active::after {
+  content: '✓';
+  position: absolute;
+  top: 5px;
+  right: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.coupon-item.selected-coupon {
+  border-color: rgba(245, 108, 108, 0.5);
+  background: rgba(245, 108, 108, 0.05);
 }
 
 .coupon-amount {
@@ -881,6 +1002,11 @@ const submitOrder = async () => {
   align-items: baseline;
   color: #f56c6c;
   font-weight: 600;
+  background: rgba(245, 108, 108, 0.1);
+  padding: 10px 15px;
+  border-radius: 8px;
+  min-width: 80px;
+  justify-content: center;
 }
 
 .currency {
@@ -896,15 +1022,90 @@ const submitOrder = async () => {
 }
 
 .coupon-name {
-  font-size: 14px;
+  font-size: 16px;
   color: #fff;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.coupon-condition {
+  font-size: 13px;
+  color: #f56c6c;
   margin-bottom: 5px;
 }
 
-.coupon-condition,
 .coupon-time {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
+}
+
+.coupon-action {
+  display: flex;
+  align-items: center;
+}
+
+.select-btn {
+  min-width: 80px;
+}
+
+.empty-coupons {
+  padding: 30px;
+  text-align: center;
+}
+
+/* 优惠券列表动画 */
+.coupon-list-enter-active,
+.coupon-list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.coupon-list-enter-from {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.coupon-list-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+.coupon-list-move {
+  transition: transform 0.5s ease;
+}
+
+:deep(.el-empty__description p) {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:deep(.el-button) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+}
+
+:deep(.el-button:hover) {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+:deep(.el-button--primary) {
+  background: rgba(64, 158, 255, 0.2) !important;
+  border-color: rgba(64, 158, 255, 0.3) !important;
+}
+
+:deep(.el-button--primary:hover) {
+  background: rgba(64, 158, 255, 0.3) !important;
+  border-color: rgba(64, 158, 255, 0.4) !important;
+}
+
+:deep(.el-button--danger) {
+  background: rgba(245, 108, 108, 0.2) !important;
+  border-color: rgba(245, 108, 108, 0.3) !important;
+}
+
+:deep(.el-button--danger:hover) {
+  background: rgba(245, 108, 108, 0.3) !important;
+  border-color: rgba(245, 108, 108, 0.4) !important;
 }
 
 /* 响应式布局 */

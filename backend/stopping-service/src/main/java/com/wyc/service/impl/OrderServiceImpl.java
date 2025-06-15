@@ -13,6 +13,7 @@ import com.wyc.mapper.OrderitemsMapper;
 import com.wyc.mapper.ProductsMapper;
 import com.wyc.mapper.PaymentsMapper;
 import com.wyc.mapper.CartItemsMapper;
+import com.wyc.service.ICouponService;
 import com.wyc.service.IMessageService;
 import com.wyc.service.IOrderService;
 import org.slf4j.Logger;
@@ -51,6 +52,9 @@ public class OrderServiceImpl implements IOrderService {
     @Autowired
     private IMessageService messageService;
 
+    @Autowired
+    private ICouponService couponService;
+
     @Override
     @Transactional
     public Long createOrder(Long userId, OrderCreateVO orderCreateVO) {
@@ -74,12 +78,37 @@ public class OrderServiceImpl implements IOrderService {
         order.setCreatedAt(new Date());
         order.setUpdatedAt(new Date());
 
+        // 设置优惠券ID
+        if (orderCreateVO.getCouponId() != null) {
+            order.setCouponId(orderCreateVO.getCouponId());
+            logger.info("订单使用优惠券: couponId={}", orderCreateVO.getCouponId());
+        }
+
         // 3. 计算订单总金额
         BigDecimal totalAmount = BigDecimal.ZERO;
         for (OrderCreateVO.OrderItemCreateVO item : orderCreateVO.getItems()) {
             Products product = productsMapper.selectById(item.getProductId());
             totalAmount = totalAmount.add(product.getPrice().multiply(new BigDecimal(item.getQuantity())));
         }
+
+        // 如果使用了优惠券，计算优惠后的金额
+        if (order.getCouponId() != null) {
+            try {
+                double discountAmount = couponService.calculateDiscount(userId, order.getCouponId(),
+                        totalAmount.doubleValue());
+                if (discountAmount > 0) {
+                    // 对于满减券，直接减去优惠金额
+                    totalAmount = totalAmount.subtract(new BigDecimal(discountAmount));
+                    logger.info("应用优惠券折扣: couponId={}, 折扣金额={}, 最终金额={}",
+                            order.getCouponId(), discountAmount, totalAmount);
+                }
+            } catch (Exception e) {
+                logger.error("计算优惠券折扣失败: couponId={}, error={}", order.getCouponId(), e.getMessage());
+                // 如果计算优惠失败，不应用优惠
+                order.setCouponId(null);
+            }
+        }
+
         order.setTotalAmount(totalAmount);
 
         // 4. 保存订单
@@ -220,10 +249,22 @@ public class OrderServiceImpl implements IOrderService {
         order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
 
-        // 4. 发送支付成功消息
+        // 4. 如果订单使用了优惠券，更新优惠券状态为已使用
+        if (order.getCouponId() != null) {
+            logger.info("订单使用了优惠券，更新优惠券状态: orderId={}, couponId={}", orderId, order.getCouponId());
+            try {
+                couponService.useCoupon(userId, order.getCouponId(), orderId);
+                logger.info("优惠券状态更新成功: couponId={}", order.getCouponId());
+            } catch (Exception e) {
+                logger.error("更新优惠券状态失败: couponId={}, error={}", order.getCouponId(), e.getMessage());
+                // 这里不抛出异常，因为订单支付已经成功，优惠券状态更新失败不应影响主流程
+            }
+        }
+
+        // 5. 发送支付成功消息
         sendPaymentSuccessMessage(order, payment);
 
-        // 5. 从购物车中删除已购买的商品
+        // 6. 从购物车中删除已购买的商品
         try {
             // 获取订单中的商品
             List<Orderitems> orderItems = orderitemsMapper.selectByOrderId(orderId);
