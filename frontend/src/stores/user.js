@@ -34,7 +34,8 @@ export const useUserStore = defineStore('user', {
       username: state.username,
       avatar: state.avatar,
       email: state.email,
-      phone: state.phone
+      phone: state.phone,
+      balance: state.balance
     })
   },
   
@@ -42,11 +43,11 @@ export const useUserStore = defineStore('user', {
     setUser(user) {
       this.userId = user.userId;
       this.username = user.username;
-      this.avatar = user.avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
+      this.avatar = user.avatar || '/images/2.jpg';
       this.email = user.email;
       this.phone = user.phone;
       this.roles = user.roles || [];
-      this.balance = user.balance || 0;
+      this.balance = user.balance ? user.balance / 100 : 0;
     },
     
     setToken(token) {
@@ -148,8 +149,12 @@ export const useUserStore = defineStore('user', {
       
       try {
         const response = await userApi.getUserDetails();
-        if (response.data && response.data.data) {
-          this.setUser(response.data.data);
+        console.log('获取用户详情响应:', response);
+        
+        if (response.code === 200 && response.data) {
+          // 直接使用response.data作为用户数据
+          this.setUser(response.data);
+          console.log('用户数据已设置，余额:', this.balance);
           return true;
         }
         return false;

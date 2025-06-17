@@ -6,6 +6,10 @@
         <div class="user-info">
           <el-avatar :size="80" :src="userStore.avatar" />
           <h3>{{ userStore.username }}</h3>
+          <div class="user-balance">
+            <span>余额:</span>
+            <span class="balance-amount">¥{{ userStore.balance.toFixed(2) }}</span>
+          </div>
         </div>
         <el-menu
           :default-active="activeMenu"
@@ -141,6 +145,20 @@ function handleProfileTabChange() {
   margin: 10px 0 0;
   font-size: 16px;
   color: #fff;
+}
+
+.user-balance {
+  margin-top: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.user-balance .balance-amount {
+  color: #67c23a;
+  font-weight: 600;
 }
 
 .profile-menu {

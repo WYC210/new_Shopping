@@ -145,6 +145,14 @@
         WHERE user_id = #{userId}
     </update>
 
+    <update id="updateBalance">
+        UPDATE users
+        SET balance = balance + #{amount},
+            balance_updated_at = NOW(),
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+
     <select id="selectByUsernameOrEmailOrPhone" resultMap="UsersResult" parameterType="string">
         <include refid="selectUsersVo"/>
         WHERE (username = #{login} OR email = #{login} OR phone = #{login})

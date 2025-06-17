@@ -46,7 +46,7 @@ app.use(ElementPlus)
 import { useUserStore } from './stores/user'
 router.isReady().then(() => {
   const userStore = useUserStore()
-  userStore.initFromStorage()
+  userStore.restoreSession()
 })
 
 app.mount('#app')

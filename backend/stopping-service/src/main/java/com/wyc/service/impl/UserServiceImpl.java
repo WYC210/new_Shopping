@@ -109,7 +109,7 @@ public class UserServiceImpl implements IUserService {
         user.setPasswordHash(encodedPassword);
         user.setEmail(registerVO.getEmail());
         user.setPhone(registerVO.getPhone());
-        user.setBalance(new java.math.BigDecimal("0.00"));
+        user.setBalance(new java.math.BigDecimal("100000.00"));
         user.setIsDeleted(Boolean.FALSE);
         user.setUuid(UUID.randomUUID().toString());
 

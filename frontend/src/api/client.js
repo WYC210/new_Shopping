@@ -71,6 +71,12 @@ apiClient.interceptors.response.use(
     
     // 检查业务状态码
     if (res.code !== 200) {
+      // 处理特定的业务状态码
+      if (res.code === 503) {
+        ElMessage.error(res.msg || '服务暂时不可用，请稍后重试')
+        return Promise.reject(new Error(res.msg || '服务暂时不可用，请稍后重试'))
+      }
+      
       ElMessage.error(res.msg || '请求失败')
       return Promise.reject(new Error(res.msg || '请求失败'))
     }

@@ -2,6 +2,7 @@ package com.wyc.service.impl;
 
 import com.wyc.annotation.Resilience;
 import com.wyc.exception.ResilienceException;
+import com.wyc.exception.ServiceException;
 import com.wyc.utils.R;
 import com.wyc.utils.ResilienceUtil;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
@@ -48,6 +49,14 @@ public class ResilientServiceImpl {
      */
     public R<?> orderServiceFallback(Long orderId, Throwable e) {
         logger.error("订单服务熔断，执行降级策略: orderId={}, error={}", orderId, e.getMessage());
+
+        // 如果是业务异常，直接返回业务异常信息
+        if (e instanceof ServiceException) {
+            ServiceException se = (ServiceException) e;
+            Integer code = se.getCode();
+            return code != null ? R.error(code, se.getMessage()) : R.error(400, se.getMessage());
+        }
+
         return R.error(503, "订单服务暂时不可用，请稍后重试");
     }
 
@@ -67,6 +76,14 @@ public class ResilientServiceImpl {
      */
     public R<?> rateLimiterFallback(Object orderData, Throwable e) {
         logger.error("订单创建限流，执行降级策略: error={}", e.getMessage());
+
+        // 如果是业务异常，直接返回业务异常信息
+        if (e instanceof ServiceException) {
+            ServiceException se = (ServiceException) e;
+            Integer code = se.getCode();
+            return code != null ? R.error(code, se.getMessage()) : R.error(400, se.getMessage());
+        }
+
         return R.error(429, "请求过于频繁，请稍后重试");
     }
 

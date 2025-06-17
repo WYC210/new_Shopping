@@ -2,6 +2,11 @@
   <div class="profile-info">
     <h2 class="section-title">账号信息</h2>
     
+    <div class="balance-card">
+      <div class="balance-title">账户余额</div>
+      <div class="balance-amount">¥{{ userStore.balance.toFixed(2) }}</div>
+    </div>
+    
     <el-form
       ref="formRef"
       :model="form"
@@ -59,7 +64,9 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { profileApi } from '@/api/profile'
+import { useUserStore } from '../../stores/user'
 
+const userStore = useUserStore()
 const formRef = ref(null)
 const form = ref({
   username: '',
@@ -151,6 +158,27 @@ onMounted(() => {
   font-size: 24px;
   color: #fff;
   font-weight: 500;
+}
+
+.balance-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.balance-title {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 10px;
+}
+
+.balance-amount {
+  font-size: 28px;
+  font-weight: 600;
+  color: #67c23a;
 }
 
 .info-form {

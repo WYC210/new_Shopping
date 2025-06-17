@@ -1,5 +1,6 @@
 package com.wyc.handler;
 
+import com.wyc.exception.ServiceException;
 import com.wyc.utils.R;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,12 @@ public class FallbackHandler {
     public R<?> handleFallback(Throwable e, String serviceName) {
         logger.error("服务[{}]调用失败，执行降级策略: {}", serviceName, e.getMessage(), e);
 
-        if (e instanceof TimeoutException) {
+        // 如果是业务异常，直接返回业务异常信息
+        if (e instanceof ServiceException) {
+            ServiceException se = (ServiceException) e;
+            Integer code = se.getCode();
+            return code != null ? R.error(code, se.getMessage()) : R.error(400, se.getMessage());
+        } else if (e instanceof TimeoutException) {
             return R.error(408, "服务调用超时，请稍后重试");
         } else if (e instanceof IllegalStateException && e.getMessage().contains("CircuitBreaker")) {
             return R.error(503, "服务暂时不可用，请稍后重试");
@@ -44,6 +50,14 @@ public class FallbackHandler {
      */
     public R<?> orderServiceFallback(Throwable e) {
         logger.error("订单服务调用失败，执行降级策略: {}", e.getMessage(), e);
+
+        // 如果是业务异常，直接返回业务异常信息
+        if (e instanceof ServiceException) {
+            ServiceException se = (ServiceException) e;
+            Integer code = se.getCode();
+            return code != null ? R.error(code, se.getMessage()) : R.error(400, se.getMessage());
+        }
+
         return R.error(503, "订单服务暂时不可用，请稍后重试");
     }
 

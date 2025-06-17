@@ -4,6 +4,7 @@ import com.wyc.domain.po.Orders;
 import com.wyc.domain.po.Orderitems;
 import com.wyc.domain.po.Products;
 import com.wyc.domain.po.Payments;
+import com.wyc.domain.po.Users;
 import com.wyc.domain.vo.OrderDetailVO;
 import com.wyc.domain.vo.OrderCreateVO;
 import com.wyc.domain.vo.OrderDetailVO.PaymentInfoVO;
@@ -13,6 +14,7 @@ import com.wyc.mapper.OrderitemsMapper;
 import com.wyc.mapper.ProductsMapper;
 import com.wyc.mapper.PaymentsMapper;
 import com.wyc.mapper.CartItemsMapper;
+import com.wyc.mapper.UsersMapper;
 import com.wyc.service.ICouponService;
 import com.wyc.service.IMessageService;
 import com.wyc.service.IOrderService;
@@ -48,6 +50,9 @@ public class OrderServiceImpl implements IOrderService {
 
     @Autowired
     private CartItemsMapper cartItemsMapper;
+
+    @Autowired
+    private UsersMapper usersMapper;
 
     @Autowired
     private IMessageService messageService;
@@ -217,7 +222,7 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void payOrder(Long orderId, Long userId, String paymentMethod) {
         logger.info("开始支付订单: orderId={}, userId={}, paymentMethod={}", orderId, userId, paymentMethod);
 
@@ -226,14 +231,52 @@ public class OrderServiceImpl implements IOrderService {
         if (order == null) {
             throw new ServiceException("订单不存在");
         }
+        logger.debug("查询订单信息成功: orderId={}, status={}, totalAmount={}", order.getOrderId(), order.getStatus(),
+                order.getTotalAmount());
+
         if (!order.getUserId().equals(userId)) {
             throw new ServiceException("无权操作此订单");
         }
-        if (!"pending".equals(order.getStatus())) {
-            throw new ServiceException("订单状态不正确");
+        if (!"pending".equalsIgnoreCase(order.getStatus())) {
+            throw new ServiceException("订单状态不正确，当前状态: " + order.getStatus());
         }
 
-        // 2. 创建支付记录
+        // 2. 检查用户余额是否足够
+        Users user = usersMapper.selectById(userId);
+        if (user == null) {
+            throw new ServiceException("用户不存在");
+        }
+        logger.debug("查询用户信息成功: userId={}, username={}, balance={}", user.getUserId(), user.getUsername(),
+                user.getBalance());
+
+        // 增强空值检查
+        if (user.getBalance() == null) {
+            throw new ServiceException("用户余额为空，请联系客服");
+        }
+
+        if (order.getTotalAmount() == null) {
+            throw new ServiceException("订单金额异常，请联系客服");
+        }
+
+        // 添加详细日志，记录余额检查
+        logger.info("用户余额检查: userId={}, 当前余额={}, 订单金额={}", userId, user.getBalance(), order.getTotalAmount());
+
+        if (user.getBalance().compareTo(order.getTotalAmount()) < 0) {
+            logger.warn("用户余额不足: userId={}, 当前余额={}, 订单金额={}", userId, user.getBalance(), order.getTotalAmount());
+            throw new ServiceException("余额不足，请充值后再支付");
+        }
+
+        // 3. 扣减用户余额
+        Double amountToDeduct = -order.getTotalAmount().doubleValue();
+        try {
+            usersMapper.updateBalance(userId, amountToDeduct);
+            logger.info("扣减用户余额成功: userId={}, amount={}", userId, amountToDeduct);
+        } catch (Exception e) {
+            logger.error("扣减用户余额失败: userId={}, amount={}, error={}", userId, amountToDeduct, e.getMessage(), e);
+            throw new ServiceException("扣减余额失败: " + e.getMessage());
+        }
+
+        // 4. 创建支付记录
         Payments payment = new Payments();
         payment.setOrderId(orderId);
         payment.setOrderNumber(String.valueOf(orderId)); // 实际应该生成订单号
@@ -242,14 +285,26 @@ public class OrderServiceImpl implements IOrderService {
         payment.setPaymentMethod(paymentMethod);
         payment.setPaidAt(new Date());
         payment.setCreatedAt(new Date());
-        paymentsMapper.insert(payment);
+        try {
+            paymentsMapper.insert(payment);
+            logger.info("创建支付记录成功: orderId={}, paymentId={}", orderId, payment.getPaymentId());
+        } catch (Exception e) {
+            logger.error("创建支付记录失败: orderId={}, error={}", orderId, e.getMessage(), e);
+            throw new ServiceException("创建支付记录失败: " + e.getMessage());
+        }
 
-        // 3. 更新订单状态
-        order.setStatus("PAID");
-        order.setUpdatedAt(new Date());
-        ordersMapper.updateById(order);
+        // 5. 更新订单状态
+        try {
+            order.setStatus("PAID");
+            order.setUpdatedAt(new Date());
+            ordersMapper.updateById(order);
+            logger.info("更新订单状态成功: orderId={}, status=PAID", orderId);
+        } catch (Exception e) {
+            logger.error("更新订单状态失败: orderId={}, error={}", orderId, e.getMessage(), e);
+            throw new ServiceException("更新订单状态失败: " + e.getMessage());
+        }
 
-        // 4. 如果订单使用了优惠券，更新优惠券状态为已使用
+        // 6. 如果订单使用了优惠券，更新优惠券状态为已使用
         if (order.getCouponId() != null) {
             logger.info("订单使用了优惠券，更新优惠券状态: orderId={}, couponId={}", orderId, order.getCouponId());
             try {
@@ -261,10 +316,10 @@ public class OrderServiceImpl implements IOrderService {
             }
         }
 
-        // 5. 发送支付成功消息
+        // 7. 发送支付成功消息
         sendPaymentSuccessMessage(order, payment);
 
-        // 6. 从购物车中删除已购买的商品
+        // 8. 从购物车中删除已购买的商品
         try {
             // 获取订单中的商品
             List<Orderitems> orderItems = orderitemsMapper.selectByOrderId(orderId);

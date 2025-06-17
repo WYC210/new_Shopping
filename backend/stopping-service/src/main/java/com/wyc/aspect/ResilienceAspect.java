@@ -1,4 +1,6 @@
 package com.wyc.aspect;
+
+import com.wyc.exception.ServiceException;
 import com.wyc.utils.R;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -36,7 +38,11 @@ public class ResilienceAspect {
      */
     public Object circuitBreakerFallback(Throwable throwable) {
         logger.error("熔断器触发，执行服务降级: {}", throwable.getMessage());
-        if (throwable instanceof TimeoutException) {
+        if (throwable instanceof ServiceException) {
+            ServiceException se = (ServiceException) throwable;
+            Integer code = se.getCode();
+            return code != null ? R.error(code, se.getMessage()) : R.error(400, se.getMessage());
+        } else if (throwable instanceof TimeoutException) {
             return R.error(408, "服务调用超时，请稍后重试");
         }
         return R.error(500, "服务暂时不可用，请稍后重试");
@@ -47,6 +53,11 @@ public class ResilienceAspect {
      */
     public Object rateLimiterFallback(Throwable throwable) {
         logger.error("限流器触发，执行服务降级: {}", throwable.getMessage());
+        if (throwable instanceof ServiceException) {
+            ServiceException se = (ServiceException) throwable;
+            Integer code = se.getCode();
+            return code != null ? R.error(code, se.getMessage()) : R.error(400, se.getMessage());
+        }
         return R.error(429, "服务繁忙，请稍后重试");
     }
 
@@ -55,6 +66,11 @@ public class ResilienceAspect {
      */
     public Object bulkheadFallback(Throwable throwable) {
         logger.error("并发控制触发，执行服务降级: {}", throwable.getMessage());
+        if (throwable instanceof ServiceException) {
+            ServiceException se = (ServiceException) throwable;
+            Integer code = se.getCode();
+            return code != null ? R.error(code, se.getMessage()) : R.error(400, se.getMessage());
+        }
         return R.error(429, "服务繁忙，请稍后重试");
     }
 
@@ -66,8 +82,14 @@ public class ResilienceAspect {
         String className = joinPoint.getTarget().getClass().getSimpleName();
         logger.error("{}类的{}方法发生异常，执行降级策略: {}", className, methodName, e.getMessage());
 
+        // 业务异常直接返回给前端
+        if (e instanceof ServiceException) {
+            ServiceException se = (ServiceException) e;
+            Integer code = se.getCode();
+            return code != null ? R.error(code, se.getMessage()) : R.error(400, se.getMessage());
+        }
         // 根据不同的异常类型返回不同的降级结果
-        if (e instanceof TimeoutException) {
+        else if (e instanceof TimeoutException) {
             return R.error(408, "服务调用超时，请稍后重试");
         }
 

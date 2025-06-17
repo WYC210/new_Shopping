@@ -69,6 +69,17 @@ resilience4j:
         waitDurationInOpenState: 5s
         failureRateThreshold: 50
         eventConsumerBufferSize: 10
+      payOrder:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 3
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 70
+        eventConsumerBufferSize: 10
+        slowCallDurationThreshold: 5s
+        slowCallRateThreshold: 50
       getHotProducts:
         registerHealthIndicator: true
         slidingWindowSize: 10

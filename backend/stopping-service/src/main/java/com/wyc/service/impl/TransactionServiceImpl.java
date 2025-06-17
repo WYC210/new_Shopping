@@ -44,8 +44,8 @@ public class TransactionServiceImpl implements ITransactionService {
         logger.debug("订单状态：{}", order.getStatus());
 
         // 2. 验证订单状态
-        if (order.getStatus().equals("pending")) {
-            throw new ServiceException("订单状态不正确");
+        if (!order.getStatus().equalsIgnoreCase("pending")) {
+            throw new ServiceException("订单状态不正确，只能对待支付订单创建交易");
         }
 
         // 3. 设置创建和更新时间

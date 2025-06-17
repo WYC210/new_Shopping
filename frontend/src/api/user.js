@@ -1,6 +1,7 @@
 import apiClient from './client'
 import { BrowsingRecordVO } from '../models/BrowsingRecord'
 import { getFingerprint } from '../utils/fingerprint'
+import { useUserStore } from '../stores/user'
 
 export const userApi = {
   // 用户登录
@@ -52,6 +53,12 @@ export const userApi = {
 
   // 记录浏览历史
   recordBrowsing(productId, productName) {
+    const userStore = useUserStore()
+    // 只有登录状态才记录浏览历史
+    if (!userStore.isAuthenticated) {
+      return Promise.resolve() // 未登录时返回一个已解决的Promise
+    }
+    
     const fingerprint = getFingerprint()
     const record = new BrowsingRecordVO(null, productId, productName, '', new Date().toISOString())
     

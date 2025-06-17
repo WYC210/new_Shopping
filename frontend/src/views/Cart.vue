@@ -74,9 +74,9 @@
               <span>运费</span>
               <span>¥{{ shipping }}</span>
             </div>
-            <div class="summary-item discount" v-if="discount > 0">
-              <span>优惠</span>
-              <span>-¥{{ discount }}</span>
+            <div class="summary-item user-balance">
+              <span>账户余额</span>
+              <span>¥{{ userStore.balance.toFixed(2) }}</span>
             </div>
             <div class="summary-item total">
               <span>应付总额</span>
@@ -149,7 +149,6 @@ console.log("哈哈哈哈")
 console.log(cartItems)
 
 const shipping = ref(10)
-const discount = ref(50)
 const recommendedProducts = ref([
   {
     id: 3,
@@ -170,7 +169,7 @@ const recommendedProducts = ref([
 ])
 
 const finalPrice = computed(() => {
-  return totalPrice.value + shipping.value - discount.value
+  return totalPrice.value + shipping.value
 })
 
 const handleQuantityChange = async (itemId, quantity) => {
@@ -536,6 +535,11 @@ onMounted(async () => {
   font-size: 18px;
   font-weight: 600;
   color: #fff;
+}
+
+.summary-item.user-balance {
+  color: #67c23a;
+  font-weight: 500;
 }
 
 .summary-actions {
