@@ -579,6 +579,9 @@ const submitOrder = async () => {
           await cartStore.fetchCartItems()
         }
         
+        // 设置支付成功标记，用于刷新用户余额
+        localStorage.setItem('payment_success', 'true')
+        
         // 跳转到订单列表页面
         router.push('/profile/orders')
       } else {

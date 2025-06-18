@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
 import FullscreenLayout from '../layouts/FullscreenLayout.vue'
+import AdminLayout from '../layouts/AdminLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -138,6 +139,16 @@ const router = createRouter({
           }
         }
       ]
+    },
+    // 单独的数据大屏路由
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: () => import('../views/admin/Dashboard.vue'),
+      meta: {
+        title: '数据大屏',
+        layout: FullscreenLayout // 使用全屏布局
+      }
     },
     // 添加404页面
     {

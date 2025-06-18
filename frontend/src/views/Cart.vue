@@ -76,7 +76,7 @@
             </div>
             <div class="summary-item user-balance">
               <span>账户余额</span>
-              <span>¥{{ userStore.balance.toFixed(2) }}</span>
+              <span>¥{{ userStore.balance }}</span>
             </div>
             <div class="summary-item total">
               <span>应付总额</span>

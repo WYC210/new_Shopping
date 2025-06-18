@@ -47,7 +47,7 @@ export const useUserStore = defineStore('user', {
       this.email = user.email;
       this.phone = user.phone;
       this.roles = user.roles || [];
-      this.balance = user.balance ? user.balance / 100 : 0;
+      this.balance = user.balance ? user.balance : 0;
     },
     
     setToken(token) {

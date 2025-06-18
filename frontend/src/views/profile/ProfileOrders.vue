@@ -103,11 +103,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { profileApi } from '../../api/profile'
+
+const emit = defineEmits(['order-paid'])
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -240,6 +242,19 @@ const handlePay = (order) => {
   })
 }
 
+// 在支付成功后返回此页面时检查并更新用户余额
+const checkPaymentSuccess = () => {
+  const paymentSuccess = localStorage.getItem('payment_success')
+  if (paymentSuccess) {
+    // 清除标记
+    localStorage.removeItem('payment_success')
+    // 触发父组件的刷新方法
+    emit('order-paid')
+    // 刷新订单列表
+    fetchOrders()
+  }
+}
+
 // 查看物流
 const handleViewLogistics = (order) => {
   router.push({
@@ -302,6 +317,8 @@ const handleDelete = async (order) => {
 onMounted(() => {
   console.log('组件挂载，初始状态:', activeTab.value)
   fetchOrders()
+  // 检查是否有支付成功的标记
+  checkPaymentSuccess()
 })
 </script>
 

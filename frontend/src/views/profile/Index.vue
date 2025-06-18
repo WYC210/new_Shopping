@@ -8,7 +8,7 @@
           <h3>{{ userStore.username }}</h3>
           <div class="user-balance">
             <span>余额:</span>
-            <span class="balance-amount">¥{{ userStore.balance.toFixed(2) }}</span>
+            <span class="balance-amount">¥{{ userStore.balance }}</span>
           </div>
         </div>
         <el-menu
@@ -46,14 +46,14 @@
 
       <!-- 右侧内容 -->
       <div class="profile-main" :class="{ 'fade-in-animation': fadeIn }">
-        <router-view @hook:beforeRouteUpdate="handleProfileTabChange" />
+        <router-view @hook:beforeRouteUpdate="handleProfileTabChange" @order-paid="refreshUserData" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onActivated } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Document, Location, Ticket, User, Lock, Clock, Star, Calendar } from '@element-plus/icons-vue'
 import { useUserStore } from '../../stores/user'
@@ -92,6 +92,23 @@ onMounted(async () => {
     fadeIn.value = false
   }, 800)
 })
+
+// 添加一个激活时的钩子，每次组件激活时更新用户数据
+onActivated(async () => {
+  if (userStore.isAuthenticated) {
+    await refreshUserData()
+  }
+})
+
+// 刷新用户数据
+const refreshUserData = async () => {
+  try {
+    await userStore.getUserDetail()
+    console.log('用户数据已更新')
+  } catch (error) {
+    console.error('更新用户数据失败:', error)
+  }
+}
 
 const handleMenuSelect = (key) => {
   // 使用路由名称进行导航，而不是拼接路径
