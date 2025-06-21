@@ -38,6 +38,10 @@ public class Orders {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date updatedAt;
 
+    /** 完成时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date completedAt;
+
     /** 订单详细表信息 */
     private List<Orderitems> orderitemsList;
 

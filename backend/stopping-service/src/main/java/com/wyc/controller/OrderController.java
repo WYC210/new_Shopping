@@ -10,11 +10,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.Map;
+import java.util.Collections;
 
 @Api(tags = "订单管理接口")
 @RestController
@@ -39,11 +41,11 @@ public class OrderController {
     @CircuitBreaker(name = "getOrderDetail", fallbackMethod = "getOrderDetailFallback")
     public R<OrderDetailVO> getOrderDetail(
             @ApiParam(value = "订单ID", required = true) @PathVariable Long orderId) {
-       // 熔断服务降级测试专用
+        // 熔断服务降级测试专用
         // try {
-        //     Thread.sleep(2000); // 模拟耗时2秒
+        // Thread.sleep(2000); // 模拟耗时2秒
         // } catch (InterruptedException e) {
-        //     Thread.currentThread().interrupt();
+        // Thread.currentThread().interrupt();
         // }
         return R.ok(orderService.getOrderDetail(orderId));
     }
@@ -117,11 +119,18 @@ public class OrderController {
             @AuthenticationPrincipal UserDetails userDetails,
             @ApiParam(value = "直接购买信息", required = true) @RequestBody DirectPurchaseVO directPurchaseVO) {
         Long userId = SecurityContext.getUserId();
+
         // 转换为订单创建对象
         OrderCreateVO orderCreateVO = new OrderCreateVO();
-        orderCreateVO.setItems(directPurchaseVO.getItems());
+
+        // 创建单个商品项
+        OrderCreateVO.OrderItemCreateVO itemVO = new OrderCreateVO.OrderItemCreateVO();
+        itemVO.setProductId(directPurchaseVO.getProductId());
+        itemVO.setQuantity(directPurchaseVO.getQuantity());
+        itemVO.setPrice(directPurchaseVO.getPrice());
+
+        orderCreateVO.setItems(Collections.singletonList(itemVO));
         orderCreateVO.setAddressId(directPurchaseVO.getAddressId());
-        orderCreateVO.setRemark(directPurchaseVO.getRemark());
 
         // 创建订单
         Long orderId = orderService.createOrder(userId, orderCreateVO);

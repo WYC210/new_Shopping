@@ -4,9 +4,14 @@ import com.wyc.domain.po.Orders;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * 订单Mapper接口
+ */
+@Repository
 @Mapper
 public interface OrdersMapper {
     /**
@@ -61,4 +66,26 @@ public interface OrdersMapper {
      * 删除订单
      */
     int deleteById(@Param("orderId") Long orderId);
+
+    /**
+     * 分页查询用户订单
+     * 
+     * @param userId 用户ID
+     * @param status 订单状态
+     * @param offset 偏移量
+     * @param limit  限制数量
+     * @return 订单列表
+     */
+    List<Orders> selectUserOrdersWithPagination(@Param("userId") Long userId,
+            @Param("status") String status,
+            @Param("offset") int offset,
+            @Param("limit") int limit);
+
+    /**
+     * 标记订单为已删除（逻辑删除）
+     * 
+     * @param orderId 订单ID
+     * @return 影响行数
+     */
+    int markAsDeleted(@Param("orderId") Long orderId);
 }

@@ -1,40 +1,48 @@
 package com.wyc.service.impl;
 
+import com.wyc.domain.builder.OrderBuilder;
 import com.wyc.domain.po.Orders;
 import com.wyc.domain.po.Orderitems;
 import com.wyc.domain.po.Products;
 import com.wyc.domain.po.Payments;
 import com.wyc.domain.po.Users;
-import com.wyc.domain.vo.OrderDetailVO;
 import com.wyc.domain.vo.OrderCreateVO;
-import com.wyc.domain.vo.OrderDetailVO.PaymentInfoVO;
+import com.wyc.domain.vo.OrderDetailVO;
+import com.wyc.domain.vo.OrderListVO;
+import com.wyc.domain.vo.DirectPurchaseVO;
 import com.wyc.exception.ServiceException;
-import com.wyc.mapper.OrdersMapper;
 import com.wyc.mapper.OrderitemsMapper;
+import com.wyc.mapper.OrdersMapper;
 import com.wyc.mapper.ProductsMapper;
 import com.wyc.mapper.PaymentsMapper;
-import com.wyc.mapper.CartItemsMapper;
 import com.wyc.mapper.UsersMapper;
-import com.wyc.service.ICouponService;
-import com.wyc.service.IMessageService;
 import com.wyc.service.IOrderService;
+import com.wyc.service.event.OrderEventPublisher;
+import com.wyc.service.factory.OrderProcessorFactory;
+import com.wyc.service.factory.PaymentStrategyFactory;
+import com.wyc.service.processor.OrderProcessor;
+import com.wyc.service.strategy.PaymentStrategy;
+import com.wyc.service.ICouponService;
+import com.wyc.utils.LogUtil;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 订单服务实现类
+ */
 @Service
 public class OrderServiceImpl implements IOrderService {
 
-    private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
+    private static final Logger logger = LogUtil.getLogger(OrderServiceImpl.class);
 
     @Autowired
     private OrdersMapper ordersMapper;
@@ -49,13 +57,16 @@ public class OrderServiceImpl implements IOrderService {
     private PaymentsMapper paymentsMapper;
 
     @Autowired
-    private CartItemsMapper cartItemsMapper;
-
-    @Autowired
     private UsersMapper usersMapper;
 
     @Autowired
-    private IMessageService messageService;
+    private OrderProcessorFactory orderProcessorFactory;
+
+    @Autowired
+    private PaymentStrategyFactory paymentStrategyFactory;
+
+    @Autowired
+    private OrderEventPublisher eventPublisher;
 
     @Autowired
     private ICouponService couponService;
@@ -63,92 +74,46 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     @Transactional
     public Long createOrder(Long userId, OrderCreateVO orderCreateVO) {
-        logger.info("开始创建订单: userId={}", userId);
+        LogUtil.logMethodStart(logger, "createOrder", userId, orderCreateVO);
 
         // 1. 验证商品库存
-        for (OrderCreateVO.OrderItemCreateVO item : orderCreateVO.getItems()) {
-            Products product = productsMapper.selectById(item.getProductId());
-            if (product == null) {
-                throw new ServiceException("商品不存在");
-            }
-            if (product.getStock() < item.getQuantity()) {
-                throw new ServiceException("商品库存不足");
-            }
-        }
+        validateProductStock(orderCreateVO);
 
-        // 2. 创建订单
-        Orders order = new Orders();
-        order.setUserId(userId);
-        order.setStatus("PENDING"); // 待支付状态
-        order.setCreatedAt(new Date());
-        order.setUpdatedAt(new Date());
+        // 2. 使用建造者模式创建订单
+        OrderBuilder orderBuilder = OrderBuilder.create()
+                .withUserId(userId)
+                .withStatus("PENDING");
 
-        // 设置优惠券ID
+        // 3. 设置优惠券
         if (orderCreateVO.getCouponId() != null) {
-            order.setCouponId(orderCreateVO.getCouponId());
-            logger.info("订单使用优惠券: couponId={}", orderCreateVO.getCouponId());
+            orderBuilder.withCouponId(orderCreateVO.getCouponId());
         }
 
-        // 3. 计算订单总金额
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        for (OrderCreateVO.OrderItemCreateVO item : orderCreateVO.getItems()) {
-            Products product = productsMapper.selectById(item.getProductId());
-            totalAmount = totalAmount.add(product.getPrice().multiply(new BigDecimal(item.getQuantity())));
-        }
+        // 4. 计算订单总金额
+        BigDecimal totalAmount = calculateTotalAmount(orderCreateVO);
+        orderBuilder.withTotalAmount(totalAmount);
 
-        // 如果使用了优惠券，计算优惠后的金额
-        if (order.getCouponId() != null) {
-            try {
-                double discountAmount = couponService.calculateDiscount(userId, order.getCouponId(),
-                        totalAmount.doubleValue());
-                if (discountAmount > 0) {
-                    // 对于满减券，直接减去优惠金额
-                    totalAmount = totalAmount.subtract(new BigDecimal(discountAmount));
-                    logger.info("应用优惠券折扣: couponId={}, 折扣金额={}, 最终金额={}",
-                            order.getCouponId(), discountAmount, totalAmount);
-                }
-            } catch (Exception e) {
-                logger.error("计算优惠券折扣失败: couponId={}, error={}", order.getCouponId(), e.getMessage());
-                // 如果计算优惠失败，不应用优惠
-                order.setCouponId(null);
-            }
-        }
+        // 5. 构建订单并保存
+        Orders order = orderBuilder.build();
 
-        order.setTotalAmount(totalAmount);
+        // 6. 使用订单处理器处理订单创建
+        OrderProcessor processor = orderProcessorFactory.getProcessor("create");
+        order = processor.process(order);
 
-        // 4. 保存订单
-        ordersMapper.insert(order);
+        // 7. 创建订单项
+        createOrderItems(order.getOrderId(), orderCreateVO);
 
-        // 5. 创建订单项
-        for (OrderCreateVO.OrderItemCreateVO item : orderCreateVO.getItems()) {
-            Products product = productsMapper.selectById(item.getProductId());
-            Orderitems orderItem = new Orderitems();
-            orderItem.setOrderId(order.getOrderId());
-            orderItem.setProductId(item.getProductId());
-            orderItem.setProductSkuId(item.getSkuId());
-            orderItem.setQuantity(item.getQuantity().longValue());
-            orderItem.setPrice(product.getPrice());
-            orderItem.setProductName(product.getName());
-            orderItem.setProductImage(product.getMainImageUrl());
-            orderItem.setCreatedAt(new Date());
-            orderitemsMapper.insert(orderItem);
+        // 8. 发布订单创建事件
+        eventPublisher.publishOrderCreatedEvent(order);
 
-            // 6. 扣减库存
-            productsMapper.updateStock(item.getProductId(), -item.getQuantity());
-        }
-
-        // 7. 发送订单创建消息
-        sendOrderCreatedMessage(order);
-
-        // 8. 发送延迟订单消息，用于超时取消
-        sendDelayedOrderMessage(order.getOrderId());
-
-        logger.info("订单创建成功: orderId={}", order.getOrderId());
+        LogUtil.logMethodSuccess(logger, "createOrder", order.getOrderId());
         return order.getOrderId();
     }
 
     @Override
     public OrderDetailVO getOrderDetail(Long orderId) {
+        LogUtil.logMethodStart(logger, "getOrderDetail", orderId);
+
         // 1. 获取订单信息
         Orders order = ordersMapper.selectById(orderId);
         if (order == null) {
@@ -167,7 +132,7 @@ public class OrderServiceImpl implements IOrderService {
         orderDetail.setOrderItems(orderItems);
 
         if (payment != null) {
-            PaymentInfoVO paymentInfo = new PaymentInfoVO();
+            OrderDetailVO.PaymentInfoVO paymentInfo = new OrderDetailVO.PaymentInfoVO();
             paymentInfo.setPaymentId(payment.getPaymentId());
             paymentInfo.setPaymentMethod(payment.getPaymentMethod());
             paymentInfo.setAmount(payment.getAmount());
@@ -175,224 +140,117 @@ public class OrderServiceImpl implements IOrderService {
             orderDetail.setPaymentInfo(paymentInfo);
         }
 
+        LogUtil.logMethodSuccess(logger, "getOrderDetail", orderDetail);
         return orderDetail;
     }
 
     @Override
     public List<OrderDetailVO> getUserOrders(Long userId, String status) {
-        logger.info("获取用户订单列表: userId={}, status={}", userId, status);
+        LogUtil.logMethodStart(logger, "getUserOrders", userId, status);
+
         List<Orders> orders = ordersMapper.selectUserOrders(userId, status);
-        return orders.stream()
+        List<OrderDetailVO> result = orders.stream()
                 .map(order -> getOrderDetail(order.getOrderId()))
                 .collect(Collectors.toList());
+
+        LogUtil.logMethodSuccess(logger, "getUserOrders", result.size());
+        return result;
     }
 
     @Override
     @Transactional
     public void cancelOrder(Long orderId, Long userId) {
-        logger.info("开始取消订单: orderId={}, userId={}", orderId, userId);
+        LogUtil.logMethodStart(logger, "cancelOrder", orderId, userId);
 
         // 1. 验证订单
-        Orders order = ordersMapper.selectById(orderId);
-        if (order == null) {
-            throw new ServiceException("订单不存在");
-        }
-        if (userId != null && !order.getUserId().equals(userId)) {
-            throw new ServiceException("无权操作此订单");
-        }
-        if (!"pending".equals(order.getStatus())) {
-            throw new ServiceException("只能取消待支付的订单");
+        Orders order = validateOrderOwnership(orderId, userId);
+
+        // 2. 使用订单处理器处理取消
+        OrderProcessor processor = orderProcessorFactory.getProcessor("cancel");
+        if (!processor.canProcess(order)) {
+            throw new ServiceException("当前订单状态不允许取消");
         }
 
-        // 2. 恢复库存
-        List<Orderitems> orderItems = orderitemsMapper.selectByOrderId(orderId);
-        for (Orderitems item : orderItems) {
-            productsMapper.updateStock(item.getProductId(), item.getQuantity().intValue());
-        }
+        order = processor.process(order);
 
-        // 3. 更新订单状态
-        order.setStatus("CANCELLED");
-        order.setUpdatedAt(new Date());
-        ordersMapper.updateById(order);
+        // 3. 发布订单取消事件
+        eventPublisher.publishOrderCancelledEvent(order);
 
-        // 4. 发送订单取消通知
-        sendOrderCancelNotification(order);
-
-        logger.info("订单取消成功: orderId={}", orderId);
+        LogUtil.logMethodSuccess(logger, "cancelOrder", orderId);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void payOrder(Long orderId, Long userId, String paymentMethod) {
-        logger.info("开始支付订单: orderId={}, userId={}, paymentMethod={}", orderId, userId, paymentMethod);
+        LogUtil.logMethodStart(logger, "payOrder", orderId, userId, paymentMethod);
 
         // 1. 验证订单
-        Orders order = ordersMapper.selectById(orderId);
-        if (order == null) {
-            throw new ServiceException("订单不存在");
-        }
-        logger.debug("查询订单信息成功: orderId={}, status={}, totalAmount={}", order.getOrderId(), order.getStatus(),
-                order.getTotalAmount());
+        Orders order = validateOrderOwnership(orderId, userId);
 
-        if (!order.getUserId().equals(userId)) {
-            throw new ServiceException("无权操作此订单");
-        }
-        if (!"pending".equalsIgnoreCase(order.getStatus())) {
-            throw new ServiceException("订单状态不正确，当前状态: " + order.getStatus());
+        // 2. 使用支付策略处理支付（简化为余额支付）
+        PaymentStrategy paymentStrategy = paymentStrategyFactory.getStrategy("BALANCE");
+        Payments payment = paymentStrategy.processPayment(order, "BALANCE");
+
+        // 3. 使用订单处理器处理支付后状态更新
+        OrderProcessor processor = orderProcessorFactory.getProcessor("pay");
+        if (!processor.canProcess(order)) {
+            throw new ServiceException("当前订单状态不允许支付");
         }
 
-        // 2. 检查用户余额是否足够
-        Users user = usersMapper.selectById(userId);
-        if (user == null) {
-            throw new ServiceException("用户不存在");
-        }
-        logger.debug("查询用户信息成功: userId={}, username={}, balance={}", user.getUserId(), user.getUsername(),
-                user.getBalance());
+        order = processor.process(order);
 
-        // 增强空值检查
-        if (user.getBalance() == null) {
-            throw new ServiceException("用户余额为空，请联系客服");
-        }
+        // 4. 发布订单支付成功事件
+        eventPublisher.publishOrderPaidEvent(order, payment);
 
-        if (order.getTotalAmount() == null) {
-            throw new ServiceException("订单金额异常，请联系客服");
-        }
-
-        // 添加详细日志，记录余额检查
-        logger.info("用户余额检查: userId={}, 当前余额={}, 订单金额={}", userId, user.getBalance(), order.getTotalAmount());
-
-        if (user.getBalance().compareTo(order.getTotalAmount()) < 0) {
-            logger.warn("用户余额不足: userId={}, 当前余额={}, 订单金额={}", userId, user.getBalance(), order.getTotalAmount());
-            throw new ServiceException("余额不足，请充值后再支付");
-        }
-
-        // 3. 扣减用户余额
-        Double amountToDeduct = -order.getTotalAmount().doubleValue();
-        try {
-            usersMapper.updateBalance(userId, amountToDeduct);
-            logger.info("扣减用户余额成功: userId={}, amount={}", userId, amountToDeduct);
-        } catch (Exception e) {
-            logger.error("扣减用户余额失败: userId={}, amount={}, error={}", userId, amountToDeduct, e.getMessage(), e);
-            throw new ServiceException("扣减余额失败: " + e.getMessage());
-        }
-
-        // 4. 创建支付记录
-        Payments payment = new Payments();
-        payment.setOrderId(orderId);
-        payment.setOrderNumber(String.valueOf(orderId)); // 实际应该生成订单号
-        payment.setUserId(userId);
-        payment.setAmount(order.getTotalAmount());
-        payment.setPaymentMethod(paymentMethod);
-        payment.setPaidAt(new Date());
-        payment.setCreatedAt(new Date());
-        try {
-            paymentsMapper.insert(payment);
-            logger.info("创建支付记录成功: orderId={}, paymentId={}", orderId, payment.getPaymentId());
-        } catch (Exception e) {
-            logger.error("创建支付记录失败: orderId={}, error={}", orderId, e.getMessage(), e);
-            throw new ServiceException("创建支付记录失败: " + e.getMessage());
-        }
-
-        // 5. 更新订单状态
-        try {
-            order.setStatus("PAID");
-            order.setUpdatedAt(new Date());
-            ordersMapper.updateById(order);
-            logger.info("更新订单状态成功: orderId={}, status=PAID", orderId);
-        } catch (Exception e) {
-            logger.error("更新订单状态失败: orderId={}, error={}", orderId, e.getMessage(), e);
-            throw new ServiceException("更新订单状态失败: " + e.getMessage());
-        }
-
-        // 6. 如果订单使用了优惠券，更新优惠券状态为已使用
+        // 5. 如果订单使用了优惠券，更新优惠券状态为已使用
         if (order.getCouponId() != null) {
-            logger.info("订单使用了优惠券，更新优惠券状态: orderId={}, couponId={}", orderId, order.getCouponId());
-            try {
-                couponService.useCoupon(userId, order.getCouponId(), orderId);
-                logger.info("优惠券状态更新成功: couponId={}", order.getCouponId());
-            } catch (Exception e) {
-                logger.error("更新优惠券状态失败: couponId={}, error={}", order.getCouponId(), e.getMessage());
-                // 这里不抛出异常，因为订单支付已经成功，优惠券状态更新失败不应影响主流程
-            }
+            couponService.useCoupon(userId, order.getCouponId(), orderId);
+            logger.info("更新优惠券状态为已使用: userId={}, couponId={}, orderId={}",
+                    userId, order.getCouponId(), orderId);
         }
 
-        // 7. 发送支付成功消息
-        sendPaymentSuccessMessage(order, payment);
-
-        // 8. 从购物车中删除已购买的商品
-        try {
-            // 获取订单中的商品
-            List<Orderitems> orderItems = orderitemsMapper.selectByOrderId(orderId);
-
-            // 从购物车中删除已购买的商品
-            if (orderItems != null && !orderItems.isEmpty()) {
-                logger.info("从购物车中删除已购买商品: userId={}, orderId={}", userId, orderId);
-                // 调用购物车服务删除选中的商品
-                cartItemsMapper.deleteSelectedByUserId(userId);
-            }
-        } catch (Exception e) {
-            logger.error("从购物车删除已购买商品失败: userId={}, orderId={}, error={}", userId, orderId, e.getMessage());
-            // 这里不抛出异常，因为订单支付已经成功，购物车清理失败不应影响主流程
-        }
-
-        logger.info("订单支付成功: orderId={}, paymentId={}", orderId, payment.getPaymentId());
+        LogUtil.logMethodSuccess(logger, "payOrder", orderId);
     }
 
     @Override
     @Transactional
     public void confirmReceipt(Long orderId, Long userId) {
-        logger.info("开始确认收货: orderId={}, userId={}", orderId, userId);
+        LogUtil.logMethodStart(logger, "confirmReceipt", orderId, userId);
 
         // 1. 验证订单
-        Orders order = ordersMapper.selectById(orderId);
-        if (order == null) {
-            throw new ServiceException("订单不存在");
-        }
-        if (!order.getUserId().equals(userId)) {
-            throw new ServiceException("无权操作此订单");
-        }
-        if (!"PAID".equals(order.getStatus())) {
-            throw new ServiceException("订单状态不正确");
+        Orders order = validateOrderOwnership(orderId, userId);
+
+        // 2. 使用订单处理器处理确认收货
+        OrderProcessor processor = orderProcessorFactory.getProcessor("complete");
+        if (!processor.canProcess(order)) {
+            throw new ServiceException("当前订单状态不允许确认收货");
         }
 
-        // 2. 更新订单状态
-        order.setStatus("COMPLETED");
-        order.setUpdatedAt(new Date());
-        ordersMapper.updateById(order);
+        order = processor.process(order);
 
-        // 3. 发送订单完成通知
-        sendOrderCompletedNotification(order);
+        // 3. 发布订单完成事件
+        eventPublisher.publishOrderCompletedEvent(order);
 
-        logger.info("确认收货成功: orderId={}", orderId);
+        LogUtil.logMethodSuccess(logger, "confirmReceipt", orderId);
     }
 
     @Override
     @Transactional
     public void deleteOrder(Long orderId, Long userId) {
-        logger.info("开始删除订单: orderId={}, userId={}", orderId, userId);
+        LogUtil.logMethodStart(logger, "deleteOrder", orderId, userId);
 
-        // 1. 验证订单
-        Orders order = ordersMapper.selectById(orderId);
-        if (order == null) {
-            throw new ServiceException("订单不存在");
-        }
-        if (!order.getUserId().equals(userId)) {
-            throw new ServiceException("无权操作此订单");
-        }
-        if (!"COMPLETED".equals(order.getStatus()) && !"CANCELLED".equals(order.getStatus())) {
+        // 验证订单
+        Orders order = validateOrderOwnership(orderId, userId);
+
+        // 只允许删除已完成或已取消的订单
+        if (!("COMPLETED".equalsIgnoreCase(order.getStatus()) || "CANCELLED".equalsIgnoreCase(order.getStatus()))) {
             throw new ServiceException("只能删除已完成或已取消的订单");
         }
 
-        // 2. 删除订单项
-        orderitemsMapper.deleteByOrderId(orderId);
+        // 标记订单为已删除（逻辑删除）
+        ordersMapper.markAsDeleted(orderId);
 
-        // 3. 删除支付记录
-        paymentsMapper.deleteByOrderId(orderId);
-
-        // 4. 删除订单
-        ordersMapper.deleteById(orderId);
-
-        logger.info("订单删除成功: orderId={}", orderId);
+        LogUtil.logMethodSuccess(logger, "deleteOrder", orderId);
     }
 
     @Override
@@ -405,111 +263,111 @@ public class OrderServiceImpl implements IOrderService {
         return ordersMapper.selectById(orderId);
     }
 
-    /**
-     * 发送订单创建消息
-     */
-    private void sendOrderCreatedMessage(Orders order) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("orderId", order.getOrderId());
-        data.put("userId", order.getUserId());
-        data.put("amount", order.getTotalAmount());
-        data.put("status", order.getStatus());
-
-        messageService.sendOrderCreatedMessage(order.getOrderId(), data);
-
-        // 发送通知给用户
-        messageService.sendNotificationMessage(
-                order.getUserId(),
-                "订单创建成功",
-                "您的订单 #" + order.getOrderId() + " 已创建成功，请尽快支付。",
-                data);
-    }
-
-    /**
-     * 发送支付成功消息
-     */
-    private void sendPaymentSuccessMessage(Orders order, Payments payment) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("orderId", order.getOrderId());
-        data.put("userId", order.getUserId());
-        data.put("paymentId", payment.getPaymentId());
-        data.put("amount", payment.getAmount());
-        data.put("paymentMethod", payment.getPaymentMethod());
-
-        messageService.sendPaymentSuccessMessage(order.getOrderId(), payment.getPaymentId(), data);
-
-        // 发送通知给用户
-        messageService.sendNotificationMessage(
-                order.getUserId(),
-                "支付成功",
-                "您的订单 #" + order.getOrderId() + " 已支付成功，金额：" + payment.getAmount() + "元。",
-                data);
-    }
-
-    /**
-     * 发送订单取消通知
-     */
-    private void sendOrderCancelNotification(Orders order) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("orderId", order.getOrderId());
-        data.put("userId", order.getUserId());
-
-        messageService.sendNotificationMessage(
-                order.getUserId(),
-                "订单已取消",
-                "您的订单 #" + order.getOrderId() + " 已取消。",
-                data);
-    }
-
-    /**
-     * 发送订单完成通知
-     */
-    private void sendOrderCompletedNotification(Orders order) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("orderId", order.getOrderId());
-        data.put("userId", order.getUserId());
-
-        messageService.sendNotificationMessage(
-                order.getUserId(),
-                "订单已完成",
-                "您的订单 #" + order.getOrderId() + " 已完成，感谢您的购买！",
-                data);
-    }
-
-    /**
-     * 发送延迟订单消息，用于超时取消
-     */
-    private void sendDelayedOrderMessage(Long orderId) {
-        // 设置30分钟超时
-        long delayMillis = 30 * 60 * 1000;
-        messageService.sendDelayedOrderMessage(orderId, delayMillis);
-    }
-
     @Override
     public Map<String, Object> getUserOrdersWithPagination(Long userId, String status, int page, int pageSize) {
-        logger.info("分页获取用户订单列表: userId={}, status={}, page={}, pageSize={}", userId, status, page, pageSize);
+        LogUtil.logMethodStart(logger, "getUserOrdersWithPagination", userId, status, page, pageSize);
 
-        // 计算偏移量
+        // 手动实现分页
         int offset = (page - 1) * pageSize;
-
-        // 获取总记录数
-        int total = ordersMapper.countUserOrders(userId, status);
-
-        // 获取分页数据
         List<Orders> orders = ordersMapper.selectUserOrdersPaged(userId, status, offset, pageSize);
+        int totalCount = ordersMapper.countUserOrders(userId, status);
+        Long total = Long.valueOf(totalCount);
 
-        // 转换为VO对象
-        List<OrderDetailVO> orderDetails = orders.stream()
-                .map(order -> getOrderDetail(order.getOrderId()))
-                .collect(Collectors.toList());
+        List<OrderListVO> orderList = orders.stream().map(order -> {
+            OrderListVO vo = new OrderListVO();
+            BeanUtils.copyProperties(order, vo);
 
-        // 构建返回结果
+            // 获取订单项数量
+            List<Orderitems> items = orderitemsMapper.selectByOrderId(order.getOrderId());
+            vo.setItemCount(items.size());
+
+            return vo;
+        }).collect(Collectors.toList());
+
         Map<String, Object> result = new HashMap<>();
         result.put("total", total);
-        result.put("pages", (total + pageSize - 1) / pageSize);
-        result.put("current", page);
-        result.put("records", orderDetails);
+        result.put("list", orderList);
+        result.put("page", page);
+        result.put("pageSize", pageSize);
 
+        LogUtil.logMethodSuccess(logger, "getUserOrdersWithPagination", result);
         return result;
+    }
+
+    /**
+     * 验证商品库存
+     *
+     * @param orderCreateVO 订单创建VO
+     */
+    private void validateProductStock(OrderCreateVO orderCreateVO) {
+        for (OrderCreateVO.OrderItemCreateVO item : orderCreateVO.getItems()) {
+            Products product = productsMapper.selectById(item.getProductId());
+            if (product == null) {
+                throw new ServiceException("商品不存在");
+            }
+            if (product.getStock() < item.getQuantity()) {
+                throw new ServiceException("商品库存不足");
+            }
+        }
+    }
+
+    /**
+     * 计算订单总金额
+     *
+     * @param orderCreateVO 订单创建VO
+     * @return 总金额
+     */
+    private BigDecimal calculateTotalAmount(OrderCreateVO orderCreateVO) {
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (OrderCreateVO.OrderItemCreateVO item : orderCreateVO.getItems()) {
+            Products product = productsMapper.selectById(item.getProductId());
+            totalAmount = totalAmount.add(product.getPrice().multiply(new BigDecimal(item.getQuantity())));
+        }
+        return totalAmount;
+    }
+
+    /**
+     * 创建订单项
+     *
+     * @param orderId       订单ID
+     * @param orderCreateVO 订单创建VO
+     */
+    private void createOrderItems(Long orderId, OrderCreateVO orderCreateVO) {
+        for (OrderCreateVO.OrderItemCreateVO item : orderCreateVO.getItems()) {
+            Products product = productsMapper.selectById(item.getProductId());
+
+            Orderitems orderItem = new Orderitems();
+            orderItem.setOrderId(orderId);
+            orderItem.setProductId(item.getProductId());
+            orderItem.setProductSkuId(item.getSkuId());
+            orderItem.setQuantity(item.getQuantity().longValue());
+            orderItem.setPrice(product.getPrice());
+            orderItem.setProductName(product.getName());
+            orderItem.setProductImage(product.getMainImageUrl());
+            orderItem.setCreatedAt(new java.util.Date());
+
+            orderitemsMapper.insert(orderItem);
+
+            // 扣减库存
+            productsMapper.updateStock(item.getProductId(), -item.getQuantity());
+        }
+    }
+
+    /**
+     * 验证订单所有权
+     *
+     * @param orderId 订单ID
+     * @param userId  用户ID
+     * @return 订单
+     */
+    private Orders validateOrderOwnership(Long orderId, Long userId) {
+        Orders order = ordersMapper.selectById(orderId);
+        if (order == null) {
+            throw new ServiceException("订单不存在");
+        }
+        if (userId != null && !order.getUserId().equals(userId)) {
+            throw new ServiceException("无权操作此订单");
+        }
+        return order;
     }
 }

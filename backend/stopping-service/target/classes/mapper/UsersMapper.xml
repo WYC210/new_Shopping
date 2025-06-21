@@ -9,7 +9,7 @@
         <result property="username"      column="username"      />
         <result property="email"         column="email"         />
         <result property="phone"         column="phone"         />
-        <result property="Uuid"          column="Uuid"         />
+        <result property="uuid"          column="Uuid"         />
         <result property="passwordHash"  column="password_hash" />
         <result property="balance"       column="balance"       />
         <result property="balanceUpdatedAt" column="balance_updated_at" />
@@ -53,7 +53,7 @@
     <!-- 使用主键索引 -->
     <select id="selectByUuid" parameterType="String" resultMap="UsersResult">
         <include refid="selectUsersVo"/>
-        where Uuid = #{Uuid} and is_deleted = 0
+        where Uuid = #{uuid} and is_deleted = 0
     </select>
     <!-- 使用email索引 -->
     <select id="selectByEmail" parameterType="String" resultMap="UsersResult">
@@ -87,7 +87,7 @@
             #{username},
             #{email},
             #{phone},
-            #{Uuid},
+            #{uuid},
             #{passwordHash},
             #{balance},
             #{balanceUpdatedAt},

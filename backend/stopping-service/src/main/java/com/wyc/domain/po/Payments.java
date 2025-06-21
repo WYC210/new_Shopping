@@ -6,7 +6,6 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-
 /**
  * 订单支付表对象 payments
  *
@@ -14,9 +13,7 @@ import lombok.Data;
  * @date 2025-05-30
  */
 @Data
-public class Payments
-{
-
+public class Payments {
 
     /** 支付记录ID */
     private Long paymentId;
@@ -45,9 +42,18 @@ public class Payments
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date paidAt;
 
+    /** 支付状态 */
+    private String status;
+
+    /** 交易ID */
+    private String transactionId;
+
     /** 创建时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date createdAt;
+
+    /** 更新时间 */
+    private Date updatedAt;
 
     /** 订单表信息 */
     private List<Orders> ordersList;

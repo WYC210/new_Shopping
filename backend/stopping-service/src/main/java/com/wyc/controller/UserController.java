@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -27,6 +29,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/wyc/users")
 public class UserController {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     private IUserService userService;
@@ -42,11 +46,27 @@ public class UserController {
     @Bulkhead(name = "userService", fallbackMethod = "fallbackRegister")
     @PostMapping("/register")
     public R<?> register(@RequestBody UserRegisterVO registerVO) {
-        userService.register(registerVO);
-        return R.ok("注册成功");
+        try {
+            userService.register(registerVO);
+            return R.ok("注册成功");
+        } catch (Exception e) {
+            logger.error("注册失败，发生异常: {}", e.getMessage(), e);
+            throw e; // 重新抛出异常，让断路器处理
+        }
     }
 
     public R<?> fallbackRegister(UserRegisterVO registerVO, Throwable t) {
+        logger.error("注册服务降级触发: {}", t.getMessage(), t);
+        // 记录具体是哪种保护机制触发
+        if (t instanceof io.github.resilience4j.circuitbreaker.CallNotPermittedException) {
+            logger.error("断路器打开，拒绝服务调用");
+        } else if (t instanceof io.github.resilience4j.ratelimiter.RequestNotPermitted) {
+            logger.error("限流器触发，请求被限制");
+        } else if (t instanceof io.github.resilience4j.bulkhead.BulkheadFullException) {
+            logger.error("舱壁已满，并发请求过多");
+        } else {
+            logger.error("其他异常导致服务降级: {}", t.getClass().getName());
+        }
         return R.error(503, "服务暂时不可用，请稍后重试");
     }
 

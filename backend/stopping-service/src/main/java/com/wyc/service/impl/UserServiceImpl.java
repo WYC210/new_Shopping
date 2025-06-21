@@ -83,38 +83,54 @@ public class UserServiceImpl implements IUserService {
         logger.info("开始注册用户: username={}, email={}, phone={}",
                 registerVO.getUsername(), registerVO.getEmail(), registerVO.getPhone());
 
-        // 验证用户名是否已存在
-        if (usersMapper.selectByUsername(registerVO.getUsername()) != null) {
-            logger.error("用户名已存在: {}", registerVO.getUsername());
-            throw new ServiceException("用户名已存在: " + registerVO.getUsername());
+        try {
+            // 验证用户名是否已存在
+            if (usersMapper.selectByUsername(registerVO.getUsername()) != null) {
+                logger.error("用户名已存在: {}", registerVO.getUsername());
+                throw new ServiceException("用户名已存在: " + registerVO.getUsername());
+            }
+
+            // 验证邮箱是否已存在
+            if (usersMapper.selectByEmail(registerVO.getEmail()) != null) {
+                logger.error("邮箱已被注册: {}", registerVO.getEmail());
+                throw new ServiceException("邮箱已被注册: " + registerVO.getEmail());
+            }
+
+            // 验证手机号是否已存在
+            if (usersMapper.selectByPhone(registerVO.getPhone()) != null) {
+                logger.error("手机号已被注册: {}", registerVO.getPhone());
+                throw new ServiceException("手机号已被注册: " + registerVO.getPhone());
+            }
+
+            // 创建新用户
+            Users user = new Users();
+            user.setUsername(registerVO.getUsername());
+            String encodedPassword = passwordEncoder.encode(registerVO.getPassword());
+            logger.info("密码加密结果: {}", encodedPassword);
+            user.setPasswordHash(encodedPassword);
+            user.setEmail(registerVO.getEmail());
+            user.setPhone(registerVO.getPhone());
+            user.setBalance(new java.math.BigDecimal("100000.00"));
+            user.setIsDeleted(Boolean.FALSE);
+            user.setUuid(UUID.randomUUID().toString());
+
+            logger.info("准备插入用户数据到数据库");
+            try {
+                int result = usersMapper.insert(user);
+                logger.info("用户数据插入结果: {}, userId={}", result, user.getUserId());
+                if (result <= 0) {
+                    logger.error("用户数据插入失败: 影响行数为0");
+                    throw new ServiceException("用户数据插入失败");
+                }
+                logger.info("用户注册成功: userId={}, username={}", user.getUserId(), user.getUsername());
+            } catch (Exception e) {
+                logger.error("用户数据插入异常: {}", e.getMessage(), e);
+                throw new ServiceException("用户数据插入异常: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            logger.error("用户注册过程发生异常: {}", e.getMessage(), e);
+            throw e; // 重新抛出异常，让上层处理
         }
-
-        // 验证邮箱是否已存在
-        if (usersMapper.selectByEmail(registerVO.getEmail()) != null) {
-            logger.error("邮箱已被注册: {}", registerVO.getEmail());
-            throw new ServiceException("邮箱已被注册: " + registerVO.getEmail());
-        }
-
-        // 验证手机号是否已存在
-        if (usersMapper.selectByPhone(registerVO.getPhone()) != null) {
-            logger.error("手机号已被注册: {}", registerVO.getPhone());
-            throw new ServiceException("手机号已被注册: " + registerVO.getPhone());
-        }
-
-        // 创建新用户
-        Users user = new Users();
-        user.setUsername(registerVO.getUsername());
-        String encodedPassword = passwordEncoder.encode(registerVO.getPassword());
-        logger.info("密码加密结果: {}", encodedPassword);
-        user.setPasswordHash(encodedPassword);
-        user.setEmail(registerVO.getEmail());
-        user.setPhone(registerVO.getPhone());
-        user.setBalance(new java.math.BigDecimal("100000.00"));
-        user.setIsDeleted(Boolean.FALSE);
-        user.setUuid(UUID.randomUUID().toString());
-
-        usersMapper.insert(user);
-        logger.info("用户注册成功: userId={}, username={}", user.getUserId(), user.getUsername());
     }
 
     @Override

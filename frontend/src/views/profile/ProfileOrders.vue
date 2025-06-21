@@ -36,12 +36,13 @@
           
           <div class="order-content">
             <div
+              v-if="order.orderItems && order.orderItems.length > 0"
               v-for="item in order.orderItems"
               :key="item.orderItemId"
               class="order-product"
             >
               <el-image
-                :src="item.productImage"
+                :src="item.productImage || '/images/2.jpg'"
                 :alt="item.productName"
                 class="product-image"
               ></el-image>
@@ -54,11 +55,25 @@
                 </div>
               </div>
             </div>
+            <!-- 当没有订单项时显示简化信息 -->
+            <div v-else class="order-product">
+              <el-image
+                src="/images/2.jpg"
+                alt="商品"
+                class="product-image"
+              ></el-image>
+              <div class="product-info">
+                <div class="product-name">商品 x{{ order.itemCount || 1 }}</div>
+                <div class="product-price">
+                  <span class="price">¥{{ order.totalAmount }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           
           <div class="order-footer">
             <div class="order-total">
-              共{{ getTotalQuantity(order.orderItems) }}件商品
+              共{{ order.orderItems && order.orderItems.length > 0 ? getTotalQuantity(order.orderItems) : (order.itemCount || 1) }}件商品
               合计：<span class="total-price">¥{{ order.totalAmount }}</span>
             </div>
             
@@ -78,7 +93,7 @@
                 <el-button type="primary" @click="handleReview(order)">评价</el-button>
               </template>
               
-              <el-button v-if="order.status === 'completed'" @click="handleDelete(order)">
+              <el-button v-if="order.status === 'cancelled' || order.status === 'completed' || order.status === 'paid'" @click="handleDelete(order)">
                 删除订单
               </el-button>
             </div>
@@ -150,7 +165,9 @@ const getStatusText = (status) => {
 
 // 计算商品总数量
 const getTotalQuantity = (items) => {
-  if (!items || !Array.isArray(items)) return 0
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return 1; // 默认至少显示1件商品
+  }
   return items.reduce((total, item) => total + (item.quantity || 0), 0)
 }
 
@@ -169,11 +186,37 @@ const fetchOrders = async () => {
       page: currentPage.value,
       pageSize: pageSize.value
     })
-    console.log('订单列表响应23232:', response)
+    console.log('订单列表响应:', response)
     if (response) {
-      orders.value = response.records
-
-      total.value = response.total || 0
+      // 适配新的API响应结构
+      if (response.data && Array.isArray(response.data)) {
+        orders.value = response.data.map(order => ({
+          orderId: order.orderId,
+          orderNo: order.orderId.toString(), // 使用orderId作为订单号
+          status: order.status,
+          totalAmount: order.totalAmount,
+          createTime: new Date(order.createdAt).toLocaleString(),
+          orderItems: order.orderItems || [] // 如果没有orderItems，使用空数组
+        }));
+        total.value = response.total || 0;
+      } else if (response.list && Array.isArray(response.list)) {
+        // 处理直接传入的数据结构
+        orders.value = response.list.map(order => ({
+          orderId: order.orderId,
+          orderNo: order.orderId.toString(), // 使用orderId作为订单号
+          status: order.status,
+          totalAmount: order.totalAmount,
+          createTime: new Date(order.createdAt).toLocaleString(),
+          orderItems: order.orderItems || [{
+            orderItemId: `item-${order.orderId}-1`,
+            productName: `商品 x${order.itemCount || 1}`,
+            productImage: '/images/cloud.jpeg',
+            price: order.totalAmount / (order.itemCount || 1),
+            quantity: order.itemCount || 1
+          }]
+        }));
+        total.value = response.total || 0;
+      }
       
       // 如果当前页没有数据但总数大于0，可能是删除了最后一页的最后一条数据
       // 此时自动跳转到前一页

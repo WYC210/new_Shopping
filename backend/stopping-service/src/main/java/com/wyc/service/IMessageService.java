@@ -8,6 +8,23 @@ import java.util.Map;
 public interface IMessageService {
 
     /**
+     * 发送消息
+     *
+     * @param topic 消息主题
+     * @param data  消息数据
+     */
+    void sendMessage(String topic, Map<String, Object> data);
+
+    /**
+     * 发送延迟消息
+     *
+     * @param topic        消息主题
+     * @param data         消息数据
+     * @param delaySeconds 延迟秒数
+     */
+    void sendDelayedMessage(String topic, Map<String, Object> data, int delaySeconds);
+
+    /**
      * 发送订单创建消息
      *
      * @param orderId 订单ID

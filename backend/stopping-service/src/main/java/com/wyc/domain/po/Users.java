@@ -6,49 +6,63 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 /**
- * 用户表对象 users
- *
- * @author wyc
- * @date 2025-05-30
+ * 用户实体类
  */
 @Data
 public class Users {
-  
 
-    /** 用户ID */
+    /**
+     * 用户ID
+     */
     private Long userId;
 
-    /** 用户名 */
+    /**
+     * 用户名
+     */
     private String username;
 
-    /** 用户邮箱 */
-    private String email;
-
-    /** 用户手机号 */
-    private String phone;
-
-    /** 用户UUID */
-    private String Uuid;
-
-    /** 密码哈希值 */
+    /**
+     * 密码哈希
+     */
     private String passwordHash;
 
-    /** 账户金额 */
+    /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
+     * 手机号
+     */
+    private String phone;
+
+    /**
+     * 余额
+     */
     private BigDecimal balance;
 
-    /** 余额更新时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    /**
+     * 余额更新时间
+     */
     private Date balanceUpdatedAt;
 
-    /** 是否已注销 */
+    /**
+     * 是否删除
+     */
     private Boolean isDeleted;
 
-    /** 创建时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    /**
+     * UUID
+     */
+    private String uuid;
+
+    /**
+     * 创建时间
+     */
     private Date createdAt;
 
-    /** 更新时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    /**
+     * 更新时间
+     */
     private Date updatedAt;
-
 }

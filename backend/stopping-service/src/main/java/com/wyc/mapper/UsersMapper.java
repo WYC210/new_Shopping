@@ -5,8 +5,13 @@ import com.wyc.domain.vo.UserProfileUpdateVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
+import org.springframework.stereotype.Repository;
 
+/**
+ * 用户Mapper接口
+ */
 @Mapper
+@Repository
 public interface UsersMapper {
     /**
      * 根据用户名查询用户

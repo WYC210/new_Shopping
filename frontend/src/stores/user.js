@@ -97,7 +97,7 @@ export const useUserStore = defineStore('user', {
         
         // 分析响应结构
         if (response.code === 200) {
-          // 从响应中获取token (根据实际API响应格式调整)
+          // 从响应中获取token 
           if (response.msg && typeof response.msg === 'string') {
             token = response.msg;
           } else if (response.data && response.data.token) {
@@ -331,6 +331,21 @@ export const useUserStore = defineStore('user', {
       } catch (error) {
         console.error('修改密码失败:', error);
         ElMessage.error(error.response?.data?.msg || '修改密码失败，请稍后再试');
+        return false;
+      }
+    },
+
+    // 删除订单
+    async deleteOrder(orderId) {
+      try {
+        const response = await apiClient.delete(`/orders/${orderId}`);
+        if (response.data && response.data.code === 200) {
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('删除订单失败:', error);
+        ElMessage.error(error.response?.data?.msg || '删除订单失败，请稍后再试');
         return false;
       }
     }

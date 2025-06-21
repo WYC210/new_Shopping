@@ -11,8 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.TimeoutException;
 
 /**
- * 弹性服务切面
- * 用于处理服务降级、熔断、限流等高并发场景
+ * 弹性服务切面，用于处理服务降级
  */
 @Aspect
 @Component
@@ -21,15 +20,21 @@ public class ResilienceAspect {
     private static final Logger logger = LoggerFactory.getLogger(ResilienceAspect.class);
 
     /**
-     * 环绕通知，处理带有@Resilience注解的方法
+     * 环绕通知，处理被CircuitBreaker、RateLimiter或Bulkhead注解标记的方法
+     * 当这些方法抛出异常时，提供统一的服务降级处理
      */
-    @Around("@annotation(com.wyc.annotation.Resilience)")
-    public Object handleResilience(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around("@annotation(io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker) || " +
+            "@annotation(io.github.resilience4j.ratelimiter.annotation.RateLimiter) || " +
+            "@annotation(io.github.resilience4j.bulkhead.annotation.Bulkhead)")
+    public Object handleResilience(ProceedingJoinPoint joinPoint) {
         try {
             return joinPoint.proceed();
-        } catch (Exception e) {
-            logger.error("服务调用异常，执行降级策略: {}", e.getMessage(), e);
-            return fallback(joinPoint, e);
+        } catch (Throwable t) {
+            logger.error("服务调用失败: {}.{}, 异常: {}",
+                    joinPoint.getSignature().getDeclaringTypeName(),
+                    joinPoint.getSignature().getName(),
+                    t.getMessage());
+            return R.error(503, "服务暂时不可用，请稍后重试");
         }
     }
 

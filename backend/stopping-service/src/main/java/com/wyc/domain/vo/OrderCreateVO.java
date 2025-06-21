@@ -3,6 +3,7 @@ package com.wyc.domain.vo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -31,5 +32,8 @@ public class OrderCreateVO {
 
         @ApiModelProperty("购买数量")
         private Integer quantity;
+        
+        @ApiModelProperty("商品单价")
+        private BigDecimal price;
     }
 }
