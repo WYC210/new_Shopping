@@ -128,10 +128,11 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { useCartStore } from '../stores/cart'
 import { useProductStore } from '../stores/product'
+import { userApi } from '../api/user'
 import { 
   ShoppingCart, 
   Search, 
@@ -148,6 +149,7 @@ import {
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const cartStore = useCartStore()
 const productStore = useProductStore()
@@ -155,6 +157,7 @@ const productStore = useProductStore()
 // 商品分类数据
 const categories = computed(() => productStore.categories || [])
 const searchQuery = ref('')
+const searchSuggestions = ref([])
 
 // 获取商品分类数据
 const fetchCategories = async () => {

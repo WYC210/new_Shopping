@@ -2,10 +2,7 @@
   <div class="login-container">
     <el-card class="login-card">
       <h2 class="title">欢迎登录</h2>
-      <div class="test-account">
-        <p>测试账号：test</p>
-        <p>测试密码：123456</p>
-      </div>
+   
       <el-form :model="loginForm" :rules="rules" ref="loginFormRef" label-position="top">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="loginForm.username" prefix-icon="User" placeholder="请输入用户名" />
@@ -29,13 +26,15 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
 import { User, Lock, ArrowRight } from '@element-plus/icons-vue'
 import { authService } from '../services/auth'
+import { userApi } from '../api/user'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const loading = ref(false)
 const loginFormRef = ref(null)
@@ -57,27 +56,34 @@ const rules = {
 }
 
 const handleLogin = async () => {
-  if (loading.value) return
-  
-  try {
-    loading.value = true
-    
-    // 调用store的登录方法
-    const success = await userStore.login({
-      username: loginForm.username,
-      password: loginForm.password
-    })
-    
-    if (success) {
-      // 使用认证服务处理登录后的操作
-      await authService.afterLogin()
+  await loginFormRef.value.validate(async (valid) => {
+    if (valid) {
+      loading.value = true
+      try {
+        const success = await userStore.login(loginForm)
+        if (success) {
+          // 同步本地浏览记录
+          const localHistory = JSON.parse(localStorage.getItem('anonymous_history') || '[]')
+          if (localHistory.length > 0) {
+            console.log(`正在同步 ${localHistory.length} 条本地浏览记录...`)
+            const syncPromises = localHistory.map(item => 
+              userApi.recordBrowsing(item.productId, item.productName)
+            )
+            await Promise.all(syncPromises)
+            localStorage.removeItem('anonymous_history')
+            console.log('本地浏览记录同步完成。')
+          }
+
+          const redirect = route.query.redirect || '/'
+          await router.push(redirect)
+        }
+      } catch (error) {
+        console.error('登录失败:', error)
+      } finally {
+        loading.value = false
+      }
     }
-  } catch (error) {
-    console.error('登录失败:', error)
-    ElMessage.error('登录失败，请稍后再试')
-  } finally {
-    loading.value = false
-  }
+  })
 }
 
 const goToRegister = () => {

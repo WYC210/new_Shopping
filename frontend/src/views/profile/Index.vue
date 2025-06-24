@@ -103,7 +103,7 @@ onActivated(async () => {
 // 刷新用户数据
 const refreshUserData = async () => {
   try {
-    await userStore.getUserDetail()
+    await userStore.getUserInfo()
     console.log('用户数据已更新')
   } catch (error) {
     console.error('更新用户数据失败:', error)

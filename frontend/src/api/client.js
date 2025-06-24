@@ -114,7 +114,7 @@ apiClient.interceptors.response.use(
     }
     
     const message = error.response?.data?.msg || error.response?.data?.message || '服务器错误'
-    ElMessage.error(message)
+    
     return Promise.reject(error)
   }
 )

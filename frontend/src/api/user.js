@@ -54,11 +54,27 @@ export const userApi = {
   // 记录浏览历史
   recordBrowsing(productId, productName) {
     const userStore = useUserStore()
-    // 只有登录状态才记录浏览历史
+    
+    // 如果用户未登录，将记录保存到本地
     if (!userStore.isAuthenticated) {
-      return Promise.resolve() // 未登录时返回一个已解决的Promise
+      try {
+        const localHistory = JSON.parse(localStorage.getItem('anonymous_history') || '[]')
+        const newRecord = { productId, productName, viewedAt: new Date().toISOString() }
+        
+        // 避免重复记录最新的一个
+        if (localHistory.length === 0 || localHistory[0].productId !== productId) {
+          localHistory.unshift(newRecord)
+        }
+        
+        // 最多保存50条
+        localStorage.setItem('anonymous_history', JSON.stringify(localHistory.slice(0, 50)))
+      } catch (e) {
+        console.error('Failed to save anonymous history to localStorage', e)
+      }
+      return Promise.resolve()
     }
     
+    // 如果用户已登录，则直接发送到服务器
     const fingerprint = getFingerprint()
     const record = new BrowsingRecordVO(null, productId, productName, '', new Date().toISOString())
     
